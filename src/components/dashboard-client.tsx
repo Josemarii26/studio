@@ -13,47 +13,44 @@ import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
 import { parseNutritionalAnalysis } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
 
 interface DashboardClientProps {
   analysisResult: { analysis: string, creatineTaken: boolean, proteinTaken: boolean } | null;
 }
 
 export function DashboardClient({ analysisResult }: DashboardClientProps) {
-  const { userProfile, isLoaded } = useUserStore();
+  const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const { user } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  const dataKey = user ? `dailyData-${user.uid}` : null;
 
-  // Load data from localStorage when the component mounts or user changes
+  // Load data from Firestore when the component mounts or user changes
   useEffect(() => {
-    if (dataKey) {
-      const storedData = localStorage.getItem(dataKey);
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData).map((d: any) => ({
-            ...d,
-            date: new Date(d.date),
-          }));
-          setDailyData(parsedData);
-        } catch (error) {
-          console.error("Failed to parse dailyData from localStorage", error);
-          setDailyData([]);
-        }
-      }
-    } else {
+    async function loadData() {
+      if (user) {
+        setIsLoadingData(true);
+        const data = await loadDailyDataForUser(user.uid);
+        setDailyData(data);
+        setIsLoadingData(false);
+      } else {
         setDailyData([]);
+        setIsLoadingData(false);
+      }
     }
-  }, [dataKey]);
+    loadData();
+  }, [user]);
+
   
-  // Save data to localStorage whenever it changes
+  // Save data to Firestore whenever it changes
   useEffect(() => {
-    if (dataKey && dailyData.length > 0) {
-      localStorage.setItem(dataKey, JSON.stringify(dailyData));
+    if (user && !isLoadingData) {
+      saveDailyDataForUser(user.uid, dailyData);
     }
-  }, [dailyData, dataKey]);
+  }, [dailyData, user, isLoadingData]);
 
 
   useEffect(() => {
@@ -92,7 +89,7 @@ export function DashboardClient({ analysisResult }: DashboardClientProps) {
     
     setDailyData(prevData => {
         const otherDays = prevData.filter(d => !isSameDay(d.date, today));
-        return [newDayData, ...otherDays];
+        return [...otherDays, newDayData];
     });
 
     setSelectedDayData(newDayData);
@@ -105,7 +102,7 @@ export function DashboardClient({ analysisResult }: DashboardClientProps) {
     red: dailyData.filter(d => d.status === 'red').map(d => d.date),
   }), [dailyData]);
   
-  if (!isLoaded || !userProfile) {
+  if (!isProfileLoaded || !userProfile || isLoadingData) {
     return <DashboardLoader />;
   }
 
@@ -141,11 +138,11 @@ export function DashboardClient({ analysisResult }: DashboardClientProps) {
                     />
                 </CardContent>
             </Card>
-          <CaloriesChart dailyData={dailyData} />
+          <CaloriesChart dailyData={daily.length > 0 ? dailyData : []} />
         </div>
         
         <div className="lg:col-span-1">
-          <ProgressPanel dailyData={dailyData} />
+          <ProgressPanel dailyData={dailyData.length > 0 ? dailyData : []} />
         </div>
       </div>
       

@@ -15,22 +15,22 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     const { userProfile, isLoaded } = useUserStore();
     
     const greenDaysStreak = useMemo(() => {
-        if (!isLoaded) return 0;
+        if (!isLoaded || !dailyData || dailyData.length === 0) return 0;
         const sortedData = [...dailyData].sort((a,b) => b.date.getTime() - a.date.getTime());
         let streak = 0;
         let today = new Date();
         
-        const startIndex = sortedData.findIndex(d => isSameDay(d.date, today) || d.date < today);
+        const startIndex = sortedData.findIndex(d => d.date && (isSameDay(d.date, today) || d.date < today));
         if (startIndex === -1) return 0;
         
         let currentDate = sortedData[startIndex].date;
-        if (!isSameDay(currentDate, today) && !isSameDay(currentDate, subDays(today,1))) {
+        if (!currentDate || (!isSameDay(currentDate, today) && !isSameDay(currentDate, subDays(today,1)))) {
              return 0; 
         }
         
         for (let i = startIndex; i < sortedData.length; i++) {
             const day = sortedData[i];
-            if (isSameDay(day.date, currentDate) && day.status === 'green') {
+            if (day.date && isSameDay(day.date, currentDate) && day.status === 'green') {
                 streak++;
                 currentDate = subDays(currentDate, 1);
             } else {

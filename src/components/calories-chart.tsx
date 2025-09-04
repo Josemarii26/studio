@@ -18,7 +18,7 @@ export function CaloriesChart({ dailyData }: CaloriesChartProps) {
     const data = [];
     for (let i = 6; i >= 0; i--) {
       const date = subDays(today, i);
-      const dayData = dailyData.find(d => isSameDay(d.date, date));
+      const dayData = dailyData.find(d => d.date && isSameDay(d.date, date));
       data.push({
         date: format(date, 'MMM d'),
         calories: dayData ? dayData.totals.calories : 0,
@@ -57,4 +57,3 @@ export function CaloriesChart({ dailyData }: CaloriesChartProps) {
     </Card>
   );
 }
-
