@@ -20,76 +20,70 @@ export function parseNutritionalAnalysis(
   };
   let observations = '';
 
-  // Regex for English and Spanish, with optional bolding
-  const mealRegex = /^\*?\*?(\w+):\*?\*? (.*?)$/i;
-  const nutritionRegex = /^\* ([\d,.]+) kcal \| ([\d,.]+) g (?:proteína|protein) \| ([\d,.]+) g (?:grasa|fat) \| ([\d,.]+) g (?:carbohidratos|carbohydrates)/i;
-
-  // More flexible regex for totals, handling optional asterisks and varied whitespace
-  const totalCaloriesRegex = /^\*?\s*Calor(?:ías|ies):\s*([\d,.]+) kcal/im;
-  const totalProteinRegex = /^\*?\s*Prote(?:ínas|in):\s*([\d,.]+) g/im;
-  const totalFatRegex = /^\*?\s*(?:Grasas|Fats):\s*([\d,.]+) g/im;
-  const totalCarbsRegex = /^\*?\s*(?:Carbohidratos|Carbohydrates):\s*([\d,.]+) g/im;
-  
-  const observationMatch = analysisText.match(/💡 \**Observa(?:ciones|tions):\**\n?([\s\S]*)/im);
-  if (observationMatch) {
-    observations = observationMatch[1].trim();
-  }
-
   const lines = analysisText.split('\n');
+
+  // Regex for parsing each part, now English-only
+  const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack):\*?\*?\s*(.*)/i;
+  const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\|\s*([\d,.]*)\s*g fat\s*\|\s*([\d,.]*)\s*g carbohydrates/i;
+  const totalsRegex = /^\*?\*?\s*(Calories|Protein|Fats|Carbohydrates):\s*\*?\*?\s*([\d,.]*)/i;
+  const observationsRegex = /^💡\s*\*?Observations:\*?\s*(.*)/i;
+
   let currentMealType: keyof DayData['meals'] | null = null;
-  
+  let isParsingObservations = false;
+
   for (const line of lines) {
-    // Check for totals first to avoid misinterpreting them as meals
-    const calMatch = line.match(totalCaloriesRegex);
-    if (calMatch) {
-        totals.calories = parseFloat(calMatch[1].replace(/,/g, ''));
-        continue;
-    }
-    const protMatch = line.match(totalProteinRegex);
-    if (protMatch) {
-        totals.protein = parseFloat(protMatch[1].replace(/,/g, ''));
-        continue;
-    }
-    const fatMatch = line.match(totalFatRegex);
-    if (fatMatch) {
-        totals.fat = parseFloat(fatMatch[1].replace(/,/g, ''));
-        continue;
-    }
-    const carbMatch = line.match(totalCarbsRegex);
-    if (carbMatch) {
-        totals.carbs = parseFloat(carbMatch[1].replace(/,/g, ''));
+    if (line.trim() === '') {
+        isParsingObservations = false; // Stop parsing observations on empty line
         continue;
     }
 
-    // Then, check for meals
-    const mealMatch = line.match(mealRegex);
-    if (mealMatch) {
-        const mealTypeStr = mealMatch[1].toLowerCase();
-        const mealTypeMap: { [key: string]: keyof DayData['meals'] } = {
-            desayuno: 'breakfast', breakfast: 'breakfast',
-            almuerzo: 'lunch', lunch: 'lunch',
-            merienda: 'snack', snack: 'snack',
-            cena: 'dinner', dinner: 'dinner',
-        };
-        const mappedType = mealTypeMap[mealTypeStr];
-        if (mappedType) {
-            currentMealType = mappedType;
-            meals[currentMealType] = {
-                description: mealMatch[2],
-                calories: 0, protein: 0, fat: 0, carbs: 0,
-            };
-        }
-        continue;
+    // Start of observations section
+    const obsMatch = line.match(observationsRegex);
+    if (obsMatch) {
+      observations = obsMatch[1].trim();
+      isParsingObservations = true;
+      continue;
     }
     
-    // Finally, check for nutrition data for the current meal
-    const nutritionMatch = line.match(nutritionRegex);
-    if (nutritionMatch && currentMealType && meals[currentMealType]) {
-        meals[currentMealType]!.calories = parseFloat(nutritionMatch[1].replace(/,/g, ''));
-        meals[currentMealType]!.protein = parseFloat(nutritionMatch[2].replace(/,/g, ''));
-        meals[currentMealType]!.fat = parseFloat(nutritionMatch[3].replace(/,/g, ''));
-        meals[currentMealType]!.carbs = parseFloat(nutritionMatch[4].replace(/,/g, ''));
-        currentMealType = null;
+    if (isParsingObservations) {
+        observations += `\n${line.trim()}`;
+        continue;
+    }
+
+    // Match meal headers
+    const mealMatch = line.match(mealHeaderRegex);
+    if (mealMatch) {
+      const mealTypeStr = mealMatch[1].toLowerCase() as keyof DayData['meals'];
+      currentMealType = mealTypeStr;
+      meals[currentMealType] = {
+        description: mealMatch[2].trim(),
+        calories: 0, protein: 0, fat: 0, carbs: 0,
+      };
+      continue;
+    }
+
+    // Match nutrition line for the current meal
+    if (currentMealType) {
+        const nutritionMatch = line.match(nutritionLineRegex);
+        if (nutritionMatch && meals[currentMealType]) {
+            meals[currentMealType]!.calories = parseFloat(nutritionMatch[1].replace(/,/g, '')) || 0;
+            meals[currentMealType]!.protein = parseFloat(nutritionMatch[2].replace(/,/g, '')) || 0;
+            meals[currentMealType]!.fat = parseFloat(nutritionMatch[3].replace(/,/g, '')) || 0;
+            meals[currentMealType]!.carbs = parseFloat(nutritionMatch[4].replace(/,/g, '')) || 0;
+            currentMealType = null; // Reset after finding nutrition
+            continue;
+        }
+    }
+
+    // Match totals
+    const totalMatch = line.match(totalsRegex);
+    if (totalMatch) {
+      const key = totalMatch[1].toLowerCase();
+      const value = parseFloat(totalMatch[2].replace(/,/g, '')) || 0;
+      if (key === 'calories') totals.calories = value;
+      if (key === 'protein') totals.protein = value;
+      if (key === 'fats') totals.fat = value;
+      if (key === 'carbohydrates') totals.carbs = value;
     }
   }
 
@@ -104,7 +98,7 @@ export function parseNutritionalAnalysis(
   return {
     meals,
     totals,
-    observations,
+    observations: observations.trim(),
     status,
   };
 }
