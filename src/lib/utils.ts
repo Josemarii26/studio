@@ -19,7 +19,7 @@ export function parseNutritionalAnalysis(
   // Regex for parsing each part of the AI's response
   const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack)\*?\*?:\s*(.*)/i;
   const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\|\s*([\d,.]*)\s*g fat\s*\|\s*([\d,.]*)\s*g carbohydrates/i;
-
+  
   // First, parse all the meals and their data
   for (let i = 0; i < lines.length - 1; i++) {
     const line = lines[i];
