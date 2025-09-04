@@ -17,7 +17,7 @@ const generateMockData = (userProfile: UserProfile | null) => {
     const startDate = new Date();
     if (!userProfile) return data;
 
-    for(let i = 0; i < 20; i++) {
+    for(let i = 1; i <= 20; i++) {
         const date = addDays(startDate, -i);
         const calories = userProfile.dailyCalorieGoal + Math.floor(Math.random() * 800 - 400);
         let status: 'green' | 'yellow' | 'red' = 'green';
@@ -104,13 +104,13 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
-                <CardContent className="p-2 sm:p-4">
+                <CardContent className="p-0 sm:p-0">
                     <Calendar
                         mode="single"
                         selected={date}
                         onSelect={setDate}
                         onDayClick={handleDayClick}
-                        className="p-0 w-full"
+                        className="p-0"
                         modifiers={modifiers}
                         modifiersClassNames={{
                             green: 'rdp-day_green',
