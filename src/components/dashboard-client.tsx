@@ -1,11 +1,12 @@
+
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { addDays, format, isSameDay } from 'date-fns';
+import { addDays, isSameDay } from 'date-fns';
 
 const mockUserProfile: UserProfile = {
   name: 'Alex Doe',
@@ -25,8 +26,10 @@ const mockUserProfile: UserProfile = {
 
 const generateMockData = () => {
     const data: DayData[] = [];
+    // Use a fixed date to avoid issues with new Date() on server vs client
+    const startDate = new Date();
     for(let i = 0; i < 20; i++) {
-        const date = addDays(new Date(), -i);
+        const date = addDays(startDate, -i);
         const calories = 2000 + Math.floor(Math.random() * 800 - 400);
         let status: 'green' | 'yellow' | 'red' = 'green';
         if (Math.abs(calories - mockUserProfile.dailyCalorieGoal) > 400) {
@@ -60,9 +63,16 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [dailyData, setDailyData] = useState<DayData[]>(generateMockData());
+  const [isClient, setIsClient] = useState(false);
+  const [date, setDate] = useState<Date | undefined>();
+  const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+    setDate(new Date());
+    setDailyData(generateMockData());
+  }, []);
 
   const handleDayClick = (day: Date) => {
     const dataForDay = dailyData.find(d => isSameDay(d.date, day));
@@ -84,6 +94,11 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
     yellow: dailyData.filter(d => d.status === 'yellow').map(d => d.date),
     red: dailyData.filter(d => d.status === 'red').map(d => d.date),
   }), [dailyData]);
+  
+  if (!isClient) {
+    // Render a skeleton or null on the server to avoid hydration errors
+    return null;
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -106,9 +121,9 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
               }}
               modifiers={modifiers}
               modifiersClassNames={{
-                green: 'green',
-                yellow: 'yellow',
-                red: 'red',
+                green: 'rdp-day_green',
+                yellow: 'rdp-day_yellow',
+                red: 'rdp-day_red',
               }}
             />
           </CardContent>

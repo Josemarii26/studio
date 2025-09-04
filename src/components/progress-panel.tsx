@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -5,7 +6,7 @@ import type { DayData, UserProfile } from '@/lib/types';
 import { Flame, TrendingUp, Target } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { format, subDays, isSameDay } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 interface ProgressPanelProps {
     dailyData: DayData[];
@@ -18,9 +19,16 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     const weeklyData = useMemo(() => {
+        const startDate = new Date();
         return Array.from({ length: 7 }).map((_, i) => {
-            const date = subDays(new Date(), i);
+            const date = subDays(startDate, i);
             const data = dailyData.find(d => isSameDay(d.date, date));
             return {
                 date: format(date, 'eee'),
@@ -93,7 +101,7 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
                     <CardTitle className="mb-2 text-lg">Daily Goal</CardTitle>
                     <div className="flex items-center gap-2">
                         <Target className="h-10 w-10 text-primary" />
-                        <span className="text-4xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</span>
+                        <span className="text-4xl font-bold">{isClient ? userProfile.dailyCalorieGoal.toLocaleString() : userProfile.dailyCalorieGoal}</span>
                     </div>
                     <CardDescription className="mt-2">kcal</CardDescription>
                 </Card>

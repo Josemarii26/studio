@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,18 +79,18 @@
 
 @layer components {
   .rdp-day {
-    @apply rounded-lg h-20 w-20 transition-transform duration-300 ease-in-out;
+    @apply h-20 w-20 rounded-lg transition-transform duration-300 ease-in-out;
   }
   .rdp-day:hover {
-    @apply scale-105 z-10;
+    @apply z-10 scale-105;
   }
   .rdp-day_green {
-    @apply bg-status-green/10 border border-status-green shadow-sm;
+    @apply border border-status-green bg-status-green/10 shadow-sm;
   }
   .rdp-day_yellow {
-    @apply bg-status-yellow/10 border border-status-yellow shadow-sm;
+    @apply border border-status-yellow bg-status-yellow/10 shadow-sm;
   }
   .rdp-day_red {
-    @apply bg-status-red/10 border border-status-red shadow-sm;
+    @apply border border-status-red bg-status-red/10 shadow-sm;
   }
 }
