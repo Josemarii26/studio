@@ -94,39 +94,41 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
         </div>
       </CardHeader>
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
-          <div className="space-y-6">
-            {messages.map(message => (
-              <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
-                {message.role !== 'user' && (
+          <ScrollArea className="h-full">
+            <div className="space-y-6 pr-4">
+              {messages.map(message => (
+                <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
+                  {message.role !== 'user' && (
+                    <Avatar className="h-8 w-8 border bg-background">
+                      <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={cn(
+                    'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
+                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                    message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
+                    )}>
+                    <SimpleMarkdown text={message.content} />
+                  </div>
+                  {message.role === 'user' && (
+                    <Avatar className="h-8 w-8 border bg-background">
+                      <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                    </Avatar>
+                  )}
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex items-start gap-3">
                   <Avatar className="h-8 w-8 border bg-background">
                     <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
                   </Avatar>
-                )}
-                <div className={cn(
-                  'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
-                   message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
-                   message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
-                   )}>
-                  <SimpleMarkdown text={message.content} />
+                  <div className="rounded-lg p-3 text-sm bg-muted">
+                      <Loader className="h-5 w-5 animate-spin text-primary" />
+                  </div>
                 </div>
-                {message.role === 'user' && (
-                  <Avatar className="h-8 w-8 border bg-background">
-                    <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex items-start gap-3">
-                <Avatar className="h-8 w-8 border bg-background">
-                  <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
-                </Avatar>
-                <div className="rounded-lg p-3 text-sm bg-muted">
-                    <Loader className="h-5 w-5 animate-spin text-primary" />
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+        </ScrollArea>
       </div>
       <CardFooter className="border-t p-4">
         <Form {...form}>
