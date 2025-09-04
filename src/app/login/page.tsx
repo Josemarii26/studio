@@ -1,8 +1,15 @@
 
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NutriTrackLogo } from "@/components/nutri-track-logo";
 import Link from "next/link";
+import { auth, provider } from '@/firebase/client';
+import { signInWithPopup } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { useToast } from "@/hooks/use-toast";
+
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -14,6 +21,27 @@ const GoogleIcon = () => (
 );
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { toast } = useToast();
+
+    const handleSignIn = async () => {
+        try {
+            await signInWithPopup(auth, provider);
+            toast({
+                title: "Signed In Successfully!",
+                description: "Redirecting to your profile setup...",
+            });
+            router.push('/onboarding');
+        } catch (error) {
+            console.error("Authentication failed:", error);
+            toast({
+                variant: "destructive",
+                title: "Authentication Failed",
+                description: "Could not sign you in with Google. Please try again.",
+            });
+        }
+    };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
@@ -27,7 +55,7 @@ export default function LoginPage() {
           <CardDescription>Sign up to start your personalized nutrition journey.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" onClick={handleSignIn}>
             <GoogleIcon />
             Sign up with Google
           </Button>
