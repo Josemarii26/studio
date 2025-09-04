@@ -105,23 +105,23 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3 space-y-8 animate-fade-in-up">
-              <Card className="shadow-lg">
+              <Card className="shadow-lg bg-background/50 backdrop-blur-xl">
                   <CardContent className="p-2 sm:p-4">
                       <Calendar
                         mode="single"
                         selected={date}
                         onSelect={setDate}
                         onDayClick={handleDayClick}
-                        className="p-0 [&_td]:p-0 w-full"
+                        className="p-0 [&_td]:p-1"
                         classNames={{
-                          cell: 'w-full h-auto aspect-square',
-                          day: "h-full w-full rounded-lg text-center text-sm p-1",
-                          head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
-                          head_row: "flex w-full mt-2 justify-around",
-                          row: "flex w-full mt-2 justify-around",
-                          month: "space-y-4 w-full",
-                          months: "w-full",
-                          table: "w-full"
+                            cell: "w-full h-auto aspect-square p-1",
+                            day: "h-full w-full rounded-lg flex items-center justify-center",
+                            head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
+                            head_row: "flex w-full mt-2",
+                            row: "flex w-full mt-2",
+                            month: "space-y-4 w-full",
+                            months: "w-full",
+                            table: "w-full border-separate border-spacing-0"
                         }}
                         modifiers={modifiers}
                         modifiersClassNames={{
@@ -139,9 +139,8 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
               <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
           </div>
       </div>
-
       <div className="mx-auto @container mt-8">
-          <DashboardGrid />
+        <DashboardGrid />
       </div>
 
       {selectedDayData && (
