@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { DayData } from '@/lib/types';
-import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
+import { Flame, TrendingUp, Target } from 'lucide-react';
 import { isSameDay, subDays } from 'date-fns';
 import { useMemo } from 'react';
 import { useUserStore } from '@/hooks/use-user-store';
@@ -45,7 +45,6 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
              <div className="grid gap-4 grid-cols-1">
                 <Card className="h-[128px] animate-pulse bg-muted"></Card>
                 <Card className="h-[128px] animate-pulse bg-muted"></Card>
-                <Card className="h-[128px] animate-pulse bg-muted"></Card>
                 <Card className="h-[218px] animate-pulse bg-muted"></Card>
             </div>
         )
@@ -69,15 +68,6 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
                     <span className="text-4xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</span>
                 </div>
                 <CardDescription className="mt-2">kcal</CardDescription>
-            </Card>
-
-            <Card className="p-6 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                <CardTitle className="mb-2 text-lg">BMI</CardTitle>
-                <div className="flex items-center justify-center gap-2">
-                    <HeartPulse className="h-10 w-10 text-status-red" />
-                    <span className="text-4xl font-bold">{userProfile.bmi}</span>
-                </div>
-                <CardDescription className="mt-2">Body Mass Index</CardDescription>
             </Card>
             
             <Card className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
