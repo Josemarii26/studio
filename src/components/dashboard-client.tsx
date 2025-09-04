@@ -8,6 +8,7 @@ import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
+import { DashboardGrid } from './dashboard-grid';
 
 const mockUserProfile: UserProfile = {
   name: 'Alex Doe',
@@ -102,8 +103,8 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-fade-in-up">
-          <div className="lg:col-span-3 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3 space-y-8 animate-fade-in-up">
               <Card className="shadow-lg">
                   <CardContent className="p-2 sm:p-4">
                       <Calendar
@@ -137,17 +138,20 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
           <div className="lg:col-span-1">
               <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
           </div>
-
-
-        {selectedDayData && (
-          <DayDetailModal
-            dayData={selectedDayData}
-            userProfile={mockUserProfile}
-            isOpen={!!selectedDayData}
-            onClose={() => setSelectedDayData(null)}
-          />
-        )}
       </div>
+
+      <div className="mx-auto @container mt-8">
+          <DashboardGrid />
+      </div>
+
+      {selectedDayData && (
+        <DayDetailModal
+          dayData={selectedDayData}
+          userProfile={mockUserProfile}
+          isOpen={!!selectedDayData}
+          onClose={() => setSelectedDayData(null)}
+        />
+      )}
     </div>
   );
 }
