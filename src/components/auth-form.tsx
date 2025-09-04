@@ -64,8 +64,9 @@ export function AuthForm() {
 
       switch (error.code) {
         case 'auth/user-not-found':
+        case 'auth/invalid-credential':
           title = 'Login Failed';
-          description = 'No account found with this email. Would you like to sign up?';
+          description = 'No account found with this email or password. Please try again.';
           break;
         case 'auth/wrong-password':
           title = 'Login Failed';
@@ -84,7 +85,6 @@ export function AuthForm() {
             description = 'Your password is too weak. Please choose a stronger password.';
             break;
         default:
-            // For other unexpected errors, you might want to log them and show a generic message.
             description = 'An unexpected error occurred. Please try again later.';
             break;
       }
