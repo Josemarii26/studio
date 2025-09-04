@@ -36,7 +36,7 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
 
 export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', role: 'assistant', content: "Hi there! Describe the meals you had today, and I'll analyze them for you. For example: `For breakfast I had two scrambled eggs with spinach and a slice of whole wheat toast. For lunch, a turkey sandwich on rye with a side of apple slices...` Also mention if you took supplements like creatine or protein powder.", timestamp: new Date() }
+    { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -95,8 +95,8 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
           <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
         </div>
       </CardHeader>
-      <div className="flex-1 min-h-0">
-        <ScrollArea className="h-full p-4">
+      <div className="flex-1 flex flex-col min-h-0">
+        <ScrollArea className="flex-1 p-4">
             <div className="space-y-6 pr-4">
               {messages.map(message => (
                 <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
