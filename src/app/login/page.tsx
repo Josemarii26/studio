@@ -34,14 +34,7 @@ export default function LoginPage() {
             router.push('/onboarding');
         } catch (error: any) {
             console.error("Authentication failed:", error);
-            let description = "Could not sign you in with Google. Please try again.";
-            if (error.code === 'auth/popup-closed-by-user') {
-                description = "You closed the sign-in window. Please try again.";
-            } else if (error.code === 'auth/cancelled-popup-request') {
-                description = "The sign-in flow was cancelled. Please try again.";
-            } else if (error.code === 'auth/configuration-not-found') {
-                description = "Authentication is not configured correctly. Please ask the developer to enable Google Sign-In in the Firebase console."
-            }
+            let description = `Could not sign you in. ${error.message}`;
 
             toast({
                 variant: "destructive",
