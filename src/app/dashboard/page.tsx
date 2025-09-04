@@ -81,13 +81,13 @@ export default function DashboardPage() {
       router.push('/login');
       return;
     }
+    // Only check for profile once auth is loaded and user is present.
     if (profileLoaded) {
-      // Only after the profile has been loaded from storage, check if it exists
+      // If profile is loaded and it's null, then onboard.
       if (!userProfile) {
-        // If it doesn't exist, the user needs to onboard
         router.push('/onboarding');
       }
-      // If it *does* exist, we stay on the dashboard.
+      // If profile exists, stay on dashboard.
     }
   }, [user, authLoading, profileLoaded, userProfile, router]);
 

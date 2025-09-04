@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { DayData } from '@/lib/types';
-import { Flame, TrendingUp, Target } from 'lucide-react';
+import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
 import { isSameDay, subDays } from 'date-fns';
 import { useMemo } from 'react';
 import { useUserStore } from '@/hooks/use-user-store';
