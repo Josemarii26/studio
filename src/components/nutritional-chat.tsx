@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, Loader } from 'lucide-react';
+import { Send, Bot, User, Loader, Info } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,7 @@ import { NutriTrackLogo } from './nutri-track-logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { isSameDay, startOfToday } from 'date-fns';
 
 const formSchema = z.object({
   message: z.string().min(10, { message: 'Please describe your meals in more detail.' }),
@@ -24,6 +25,7 @@ const formSchema = z.object({
 
 interface NutritionalChatProps {
   onAnalysisUpdate: (data: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => void;
+  dailyData: DayData[];
 }
 
 const SimpleMarkdown = ({ text }: { text: string }) => {
@@ -51,13 +53,17 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
     );
 };
 
-export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
+export function NutritionalChat({ onAnalysisUpdate, dailyData }: NutritionalChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const chatHistoryKey = user ? `chatHistory-${user.uid}` : null;
+  
+  const todaysData = dailyData.find(d => isSameDay(d.date, startOfToday()));
+  const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0;
+
 
   const resetToInitialMessage = () => {
     setMessages([
@@ -105,6 +111,15 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
   }, [messages]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    if(hasSuccessfulLogForToday) {
+        toast({
+            variant: "destructive",
+            title: "Already Logged for Today",
+            description: "You can only submit one nutritional analysis per day. You can see today's entry on the calendar.",
+        });
+        return;
+    }
+
     const userMessage: ChatMessage = { id: String(Date.now()), role: 'user', content: values.message, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
@@ -180,36 +195,43 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
         </ScrollArea>
       </div>
       <CardFooter className="border-t p-4">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full items-start gap-2">
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Describe your meals..."
-                      rows={1}
-                      className="min-h-0 resize-none"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          form.handleSubmit(handleSubmit)();
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" size="icon" disabled={isLoading}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
-        </Form>
+        {hasSuccessfulLogForToday ? (
+            <div className="w-full text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg flex items-center gap-2 justify-center">
+                <Info className="h-4 w-4" />
+                You've already logged your meals for today.
+            </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full items-start gap-2">
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Describe your meals..."
+                        rows={1}
+                        className="min-h-0 resize-none"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            form.handleSubmit(handleSubmit)();
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" size="icon" disabled={isLoading}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </Form>
+        )}
       </CardFooter>
     </div>
   );

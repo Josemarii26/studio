@@ -15,6 +15,11 @@ import { useUserStore } from '@/hooks/use-user-store';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { DashboardLoader } from '@/components/dashboard-loader';
+import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
+import type { DayData } from '@/lib/types';
+import { parseNutritionalAnalysis } from '@/lib/utils';
+import { startOfToday, isSameDay } from 'date-fns';
+
 
 function Header() {
   const { toggleSidebar } = useSidebar();
@@ -69,12 +74,12 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { isLoaded: profileLoaded, userProfile } = useUserStore();
   const router = useRouter();
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [dailyData, setDailyData] = useState<DayData[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
+  // Authentication and onboarding checks
   useEffect(() => {
-    if (authLoading) {
-      return;
-    }
+    if (authLoading) return;
     if (!user) {
       router.push('/login');
       return;
@@ -85,11 +90,47 @@ export default function DashboardPage() {
   }, [user, authLoading, profileLoaded, userProfile, router]);
 
 
-  const handleAnalysisUpdate = (data: any) => {
-    setAnalysisResult(data);
+  // Load data from Firestore when the component mounts or user changes
+  useEffect(() => {
+    async function loadData() {
+      if (user) {
+        setIsLoadingData(true);
+        const data = await loadDailyDataForUser(user.uid);
+        setDailyData(data);
+        setIsLoadingData(false);
+      }
+    }
+    loadData();
+  }, [user]);
+
+  
+  // Save data to Firestore whenever it changes
+  useEffect(() => {
+    if (user && !isLoadingData) {
+      saveDailyDataForUser(user.uid, dailyData);
+    }
+  }, [dailyData, user, isLoadingData]);
+  
+
+  const handleAnalysisUpdate = (result: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => {
+    if (!userProfile) return;
+
+    const parsedData = parseNutritionalAnalysis(result.analysis, userProfile);
+    const today = startOfToday();
+    const newDayData: DayData = {
+      date: today,
+      ...parsedData,
+      creatineTaken: result.creatineTaken,
+      proteinTaken: result.proteinTaken,
+    };
+    
+    setDailyData(prevData => {
+        const otherDays = prevData.filter(d => !isSameDay(d.date, today));
+        return [...otherDays, newDayData];
+    });
   };
   
-  if (authLoading || !profileLoaded || !userProfile) {
+  if (authLoading || !profileLoaded || !userProfile || isLoadingData) {
     return <DashboardLoader />;
   }
 
@@ -99,10 +140,10 @@ export default function DashboardPage() {
         <Header />
         <div className="flex flex-1">
             <DashboardContent>
-              <DashboardClient analysisResult={analysisResult} />
+              <DashboardClient dailyData={dailyData} setDailyData={setDailyData} />
             </DashboardContent>
             <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
-                <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
+                <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} dailyData={dailyData} />
             </Sidebar>
         </div>
       </div>

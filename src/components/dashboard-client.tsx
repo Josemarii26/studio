@@ -3,61 +3,25 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { addDays, isSameDay, startOfToday } from 'date-fns';
+import { isSameDay } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { DashboardGrid } from './dashboard-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
-import { parseNutritionalAnalysis } from '@/lib/utils';
-import { useAuth } from '@/hooks/use-auth';
-import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
+
 
 interface DashboardClientProps {
-  analysisResult: { analysis: string, creatineTaken: boolean, proteinTaken: boolean } | null;
+  dailyData: DayData[];
+  setDailyData: (data: DayData[]) => void;
 }
 
-export function DashboardClient({ analysisResult }: DashboardClientProps) {
+export function DashboardClient({ dailyData, setDailyData }: DashboardClientProps) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
-  const { user } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
-  const [isLoadingData, setIsLoadingData] = useState(true);
-
-
-  // Load data from Firestore when the component mounts or user changes
-  useEffect(() => {
-    async function loadData() {
-      if (user) {
-        setIsLoadingData(true);
-        const data = await loadDailyDataForUser(user.uid);
-        setDailyData(data);
-        setIsLoadingData(false);
-      } else {
-        setDailyData([]);
-        setIsLoadingData(false);
-      }
-    }
-    loadData();
-  }, [user]);
-
-  
-  // Save data to Firestore whenever it changes
-  useEffect(() => {
-    if (user && !isLoadingData) {
-      saveDailyDataForUser(user.uid, dailyData);
-    }
-  }, [dailyData, user, isLoadingData]);
-
-
-  useEffect(() => {
-    if (analysisResult && userProfile) {
-      handleAnalysis(analysisResult);
-    }
-  }, [analysisResult, userProfile]);
 
 
   const handleDayClick = (day: Date) => {
@@ -75,25 +39,13 @@ export function DashboardClient({ analysisResult }: DashboardClientProps) {
     }
   };
   
-   const handleAnalysis = (result: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => {
-    if (!userProfile) return;
-
-    const parsedData = parseNutritionalAnalysis(result.analysis, userProfile);
-    const today = startOfToday();
-    const newDayData: DayData = {
-      date: today,
-      ...parsedData,
-      creatineTaken: result.creatineTaken,
-      proteinTaken: result.proteinTaken,
-    };
-    
-    setDailyData(prevData => {
-        const otherDays = prevData.filter(d => !isSameDay(d.date, today));
-        return [...otherDays, newDayData];
-    });
-
-    setSelectedDayData(newDayData);
-  };
+  // When an analysis is complete, select today's data to show the modal
+  useEffect(() => {
+    const todayData = dailyData.find(d => isSameDay(d.date, new Date()));
+    if(todayData && Object.keys(todayData.meals).length > 0){
+        setSelectedDayData(todayData);
+    }
+  }, [dailyData]);
 
 
   const modifiers = useMemo(() => ({
@@ -102,7 +54,7 @@ export function DashboardClient({ analysisResult }: DashboardClientProps) {
     red: dailyData.filter(d => d.status === 'red').map(d => d.date),
   }), [dailyData]);
   
-  if (!isProfileLoaded || !userProfile || isLoadingData) {
+  if (!isProfileLoaded || !userProfile) {
     return <DashboardLoader />;
   }
 
