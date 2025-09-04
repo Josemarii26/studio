@@ -17,7 +17,7 @@ function Header() {
   return (
     <header className={cn(
       "sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 transition-all duration-300 ease-in-out",
-      open && "pr-[400px] xl:pr-[450px]"
+      open && "pr-[calc(400px+1rem)] xl:pr-[calc(450px+1rem)]"
     )}>
       <a href="/" className="flex items-center gap-2">
         <NutriTrackLogo className="h-8 w-8 text-primary" />
@@ -69,10 +69,12 @@ export default function Home() {
 function DashboardContent({ onAnalysisUpdate }: { onAnalysisUpdate: (data: any) => void; }) {
   const { open } = useSidebar();
   return (
-      <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", open && "pr-[400px] xl:pr-[450px]")}>
+      <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", open && "pr-[calc(400px+1rem)] xl:pr-[calc(450px+1rem)]")}>
         <div className="space-y-8">
           <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
-          <DashboardGrid />
+          <div className="mx-auto @container">
+            <DashboardGrid />
+          </div>
         </div>
       </main>
   )
