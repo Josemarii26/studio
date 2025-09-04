@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { isSameDay, startOfYesterday, differenceInDays } from 'date-fns';
@@ -15,6 +15,29 @@ import { DashboardLoader } from './dashboard-loader';
 
 interface DashboardClientProps {
   dailyData: DayData[];
+}
+
+function CalendarLegend() {
+    return (
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-status-green/50 border border-status-green" />
+                <span>On Target</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-status-yellow/50 border border-status-yellow" />
+                <span>Close</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-status-red/50 border border-status-red" />
+                <span>Off Target</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-muted/80 border border-muted-foreground/30" />
+                <span>Missed</span>
+            </div>
+        </div>
+    )
 }
 
 export function DashboardClient({ dailyData }: DashboardClientProps) {
@@ -113,6 +136,9 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                         }}
                     />
                 </CardContent>
+                <CardFooter className="py-4">
+                    <CalendarLegend />
+                </CardFooter>
             </Card>
           <CaloriesChart dailyData={dailyData} />
         </div>
