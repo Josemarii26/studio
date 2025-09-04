@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
@@ -100,36 +100,41 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-        <Card className="shadow-lg">
-            <CardContent className="p-2 sm:p-4">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  onDayClick={handleDayClick}
-                  className="p-0 [&_td]:p-0 w-full"
-                  classNames={{
-                    cell: 'w-full',
-                    day: "h-16 lg:h-24 w-full rounded-lg text-center text-sm p-1",
-                    head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
-                    head_row: "flex w-full mt-2 justify-around",
-                    row: "flex w-full mt-2 justify-around",
-                    month: "space-y-4 w-full",
-                    months: "w-full",
-                    table: "w-full"
-                  }}
-                  modifiers={modifiers}
-                  modifiersClassNames={{
-                    green: 'rdp-day_green',
-                    yellow: 'rdp-day_yellow',
-                    red: 'rdp-day_red',
-                  }}
-                />
-            </CardContent>
-        </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-3">
+            <Card className="shadow-lg h-full">
+                <CardContent className="p-2 sm:p-4">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      onDayClick={handleDayClick}
+                      className="p-0 [&_td]:p-0 w-full"
+                      classNames={{
+                        cell: 'w-full',
+                        day: "h-16 lg:h-24 w-full rounded-lg text-center text-sm p-1",
+                        head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
+                        head_row: "flex w-full mt-2 justify-around",
+                        row: "flex w-full mt-2 justify-around",
+                        month: "space-y-4 w-full",
+                        months: "w-full",
+                        table: "w-full"
+                      }}
+                      modifiers={modifiers}
+                      modifiersClassNames={{
+                        green: 'rdp-day_green',
+                        yellow: 'rdp-day_yellow',
+                        red: 'rdp-day_red',
+                      }}
+                    />
+                </CardContent>
+            </Card>
+        </div>
 
-        <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
+        <div className="lg:col-span-1">
+            <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
+        </div>
+
 
       {selectedDayData && (
         <DayDetailModal

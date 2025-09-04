@@ -1,11 +1,9 @@
 
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { DayData, UserProfile } from '@/lib/types';
 import { Flame, TrendingUp, Target } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, Line, ResponsiveContainer, XAxis, YAxis } from 'recharts';
-import { format, subDays, isSameDay } from 'date-fns';
+import { isSameDay, subDays } from 'date-fns';
 import { useMemo, useState, useEffect } from 'react';
 
 interface ProgressPanelProps {
@@ -13,32 +11,13 @@ interface ProgressPanelProps {
     userProfile: UserProfile;
 }
 
-const chartConfig = {
-    calories: { label: "Calories", color: "hsl(var(--chart-1))" },
-    goal: { label: "Goal", color: "hsl(var(--chart-2))" },
-} satisfies ChartConfig;
-
 export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
-
-    const weeklyData = useMemo(() => {
-        if (!isClient) return [];
-        const startDate = new Date();
-        return Array.from({ length: 7 }).map((_, i) => {
-            const date = subDays(startDate, i);
-            const data = dailyData.find(d => isSameDay(d.date, date));
-            return {
-                date: format(date, 'eee'),
-                calories: data?.totals.calories || 0,
-                goal: userProfile.dailyCalorieGoal
-            };
-        }).reverse();
-    }, [dailyData, userProfile.dailyCalorieGoal, isClient]);
-
+    
     const greenDaysStreak = useMemo(() => {
         if (!isClient) return 0;
         const sortedData = [...dailyData].sort((a,b) => b.date.getTime() - a.date.getTime());
@@ -68,28 +47,7 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
 
 
     return (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="lg:col-span-3">
-                <CardHeader>
-                    <CardTitle>Weekly Calorie Intake</CardTitle>
-                    <CardDescription>Your calories vs. your daily goal for the last 7 days.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                        <ResponsiveContainer>
-                            <BarChart data={weeklyData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
-                                <CartesianGrid vertical={false} />
-                                <XAxis dataKey="date" tickLine={false} tickMargin={10} axisLine={false} />
-                                <YAxis />
-                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" hideLabel />} />
-                                <Bar dataKey="calories" fill="var(--color-calories)" radius={8} />
-                                <Line type="monotone" dataKey="goal" stroke="var(--color-goal)" strokeWidth={2} dot={false} strokeDasharray="3 3" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-
+        <div className="grid gap-4 grid-cols-1">
             <Card className="flex flex-col items-center justify-center p-6 text-center">
                 <CardTitle className="mb-2 text-lg">Streak</CardTitle>
                 <div className="flex items-center gap-2">
