@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NutriTrackLogo } from "@/components/nutri-track-logo";
 import Link from "next/link";
-import { auth, provider } from '@/firebase/client';
-import { signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,21 +23,12 @@ export default function LoginPage() {
     const { toast } = useToast();
 
     const handleSignIn = async () => {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            toast({
-                title: "Signed In Successfully!",
-                description: "Redirecting to your profile setup...",
-            });
-            router.push('/onboarding');
-        } catch (error: any) {
-            console.error("Authentication failed:", error);
-            toast({
-                variant: "destructive",
-                title: "Authentication Failed",
-                description: `Could not sign you in. ${error.message}`,
-            });
-        }
+        // Temporarily bypass Firebase Auth for development
+        toast({
+            title: "Login Simulated",
+            description: "Redirecting to your profile setup...",
+        });
+        router.push('/onboarding');
     };
 
   return (
