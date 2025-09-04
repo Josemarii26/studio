@@ -93,7 +93,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
         <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-2/3 space-y-8">
                 <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
-                    <CardContent className="p-2 sm:p-4 flex justify-center">
+                    <CardContent className="p-2 sm:p-4">
                         <Calendar
                             mode="single"
                             selected={date}
@@ -101,10 +101,11 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
                             onDayClick={handleDayClick}
                             className="p-0"
                             classNames={{
-                                cell: "w-12 h-12",
-                                day: "w-12 h-12 rounded-lg",
-                                head_cell: "w-12 font-normal text-[0.8rem]",
+                                cell: "w-full sm:w-12 h-12",
+                                day: "w-full sm:w-12 h-12 rounded-lg",
+                                head_cell: "w-full sm:w-12 font-normal text-[0.8rem]",
                                 row: "flex w-full mt-2",
+                                month: "w-full"
                             }}
                             modifiers={modifiers}
                             modifiersClassNames={{
