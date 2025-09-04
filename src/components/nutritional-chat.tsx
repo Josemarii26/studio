@@ -93,9 +93,8 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
           <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 p-0 min-h-0">
-        <ScrollArea className="h-full" ref={scrollAreaRef}>
-          <div className="space-y-6 p-4">
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="space-y-6">
             {messages.map(message => (
               <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
                 {message.role !== 'user' && (
@@ -128,8 +127,7 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
               </div>
             )}
           </div>
-        </ScrollArea>
-      </CardContent>
+      </div>
       <CardFooter className="border-t p-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full items-start gap-2">
