@@ -96,4 +96,29 @@
   .animated-image {
       @apply transition-transform duration-300 ease-in-out hover:scale-105;
   }
+  .masonry-grid {
+    column-count: 1;
+    column-gap: 1rem;
+  }
+  @media (min-width: 768px) {
+    .masonry-grid {
+      column-count: 2;
+    }
+  }
+  @media (min-width: 1024px) {
+    .masonry-grid {
+      column-count: 3;
+    }
+  }
+  @media (min-width: 1280px) {
+    .masonry-grid {
+        column-count: 4;
+    }
+  }
+  .masonry-item {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 1rem;
+    break-inside: avoid;
+  }
 }
