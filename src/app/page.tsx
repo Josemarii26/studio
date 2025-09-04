@@ -13,14 +13,12 @@ import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
 
 function Header() {
-  const { toggleSidebar, open } = useSidebar();
+  const { toggleSidebar } = useSidebar();
   return (
     <header className={cn(
-      "sticky top-0 z-40 h-16 border-b bg-background/80 backdrop-blur-sm transition-all duration-300 ease-in-out"
+      "sticky top-0 z-40 h-16 border-b bg-background/80 backdrop-blur-sm"
     )}>
-      <div className={cn("flex h-full items-center justify-between gap-4 px-4 sm:px-6 transition-all duration-300 ease-in-out",
-        open && "pr-[calc(400px+1.5rem)] xl:pr-[calc(450px+1.5rem)]"
-      )}>
+      <div className={cn("flex h-full items-center justify-between gap-4 px-4 sm:px-6")}>
         <a href="/" className="flex items-center gap-2">
           <NutriTrackLogo className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-headline">
@@ -60,7 +58,7 @@ export default function Home() {
         <Header />
         <div className="flex flex-1">
             <DashboardContent onAnalysisUpdate={handleAnalysisUpdate} />
-            <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
+            <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l mt-16">
                 <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
             </Sidebar>
         </div>
@@ -72,7 +70,9 @@ export default function Home() {
 function DashboardContent({ onAnalysisUpdate }: { onAnalysisUpdate: (data: any) => void; }) {
   const { open } = useSidebar();
   return (
-      <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", open && "pr-[calc(400px+2rem)] xl:pr-[calc(450px+2rem)]")}>
+      <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", 
+          open && "mr-[400px] xl:mr-[450px]"
+      )}>
         <div className="space-y-8">
           <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
           <div className="mx-auto @container">
