@@ -4,7 +4,10 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider, useAuth } from '@/hooks/use-auth';
+import { AuthContext, useAuth } from '@/hooks/use-auth';
+import { useState, useEffect, ReactNode } from 'react';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup } from 'firebase/auth';
+import { auth, provider } from '@/firebase/client';
 
 // This can't be in the layout component directly, as Metadata can't be exported from a client component.
 // We can define it separately.
@@ -12,6 +15,39 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth';
 //   title: 'NutriTrackAI',
 //   description: 'Track your nutrition with the power of AI.',
 // };
+
+function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signUp = async (email: string, password: string) => {
+    await createUserWithEmailAndPassword(auth, email, password);
+  };
+  
+  const signInWithGoogle = async () => {
+    await signInWithPopup(auth, provider);
+  };
+
+  const signOut = async () => {
+    await firebaseSignOut(auth);
+  };
+  
+  const value = { user, loading, signIn, signUp, signOut, signInWithGoogle };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
 export default function RootLayout({
   children,
