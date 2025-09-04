@@ -6,11 +6,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { isSameDay, startOfYesterday, differenceInDays } from 'date-fns';
+import { isSameDay, startOfYesterday, differenceInDays, isToday } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { DashboardGrid } from './dashboard-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
+import { useSidebar } from './ui/sidebar';
 
 
 interface DashboardClientProps {
@@ -42,6 +43,7 @@ function CalendarLegend() {
 
 export function DashboardClient({ dailyData }: DashboardClientProps) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
+  const { toggleSidebar } = useSidebar();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
 
@@ -65,8 +67,12 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   useEffect(() => {
     const todayData = dailyData.find(d => isSameDay(d.date, new Date()));
     if(todayData && Object.keys(todayData.meals).length > 0){
-        setSelectedDayData(todayData);
+        // Don't re-open the modal if it was just closed by the user
+        if(!selectedDayData) {
+             setSelectedDayData(todayData);
+        }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dailyData]);
 
 
@@ -76,7 +82,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     
     // Find the earliest date logged to know where to start checking for missed days.
     const firstLogDate = dailyData.length > 0 
-      ? dailyData.reduce((earliest, current) => current.date < earliest ? current.date : earliest, dailyData[0].date)
+      ? dailyData.reduce((earliest, current) => current.date < earliest.date ? current : earliest, dailyData[0]).date
       : new Date();
 
     const missedDays = [];
@@ -85,7 +91,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
         for (let i = 0; i <= daysSinceFirstLog; i++) {
             const dateToCheck = new Date(firstLogDate);
             dateToCheck.setDate(dateToCheck.getDate() + i);
-            if (!loggedDates.includes(dateToCheck.toDateString())) {
+            if (!loggedDates.includes(dateToCheck.toDateString()) && dateToCheck <= yesterday) {
                 missedDays.push(dateToCheck);
             }
         }
@@ -109,6 +115,11 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     maintain: 'maintaining your weight',
     gain: 'gaining muscle',
   };
+  
+  const handleGoToChat = () => {
+    setSelectedDayData(null);
+    toggleSidebar();
+  }
 
   return (
     <div className="space-y-8">
@@ -159,6 +170,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
           userProfile={userProfile}
           isOpen={!!selectedDayData}
           onClose={() => setSelectedDayData(null)}
+          onGoToChat={handleGoToChat}
         />
       )}
     </div>

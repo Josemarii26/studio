@@ -1,20 +1,22 @@
 
 'use client';
-import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { format, isToday } from 'date-fns';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DayData, UserProfile, Meal } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import { Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { Carrot, Pizza, Cookie, Soup, CheckCircle2, XCircle, Pill } from 'lucide-react';
+import { Carrot, Pizza, Cookie, Soup, CheckCircle2, XCircle, Pill, MessageSquarePlus } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Button } from './ui/button';
 
 interface DayDetailModalProps {
   dayData: DayData;
   userProfile: UserProfile;
   isOpen: boolean;
   onClose: () => void;
+  onGoToChat: () => void;
 }
 
 const macroChartConfig = {
@@ -31,7 +33,7 @@ const mealIcons: { [key: string]: ReactNode } = {
 };
 
 
-export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDetailModalProps) {
+export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToChat }: DayDetailModalProps) {
   const { date, meals, totals, observations, creatineTaken, proteinTaken } = dayData;
   
   const macroData = [
@@ -40,7 +42,9 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
     { name: 'Fat', value: totals.fat, fill: 'var(--color-fat)' },
   ];
 
-  const hasData = macroData.some(d => d.value > 0);
+  const hasData = totals.calories > 0;
+  const isTodayAndEmpty = isToday(date) && !hasData;
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -129,7 +133,7 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
         <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold">Logged Meals</h3>
             <div className="space-y-4">
-              {Object.entries(meals).length > 0 ? Object.entries(meals).map(([mealType, mealData]) => mealData && (
+              {hasData ? Object.entries(meals).map(([mealType, mealData]) => mealData && (
                 <Card key={mealType}>
                     <CardHeader className="p-4 flex flex-row items-center justify-between">
                         <div className="flex items-center">
@@ -154,6 +158,14 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
               )}
             </div>
         </div>
+        {isTodayAndEmpty && (
+             <DialogFooter className="mt-4">
+                <Button onClick={onGoToChat}>
+                    <MessageSquarePlus className="mr-2 h-4 w-4"/>
+                    Log Today's Meals
+                </Button>
+            </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
