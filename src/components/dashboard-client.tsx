@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
@@ -104,13 +104,13 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
-                <CardContent className="p-0">
+                <CardContent className="p-2 sm:p-4">
                     <Calendar
                         mode="single"
                         selected={date}
                         onSelect={setDate}
                         onDayClick={handleDayClick}
-                        className="p-0"
+                        className="p-0 w-full"
                         modifiers={modifiers}
                         modifiersClassNames={{
                             green: 'rdp-day_green',
