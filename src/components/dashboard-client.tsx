@@ -15,8 +15,8 @@ import { parseNutritionalAnalysis } from '@/lib/utils';
 
 const generateMockData = (userProfile: UserProfile | null) => {
     const data: DayData[] = [];
-    const startDate = new Date();
     if (!userProfile) return data;
+    const startDate = new Date();
 
     for(let i = 1; i <= 20; i++) {
         const date = addDays(startDate, -i);
@@ -49,10 +49,10 @@ const generateMockData = (userProfile: UserProfile | null) => {
 }
 
 interface DashboardClientProps {
-  onAnalysisUpdate: (data: any) => void;
+  analysisResult: { analysis: string, creatineTaken: boolean, proteinTaken: boolean } | null;
 }
 
-export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
+export function DashboardClient({ analysisResult }: DashboardClientProps) {
   const { userProfile, isLoaded } = useUserStore();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dailyData, setDailyData] = useState<DayData[]>([]);
@@ -61,16 +61,16 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   useEffect(() => {
     if (isLoaded && userProfile) {
         const mockData = generateMockData(userProfile);
-        
-        const today = startOfToday();
-        const todayData = dailyData.find(d => isSameDay(d.date, today));
-        if (todayData) {
-            setDailyData([todayData, ...mockData]);
-        } else {
-            setDailyData(mockData);
-        }
+        setDailyData(mockData);
     }
   }, [isLoaded, userProfile]);
+
+  useEffect(() => {
+    if (analysisResult && userProfile) {
+      handleAnalysis(analysisResult);
+    }
+  }, [analysisResult, userProfile]);
+
 
   const handleDayClick = (day: Date) => {
     const dataForDay = dailyData.find(d => isSameDay(d.date, day));
@@ -87,16 +87,16 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
     }
   };
   
-   const handleAnalysis = (analysisResult: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => {
+   const handleAnalysis = (result: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => {
     if (!userProfile) return;
 
-    const parsedData = parseNutritionalAnalysis(analysisResult.analysis, userProfile);
+    const parsedData = parseNutritionalAnalysis(result.analysis, userProfile);
     const today = startOfToday();
     const newDayData: DayData = {
       date: today,
       ...parsedData,
-      creatineTaken: analysisResult.creatineTaken,
-      proteinTaken: analysisResult.proteinTaken,
+      creatineTaken: result.creatineTaken,
+      proteinTaken: result.proteinTaken,
     };
     
     setDailyData(prevData => {
@@ -104,8 +104,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
         return [newDayData, ...otherDays];
     });
 
-    onAnalysisUpdate(newDayData); // Propagate up if needed
-    setSelectedDayData(newDayData); // Open the modal with the new data
+    setSelectedDayData(newDayData);
   };
 
 

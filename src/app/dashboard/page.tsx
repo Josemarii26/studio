@@ -69,7 +69,7 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { isLoaded: profileLoaded, userProfile } = useUserStore();
   const router = useRouter();
-  const [analysisData, setAnalysisData] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   useEffect(() => {
     if (authLoading) {
@@ -86,14 +86,12 @@ export default function DashboardPage() {
 
 
   const handleAnalysisUpdate = (data: any) => {
-    setAnalysisData(data);
+    setAnalysisResult(data);
   };
   
   if (authLoading || !profileLoaded || !userProfile) {
     return <DashboardLoader />;
   }
-  
-  const dashboardClient = <DashboardClient onAnalysisUpdate={handleAnalysisUpdate} />;
 
   return (
     <SidebarProvider>
@@ -101,10 +99,10 @@ export default function DashboardPage() {
         <Header />
         <div className="flex flex-1">
             <DashboardContent>
-              {dashboardClient}
+              <DashboardClient analysisResult={analysisResult} />
             </DashboardContent>
             <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
-                <NutritionalChat onAnalysisUpdate={(result) => dashboardClient.props.onAnalysisUpdate(result)} />
+                <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
             </Sidebar>
         </div>
       </div>
