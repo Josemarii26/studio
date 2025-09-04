@@ -40,6 +40,8 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
     { name: 'Fat', value: totals.fat, fill: 'var(--color-fat)' },
   ];
 
+  const hasData = macroData.some(d => d.value > 0);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -54,16 +56,22 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
                         <CardTitle>Macronutrient Split</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={macroChartConfig} className="mx-auto aspect-square h-[250px]">
+                       {hasData ? (
+                         <ChartContainer config={macroChartConfig} className="mx-auto aspect-square h-[250px]">
                             <ResponsiveContainer>
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={macroData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                    <Pie data={macroData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} cy="50%">
                                     </Pie>
                                     <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-mt-4" />
                                 </PieChart>
                             </ResponsiveContainer>
                         </ChartContainer>
+                       ) : (
+                        <div className="flex h-[250px] w-full items-center justify-center text-muted-foreground">
+                            No macro data available.
+                        </div>
+                       )}
                     </CardContent>
                 </Card>
             </div>
