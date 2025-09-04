@@ -22,13 +22,14 @@ export function parseNutritionalAnalysis(
   };
   let observations = '';
 
+  // Regex for English and Spanish
   const mealRegex = /\*?\*?(\w+):\*?\*? (.*?)$/i;
-  const nutritionRegex = /\*? ([\d,.]+) kcal \| ([\d,.]+) g proteína \| ([\d,.]+) g grasa \| ([\d,.]+) g carbohidratos/i;
-  const totalCaloriesRegex = /\* \*\*Calorías:\*\* ([\d,.]+) kcal/i;
-  const totalProteinRegex = /\* \*\*Proteínas:\*\* ([\d,.]+) g/i;
-  const totalFatRegex = /\* \*\*Grasas:\*\* ([\d,.]+) g/i;
-  const totalCarbsRegex = /\* \*\*Carbohidratos:\*\* ([\d,.]+) g/i;
-  const observationRegex = /💡 \*\*Observaciones:\*\*\n(.*?)$/s;
+  const nutritionRegex = /\*? ([\d,.]+) kcal \| ([\d,.]+) g (?:proteína|protein) \| ([\d,.]+) g (?:grasa|fat) \| ([\d,.]+) g (?:carbohidratos|carbohydrates)/i;
+  const totalCaloriesRegex = /\* \*\*(?:Calorías|Calories):\*\* ([\d,.]+) kcal/i;
+  const totalProteinRegex = /\* \*\*(?:Proteínas|Protein):\*\* ([\d,.]+) g/i;
+  const totalFatRegex = /\* \*\*(?:Grasas|Fats):\*\* ([\d,.]+) g/i;
+  const totalCarbsRegex = /\* \*\*(?:Carbohidratos|Carbohydrates):\*\* ([\d,.]+) g/i;
+  const observationRegex = /💡 \*\*(?:Observaciones|Observations):\*\*\n?([\s\S]*)$/s;
   
   let currentMealType: keyof DayData['meals'] | null = null;
   
@@ -36,21 +37,23 @@ export function parseNutritionalAnalysis(
     const mealMatch = line.match(mealRegex);
     if (mealMatch) {
         const mealTypeStr = mealMatch[1].toLowerCase();
-        if (['desayuno', 'almuerzo', 'merienda', 'cena', 'snack'].includes(mealTypeStr)) {
-            const mealTypeMap: { [key: string]: keyof DayData['meals'] } = {
-                desayuno: 'breakfast',
-                almuerzo: 'lunch',
-                merienda: 'snack',
-                cena: 'dinner',
-                snack: 'snack',
+        const mealTypeMap: { [key: string]: keyof DayData['meals'] } = {
+            desayuno: 'breakfast',
+            breakfast: 'breakfast',
+            almuerzo: 'lunch',
+            lunch: 'lunch',
+            merienda: 'snack',
+            snack: 'snack',
+            cena: 'dinner',
+            dinner: 'dinner',
+        };
+        const mappedType = mealTypeMap[mealTypeStr];
+        if (mappedType) {
+            currentMealType = mappedType;
+            meals[currentMealType] = {
+                description: mealMatch[2],
+                calories: 0, protein: 0, fat: 0, carbs: 0,
             };
-            currentMealType = mealTypeMap[mealTypeStr];
-            if (currentMealType) {
-                 meals[currentMealType] = {
-                    description: mealMatch[2],
-                    calories: 0, protein: 0, fat: 0, carbs: 0,
-                 };
-            }
         }
     }
     
@@ -63,7 +66,7 @@ export function parseNutritionalAnalysis(
     }
   }
 
-  const totalsMatch = analysisText.match(/🔢 Totales del día:([\s\S]*?)💡/);
+  const totalsMatch = analysisText.match(/(?:🔢 Totales del día:|Totals for the day:)([\s\S]*?)💡/);
   if(totalsMatch) {
     const totalsBlock = totalsMatch[1];
     const calMatch = totalsBlock.match(totalCaloriesRegex);
@@ -80,7 +83,7 @@ export function parseNutritionalAnalysis(
   if (obsMatch) {
       observations = obsMatch[1].trim();
   } else {
-      const fallbackObs = analysisText.split('💡 Observaciones:');
+      const fallbackObs = analysisText.split(/💡 (?:Observaciones|Observations):/);
       if (fallbackObs.length > 1) {
           observations = fallbackObs[1].trim();
       }

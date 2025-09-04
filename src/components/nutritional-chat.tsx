@@ -16,6 +16,7 @@ import { nutritionalChatAnalysis } from '@/ai/flows/nutritional-chat-analysis';
 import { NutriTrackLogo } from './nutri-track-logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 const formSchema = z.object({
   message: z.string().min(10, { message: 'Please describe your meals in more detail.' }),
@@ -26,21 +27,71 @@ interface NutritionalChatProps {
 }
 
 const SimpleMarkdown = ({ text }: { text: string }) => {
-  const content = text
-    .split('**')
-    .map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part)
-    .flatMap(part => typeof part === 'string' ? part.split('*').map((subPart, j) => j % 2 === 1 ? <em key={`${j}`}>{subPart}</em> : subPart) : part);
-
-  return <>{content.map((part, i) => <div key={i}>{part}</div>)}</>;
+    const lines = text.split('\n');
+    return (
+      <>
+        {lines.map((line, lineIndex) => {
+          // Process bold and italics within each line
+          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g).filter(Boolean);
+          return (
+            <div key={lineIndex}>
+              {parts.map((part, partIndex) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                  return <strong key={partIndex}>{part.slice(2, -2)}</strong>;
+                }
+                if (part.startsWith('*') && part.endsWith('*')) {
+                    return <em key={partIndex}>{part.slice(1,-1)}</em>
+                }
+                return part;
+              })}
+            </div>
+          );
+        })}
+      </>
+    );
 };
 
 export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const chatHistoryKey = user ? `chatHistory-${user.uid}` : null;
+
+  useEffect(() => {
+    if (chatHistoryKey) {
+        const storedHistory = localStorage.getItem(chatHistoryKey);
+        if (storedHistory) {
+            try {
+                const parsedHistory = JSON.parse(storedHistory);
+                // Make sure we have a valid array before setting state
+                if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
+                     setMessages(parsedHistory.map((msg: any) => ({ ...msg, timestamp: new Date(msg.timestamp) })));
+                } else {
+                    resetToInitialMessage();
+                }
+            } catch (error) {
+                console.error("Failed to parse chat history:", error);
+                resetToInitialMessage();
+            }
+        } else {
+            resetToInitialMessage();
+        }
+    }
+  }, [chatHistoryKey]);
+
+  useEffect(() => {
+    if (chatHistoryKey && messages.length > 0) {
+      localStorage.setItem(chatHistoryKey, JSON.stringify(messages));
+    }
+  }, [messages, chatHistoryKey]);
+  
+  const resetToInitialMessage = () => {
+    setMessages([
+        { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
+    ]);
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

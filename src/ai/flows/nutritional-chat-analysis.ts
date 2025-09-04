@@ -33,25 +33,33 @@ const prompt = ai.definePrompt({
   name: 'nutritionalChatAnalysisPrompt',
   input: {schema: NutritionalChatAnalysisInputSchema},
   output: {schema: NutritionalChatAnalysisOutputSchema},
-  prompt: `Analyze this description of meals. Also, check if the user mentions taking "creatine" or "protein powder" and set the creatineTaken and proteinTaken booleans appropriately. Return EXACTLY this format:
+  prompt: `You are a nutrition expert. Analyze the user's description of their meals for the day. You must detect the language of the user's input (English or Spanish) and respond in the same language.
 
-**📅 [Fecha] – Registro de comidas**
+Your response must include:
+1. A detailed breakdown of each meal (Breakfast, Lunch, Dinner, Snack) with its estimated calories, protein, fat, and carbohydrates.
+2. A summary of the day's total calories, protein, fat, and carbs.
+3. A brief "Observations" section with insights about the day's intake.
+4. An analysis of whether the user mentioned taking "creatine" or "protein powder" and setting the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
 
-**Desayuno:** [descripción]
-* [calorías] kcal | [proteínas] g proteína | [grasas] g grasa | [carbohidratos] g carbohidratos
+**IMPORTANT**: Structure your response EXACTLY like the example below, translating the titles and units to match the user's language.
 
-[Repetir para cada comida]
+**[Date] – Meal Log**
 
-**🔢 Totales del día:**
-* **Calorías:** [total] kcal
-* **Proteínas:** [total] g  
-* **Grasas:** [total] g
-* **Carbohidratos:** [total] g
+**Breakfast:** [description]
+* [calories] kcal | [protein] g protein | [fat] g fat | [carbs] g carbohydrates
 
-💡 **Observaciones:**
-[Análisis breve comparado con objetivos del usuario]
+[Repeat for each meal]
 
-Meals Description: {{{mealDescription}}} `,
+**Totals for the day:**
+* **Calories:** [total] kcal
+* **Protein:** [total] g  
+* **Fats:** [total] g
+* **Carbohydrates:** [total] g
+
+💡 **Observations:**
+[Brief analysis comparing to user's goals]
+
+User's Meal Description: {{{mealDescription}}} `,
 });
 
 const nutritionalChatAnalysisFlow = ai.defineFlow(
