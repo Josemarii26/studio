@@ -33,7 +33,9 @@ const prompt = ai.definePrompt({
   name: 'nutritionalChatAnalysisPrompt',
   input: {schema: NutritionalChatAnalysisInputSchema},
   output: {schema: NutritionalChatAnalysisOutputSchema},
-  prompt: `You are a nutrition expert. Analyze the user's description of their meals for the day. You must detect the language of the user's input (English or Spanish) and respond in the same language.
+  prompt: `You are a nutrition expert. Your first and most important task is to detect the language of the user's input (it will be either English or Spanish). You MUST respond in the same language. All titles, units, and observations must be in the detected language.
+
+Analyze the user's description of their meals for the day.
 
 Your response must include:
 1. A detailed breakdown of each meal (Breakfast, Lunch, Dinner, Snack) with its estimated calories, protein, fat, and carbohydrates.

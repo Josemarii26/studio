@@ -59,6 +59,12 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
   const { user } = useAuth();
   const chatHistoryKey = user ? `chatHistory-${user.uid}` : null;
 
+  const resetToInitialMessage = () => {
+    setMessages([
+        { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
+    ]);
+  }
+
   useEffect(() => {
     if (chatHistoryKey) {
         const storedHistory = localStorage.getItem(chatHistoryKey);
@@ -86,12 +92,6 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
       localStorage.setItem(chatHistoryKey, JSON.stringify(messages));
     }
   }, [messages, chatHistoryKey]);
-  
-  const resetToInitialMessage = () => {
-    setMessages([
-        { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
-    ]);
-  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -144,7 +144,7 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
       </CardHeader>
       <div className="flex flex-1 flex-col min-h-0">
         <ScrollArea className="flex-1 p-4">
-            <div className="space-y-6 pr-4">
+            <div ref={scrollAreaRef} className="space-y-6 pr-4">
               {messages.map(message => (
                 <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
                   {message.role !== 'user' && (
