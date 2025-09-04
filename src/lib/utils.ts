@@ -16,56 +16,47 @@ export function parseNutritionalAnalysis(
 
   const lines = analysisText.split('\n').filter(line => line.trim() !== '');
 
+  // Regex for parsing each part of the AI's response
   const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack)\*?\*?:\s*(.*)/i;
   const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\|\s*([\d,.]*)\s*g fat\s*\|\s*([\d,.]*)\s*g carbohydrates/i;
-  const observationsRegex = /^💡\s*\*?Observations\*?\*?:(.*)/i;
 
-  let currentMealType: keyof DayData['meals'] | null = null;
-  let inObservationsSection = false;
-  let tempObservations: string[] = [];
-
-  for (const line of lines) {
-    if (inObservationsSection) {
-        tempObservations.push(line);
-        continue;
-    }
-
+  // First, parse all the meals and their data
+  for (let i = 0; i < lines.length - 1; i++) {
+    const line = lines[i];
     const mealMatch = line.match(mealHeaderRegex);
-    if (mealMatch) {
-      currentMealType = mealMatch[1].toLowerCase() as keyof DayData['meals'];
-      if (meals[currentMealType]) {
-          // Avoid overwriting existing meal, handle as needed
-      }
-      meals[currentMealType] = {
-        description: mealMatch[2].trim(),
-        calories: 0, protein: 0, fat: 0, carbs: 0,
-      };
-      continue;
-    }
-
-    if (currentMealType) {
-      const nutritionMatch = line.match(nutritionLineRegex);
-      if (nutritionMatch && meals[currentMealType]) {
-          meals[currentMealType]!.calories = parseFloat(nutritionMatch[1].replace(/,/g, '')) || 0;
-          meals[currentMealType]!.protein = parseFloat(nutritionMatch[2].replace(/,/g, '')) || 0;
-          meals[currentMealType]!.fat = parseFloat(nutritionMatch[3].replace(/,/g, '')) || 0;
-          meals[currentMealType]!.carbs = parseFloat(nutritionMatch[4].replace(/,/g, '')) || 0;
-          currentMealType = null; // Reset after finding nutrition info
-          continue;
-      }
-    }
     
-    const obsMatch = line.match(observationsRegex);
-    if (obsMatch) {
-        inObservationsSection = true;
-        if (obsMatch[1] && obsMatch[1].trim()) {
-            tempObservations.push(obsMatch[1].trim());
-        }
-        continue;
+    if (mealMatch) {
+      const mealType = mealMatch[1].toLowerCase() as keyof DayData['meals'];
+      const description = mealMatch[2].trim();
+      
+      const nextLine = lines[i + 1];
+      const nutritionMatch = nextLine.match(nutritionLineRegex);
+      
+      if (nutritionMatch) {
+        meals[mealType] = {
+          description,
+          calories: parseFloat(nutritionMatch[1].replace(/,/g, '')) || 0,
+          protein: parseFloat(nutritionMatch[2].replace(/,/g, '')) || 0,
+          fat: parseFloat(nutritionMatch[3].replace(/,/g, '')) || 0,
+          carbs: parseFloat(nutritionMatch[4].replace(/,/g, '')) || 0,
+        };
+      }
     }
   }
 
-  observations = tempObservations.join('\n').trim();
+  // Second, find and parse the observations section
+  const observationsRegex = /^💡\s*\*?Observations\*?\*?:/i;
+  const obsStartIndex = lines.findIndex(line => observationsRegex.test(line));
+
+  if (obsStartIndex !== -1) {
+    // Get the first line, removing the "Observations:" part
+    const firstObsLine = lines[obsStartIndex].replace(observationsRegex, '').trim();
+    const restObsLines = lines.slice(obsStartIndex + 1);
+    
+    // Join them all together
+    observations = [firstObsLine, ...restObsLines].join('\n').trim();
+  }
+
 
   // Calculate totals by summing up parsed meals
   const totals: DayData['totals'] = Object.values(meals).reduce(
