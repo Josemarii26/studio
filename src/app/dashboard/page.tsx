@@ -11,9 +11,12 @@ import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useUserStore } from '@/hooks/use-user-store';
 
 function Header() {
   const { toggleSidebar } = useSidebar();
+  const { userProfile, isLoaded } = useUserStore();
+
   return (
     <header className={cn(
       "sticky top-0 z-40 h-16 border-b bg-background/80 backdrop-blur-sm"
@@ -32,12 +35,14 @@ function Header() {
               <MessageSquare className="mr-2" />
               Chat
           </Button>
-          <Link href="/profile">
-            <Avatar className="cursor-pointer">
-                <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="person face" />
-                <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-          </Link>
+          {isLoaded && userProfile && (
+            <Link href="/profile">
+              <Avatar className="cursor-pointer">
+                  <AvatarImage src={userProfile.photoUrl || ''} data-ai-hint="person face" />
+                  <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
         </div>
       </div>
     </header>

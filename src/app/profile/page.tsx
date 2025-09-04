@@ -14,6 +14,7 @@ import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { DashboardLoader } from '@/components/dashboard-loader';
 
 // Mock data - in a real app, this would be fetched from a server
 const performanceStats = {
@@ -116,7 +117,7 @@ export default function ProfilePage() {
 
 
   if (!isLoaded || !userProfile) {
-    return <div className="flex min-h-screen items-center justify-center">Loading profile...</div>;
+    return <DashboardLoader />;
   }
 
   return (
@@ -129,7 +130,7 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center gap-4 text-center animate-fade-in-up">
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
             <Avatar className="h-24 w-24 border-4 border-primary cursor-pointer hover:opacity-80 transition-opacity" onClick={handleAvatarClick}>
-              <AvatarImage src={userProfile.photoUrl || `https://picsum.photos/200/200?random=${userProfile.name}`} data-ai-hint="person face" />
+              <AvatarImage src={userProfile.photoUrl || ''} data-ai-hint="person face" />
               <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
