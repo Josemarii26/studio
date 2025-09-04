@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import type { DayData, UserProfile } from '@/lib/types';
 import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
 import { isSameDay, subDays } from 'date-fns';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useUserStore } from '@/hooks/use-user-store';
 
 interface ProgressPanelProps {
