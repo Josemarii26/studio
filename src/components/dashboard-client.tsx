@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { isSameDay } from 'date-fns';
+import { isSameDay, startOfYesterday, differenceInDays } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { DashboardGrid } from './dashboard-grid';
 import { useUserStore } from '@/hooks/use-user-store';
@@ -47,11 +47,35 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   }, [dailyData]);
 
 
-  const modifiers = useMemo(() => ({
-    green: dailyData.filter(d => d.status === 'green').map(d => d.date),
-    yellow: dailyData.filter(d => d.status === 'yellow').map(d => d.date),
-    red: dailyData.filter(d => d.status === 'red').map(d => d.date),
-  }), [dailyData]);
+  const modifiers = useMemo(() => {
+    const loggedDates = dailyData.map(d => d.date.toDateString());
+    const yesterday = startOfYesterday();
+    
+    // Find the earliest date logged to know where to start checking for missed days.
+    const firstLogDate = dailyData.length > 0 
+      ? dailyData.reduce((earliest, current) => current.date < earliest ? current.date : earliest, dailyData[0].date)
+      : new Date();
+
+    const missedDays = [];
+    if (dailyData.length > 0) {
+        const daysSinceFirstLog = differenceInDays(yesterday, firstLogDate);
+        for (let i = 0; i <= daysSinceFirstLog; i++) {
+            const dateToCheck = new Date(firstLogDate);
+            dateToCheck.setDate(dateToCheck.getDate() + i);
+            if (!loggedDates.includes(dateToCheck.toDateString())) {
+                missedDays.push(dateToCheck);
+            }
+        }
+    }
+
+    return {
+        green: dailyData.filter(d => d.status === 'green').map(d => d.date),
+        yellow: dailyData.filter(d => d.status === 'yellow').map(d => d.date),
+        red: dailyData.filter(d => d.status === 'red').map(d => d.date),
+        missed: missedDays,
+        disabled: { after: new Date() }, // Disable future days
+    }
+  }, [dailyData]);
   
   if (!isProfileLoaded || !userProfile) {
     return <DashboardLoader />;
@@ -85,6 +109,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             green: 'rdp-day_green',
                             yellow: 'rdp-day_yellow',
                             red: 'rdp-day_red',
+                            missed: 'rdp-day_missed'
                         }}
                     />
                 </CardContent>

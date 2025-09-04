@@ -117,6 +117,12 @@
   .rdp-day_red {
     @apply bg-status-red/20 border-status-red/30;
   }
+  .rdp-day_missed {
+    @apply bg-muted/50 border-muted-foreground/10 opacity-75;
+  }
+  .rdp-day_missed:hover {
+      @apply bg-muted;
+  }
   .animated-image {
       @apply transition-transform duration-300 ease-in-out hover:scale-105;
   }
