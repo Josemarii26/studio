@@ -91,7 +91,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-8 animate-fade-in-up">
+          <div className="lg:col-span-3 grid grid-cols-1 gap-8 animate-fade-in-up">
               <Card className="shadow-lg bg-background/50 backdrop-blur-xl">
                   <CardContent className="p-2 sm:p-4">
                       <Calendar

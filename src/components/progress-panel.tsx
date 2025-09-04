@@ -1,7 +1,7 @@
 
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import type { DayData, UserProfile } from '@/lib/types';
+import type { DayData } from '@/lib/types';
 import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
 import { isSameDay, subDays } from 'date-fns';
 import { useMemo } from 'react';
@@ -42,9 +42,15 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     }, [dailyData, isLoaded]);
 
     if (!isLoaded || !userProfile) {
-        return <div>Loading...</div>
+        return (
+             <div className="grid gap-4 grid-cols-1">
+                <Card className="h-[128px] animate-pulse bg-muted"></Card>
+                <Card className="h-[128px] animate-pulse bg-muted"></Card>
+                <Card className="h-[128px] animate-pulse bg-muted"></Card>
+                <Card className="h-[218px] animate-pulse bg-muted"></Card>
+            </div>
+        )
     }
-
 
     return (
         <div className="grid gap-4 grid-cols-1">
