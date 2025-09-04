@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, Loader, Info } from 'lucide-react';
+import { Send, Bot, User, Loader, Info, CheckCircle2, XCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -55,6 +55,25 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
     );
 };
 
+const KeywordChecker = ({ message }: { message: string }) => {
+    const keywords = ['breakfast', 'lunch', 'dinner', 'snack'];
+    const lowerCaseMessage = message.toLowerCase();
+
+    return (
+        <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+            {keywords.map(keyword => {
+                const isPresent = lowerCaseMessage.includes(keyword);
+                return (
+                    <div key={keyword} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
+                        {isPresent ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                        <span className="capitalize">{keyword}</span>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
 export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMessages }: NutritionalChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -64,6 +83,13 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   
   const todaysData = dailyData.find(d => d.date && isSameDay(d.date, startOfToday()));
   const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0;
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { message: '' },
+  });
+
+  const messageValue = form.watch('message');
 
 
   const resetToInitialMessage = () => {
@@ -101,11 +127,6 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     }
   }, [messages, chatHistoryKey]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { message: '' },
-  });
-
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
@@ -124,13 +145,13 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
 
     const requiredKeywords = ['breakfast', 'lunch', 'dinner', 'snack'];
     const messageContent = values.message.toLowerCase();
-    const hasKeyword = requiredKeywords.some(keyword => messageContent.includes(keyword));
+    const keywordsFound = requiredKeywords.filter(keyword => messageContent.includes(keyword));
 
-    if (!hasKeyword) {
+    if (keywordsFound.length < 2) {
         toast({
             variant: 'destructive',
             title: 'Missing Meal Labels',
-            description: 'Please label your meals with "Breakfast", "Lunch", "Dinner", or "Snack" to get an accurate analysis.',
+            description: 'Please label at least two meals (e.g., "Breakfast" and "Lunch") to get an accurate analysis.',
         });
         return;
     }
@@ -211,33 +232,39 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
             </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full items-start gap-2">
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Describe your meals..."
-                        rows={1}
-                        className="min-h-0 resize-none"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            form.handleSubmit(handleSubmit)();
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" size="icon" disabled={isLoading}>
-                <Send className="h-4 w-4" />
-              </Button>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full flex-col gap-2">
+               <div className="p-2 rounded-md bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-2">Please include at least two labels for an accurate analysis:</p>
+                  <KeywordChecker message={messageValue || ''} />
+               </div>
+              <div className="flex w-full items-start gap-2">
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Describe your meals..."
+                          rows={1}
+                          className="min-h-0 resize-none"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              form.handleSubmit(handleSubmit)();
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" size="icon" disabled={isLoading}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </form>
           </Form>
         )}
@@ -245,3 +272,5 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     </div>
   );
 }
+
+    
