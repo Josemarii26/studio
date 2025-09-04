@@ -1,3 +1,4 @@
+
 export type Meal = {
   description: string;
   calories: number;
@@ -38,6 +39,7 @@ export type UserProfile = {
   dailyFatGoal: number;
   dailyCarbsGoal: number;
   bmi: number;
+  photoUrl: string | null;
 };
 
 export type ChatMessage = {

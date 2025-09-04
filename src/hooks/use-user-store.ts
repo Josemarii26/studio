@@ -19,6 +19,7 @@ const mockUserProfile: UserProfile = {
   dailyFatGoal: 70,
   dailyCarbsGoal: 250,
   bmi: 24.7,
+  photoUrl: null,
 };
 
 
@@ -41,7 +42,8 @@ export function useUserStore() {
       // Fallback to mock data in case of parsing error
       setUserProfileState(mockUserProfile);
     } finally {
-        setIsLoaded(true);
+        // Add a small delay to show the loader
+        setTimeout(() => setIsLoaded(true), 500);
     }
   }, []);
 

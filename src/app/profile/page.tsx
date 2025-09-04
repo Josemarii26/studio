@@ -12,7 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data - in a real app, this would be fetched from a server
 const performanceStats = {
@@ -65,14 +66,53 @@ function StatCard({ icon, label, value, unit }: { icon: React.ReactNode, label: 
 }
 
 export default function ProfilePage() {
-  const { userProfile, isLoaded } = useUserStore();
+  const { userProfile, setUserProfile, isLoaded } = useUserStore();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isLoaded && !userProfile) {
         router.push('/onboarding');
     }
   },[isLoaded, userProfile, router])
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid File Type',
+          description: 'Please select an image file.',
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if(userProfile) {
+            setUserProfile({ ...userProfile, photoUrl: base64String });
+            toast({
+                title: 'Profile Picture Updated',
+                description: 'Your new photo has been saved successfully.',
+            });
+        }
+      };
+      reader.onerror = () => {
+        toast({
+            variant: 'destructive',
+            title: 'Upload Failed',
+            description: 'There was an error reading the file.',
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
 
   if (!isLoaded || !userProfile) {
@@ -87,8 +127,9 @@ export default function ProfilePage() {
           
           {/* User Info Header */}
           <div className="flex flex-col items-center gap-4 text-center animate-fade-in-up">
-            <Avatar className="h-24 w-24 border-4 border-primary">
-              <AvatarImage src="https://picsum.photos/200/200" data-ai-hint="person face" />
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+            <Avatar className="h-24 w-24 border-4 border-primary cursor-pointer hover:opacity-80 transition-opacity" onClick={handleAvatarClick}>
+              <AvatarImage src={userProfile.photoUrl || `https://picsum.photos/200/200?random=${userProfile.name}`} data-ai-hint="person face" />
               <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>

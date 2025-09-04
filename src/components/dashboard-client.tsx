@@ -10,6 +10,7 @@ import { addDays, isSameDay } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { DashboardGrid } from './dashboard-grid';
 import { useUserStore } from '@/hooks/use-user-store';
+import { DashboardLoader } from './dashboard-loader';
 
 const generateMockData = (userProfile: UserProfile | null) => {
     const data: DayData[] = [];
@@ -84,8 +85,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   }), [dailyData]);
   
   if (!isLoaded) {
-    // Render a skeleton or null on the server to avoid hydration errors
-    return <div className="min-h-screen p-8">Loading dashboard...</div>;
+    return <DashboardLoader />;
   }
 
   return (
