@@ -142,4 +142,3 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
     </div>
   );
 }
-

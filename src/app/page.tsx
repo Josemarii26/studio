@@ -8,7 +8,8 @@ import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
-import { SidebarProvider, Sidebar, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
+import { DashboardClient } from '@/components/dashboard-client';
 
 function Header() {
   const { toggleSidebar } = useSidebar();
@@ -21,9 +22,9 @@ function Header() {
         </h1>
       </a>
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => toggleSidebar()}>
-          <MessageSquare className="mr-2" />
-          Chat
+        <Button variant="outline" onClick={toggleSidebar}>
+            <MessageSquare className="mr-2" />
+            Chat
         </Button>
         <a href="/onboarding">
           <Avatar className="cursor-pointer">
@@ -55,7 +56,10 @@ export default function Home() {
                 <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
             </Sidebar>
             <main className="flex-1 p-4 md:p-6 lg:p-8">
-              <DashboardGrid />
+              <div className="space-y-8">
+                <DashboardClient onAnalysisUpdate={handleAnalysisUpdate} />
+                <DashboardGrid />
+              </div>
             </main>
         </div>
       </div>
