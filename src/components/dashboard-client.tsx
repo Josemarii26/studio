@@ -138,11 +138,11 @@ export function DashboardClient({ analysisResult }: DashboardClientProps) {
                     />
                 </CardContent>
             </Card>
-          <CaloriesChart dailyData={daily.length > 0 ? dailyData : []} />
+          <CaloriesChart dailyData={dailyData} />
         </div>
         
         <div className="lg:col-span-1">
-          <ProgressPanel dailyData={dailyData.length > 0 ? dailyData : []} />
+          <ProgressPanel dailyData={dailyData} />
         </div>
       </div>
       
