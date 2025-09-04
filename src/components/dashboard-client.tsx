@@ -90,9 +90,9 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
 
   return (
     <div className="space-y-8">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="flex-1 w-full lg:w-2/3 animate-fade-in-up">
-                 <Card className="shadow-lg bg-background/50 backdrop-blur-xl h-full">
+        <div className="flex flex-col lg:flex-row gap-8">
+            <div className="w-full lg:w-2/3 space-y-8">
+                <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
                     <CardContent className="p-2 sm:p-4">
                         <Calendar
                             mode="single"
@@ -119,13 +119,12 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
                         />
                     </CardContent>
                 </Card>
+                <CaloriesChart dailyData={dailyData} />
             </div>
              <div className="w-full lg:w-1/3">
               <ProgressPanel dailyData={dailyData} />
           </div>
         </div>
-      
-        <CaloriesChart dailyData={dailyData} />
       
       <div className="mx-auto @container mt-8">
         <DashboardGrid />
