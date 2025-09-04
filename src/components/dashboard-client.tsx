@@ -101,32 +101,36 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
             <p className="text-muted-foreground">You're on track for your goal of {goalText[userProfile.goal]}. Let's review your progress.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-                <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
-                    <CardContent className="p-2 sm:p-4 w-full">
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={setDate}
-                            onDayClick={handleDayClick}
-                            className="p-0 w-full"
-                            modifiers={modifiers}
-                            modifiersClassNames={{
-                                green: 'rdp-day_green',
-                                yellow: 'rdp-day_yellow',
-                                red: 'rdp-day_red',
-                            }}
-                        />
-                    </CardContent>
-                </Card>
-                <CaloriesChart dailyData={dailyData} />
-            </div>
-            <div className="lg:col-span-1">
-                <ProgressPanel dailyData={dailyData} />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Main Content: Calendar and Chart */}
+        <div className="lg:col-span-2 space-y-8">
+          <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
+            <CardContent className="p-2 sm:p-4">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                onDayClick={handleDayClick}
+                className="w-full p-0"
+                modifiers={modifiers}
+                modifiersClassNames={{
+                  green: 'rdp-day_green',
+                  yellow: 'rdp-day_yellow',
+                  red: 'rdp-day_red',
+                }}
+              />
+            </CardContent>
+          </Card>
+          <CaloriesChart dailyData={dailyData} />
         </div>
+        
+        {/* Side Panel: Progress */}
+        <div className="lg:col-span-1">
+          <ProgressPanel dailyData={dailyData} />
+        </div>
+      </div>
       
+      {/* Journey Grid */}
       <div className="mx-auto @container mt-8">
         <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">Your Journey</h2>
         <DashboardGrid />
