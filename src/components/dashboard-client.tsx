@@ -12,41 +12,7 @@ import { DashboardGrid } from './dashboard-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
 import { parseNutritionalAnalysis } from '@/lib/utils';
-
-const generateMockData = (userProfile: UserProfile | null) => {
-    const data: DayData[] = [];
-    if (!userProfile) return data;
-    const startDate = new Date();
-
-    for(let i = 1; i <= 20; i++) {
-        const date = addDays(startDate, -i);
-        const calories = userProfile.dailyCalorieGoal + Math.floor(Math.random() * 800 - 400);
-        let status: 'green' | 'yellow' | 'red' = 'green';
-        if (Math.abs(calories - userProfile.dailyCalorieGoal) > 400) {
-            status = 'red';
-        } else if (Math.abs(calories - userProfile.dailyCalorieGoal) > 200) {
-            status = 'yellow';
-        }
-        data.push({
-            date,
-            meals: {
-                breakfast: { description: 'Oatmeal with berries and nuts', calories: 450, protein: 15, fat: 15, carbs: 65 },
-                lunch: { description: 'Grilled chicken salad with avocado', calories: 600, protein: 45, fat: 30, carbs: 30 },
-                dinner: { description: `Salmon fillet with quinoa and roasted asparagus`, calories: 750, protein: 50, fat: 35, carbs: 55 },
-                snack: { description: 'Greek yogurt', calories: 200, protein: 20, fat: 10, carbs: 10 },
-            },
-            totals: {
-                calories,
-                protein: 130,
-                fat: 90,
-                carbs: 160,
-            },
-            status,
-            observations: 'A well-balanced day. Protein intake is excellent. Keep it up!',
-        });
-    }
-    return data;
-}
+import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardClientProps {
   analysisResult: { analysis: string, creatineTaken: boolean, proteinTaken: boolean } | null;
@@ -54,16 +20,41 @@ interface DashboardClientProps {
 
 export function DashboardClient({ analysisResult }: DashboardClientProps) {
   const { userProfile, isLoaded } = useUserStore();
+  const { user } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
 
+  const dataKey = user ? `dailyData-${user.uid}` : null;
+
+  // Load data from localStorage when the component mounts or user changes
   useEffect(() => {
-    if (isLoaded && userProfile) {
-        const mockData = generateMockData(userProfile);
-        setDailyData(mockData);
+    if (dataKey) {
+      const storedData = localStorage.getItem(dataKey);
+      if (storedData) {
+        try {
+          const parsedData = JSON.parse(storedData).map((d: any) => ({
+            ...d,
+            date: new Date(d.date),
+          }));
+          setDailyData(parsedData);
+        } catch (error) {
+          console.error("Failed to parse dailyData from localStorage", error);
+          setDailyData([]);
+        }
+      }
+    } else {
+        setDailyData([]);
     }
-  }, [isLoaded, userProfile]);
+  }, [dataKey]);
+  
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    if (dataKey && dailyData.length > 0) {
+      localStorage.setItem(dataKey, JSON.stringify(dailyData));
+    }
+  }, [dailyData, dataKey]);
+
 
   useEffect(() => {
     if (analysisResult && userProfile) {
