@@ -58,7 +58,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && userProfile) {
       setDailyData(generateMockData(userProfile));
     }
   }, [isLoaded, userProfile]);
@@ -84,7 +84,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
     red: dailyData.filter(d => d.status === 'red').map(d => d.date),
   }), [dailyData]);
   
-  if (!isLoaded) {
+  if (!isLoaded || !userProfile) {
     return <DashboardLoader />;
   }
 

@@ -72,19 +72,25 @@ export default function DashboardPage() {
   const [analysisData, setAnalysisData] = useState<any>(null);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-    // Once auth is loaded, if there's a user but no profile, they need to onboard.
-    if (!authLoading && user && !profileLoaded) {
-      // Still waiting for profile to load
+    if (authLoading) {
+      // Wait until Firebase auth state is loaded
       return;
     }
-    if (!authLoading && user && !userProfile) {
-        router.push('/onboarding');
+    if (!user) {
+      // If no user, redirect to login
+      router.push('/login');
+      return;
     }
-
+    if (profileLoaded) {
+      // Only after the profile has been loaded from storage, check if it exists
+      if (!userProfile) {
+        // If it doesn't exist, the user needs to onboard
+        router.push('/onboarding');
+      }
+      // If it *does* exist, we stay on the dashboard.
+    }
   }, [user, authLoading, profileLoaded, userProfile, router]);
+
 
   const handleAnalysisUpdate = (data: any) => {
     // In a real app, this would update a global state or database
