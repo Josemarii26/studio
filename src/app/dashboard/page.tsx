@@ -1,21 +1,31 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NutritionalChat } from '@/components/nutritional-chat';
 import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, LogOut } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useUserStore } from '@/hooks/use-user-store';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { DashboardLoader } from '@/components/dashboard-loader';
 
 function Header() {
   const { toggleSidebar } = useSidebar();
-  const { userProfile, isLoaded } = useUserStore();
+  const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   return (
     <header className={cn(
@@ -35,13 +45,18 @@ function Header() {
               <MessageSquare className="mr-2" />
               Chat
           </Button>
-          {isLoaded && userProfile && (
-            <Link href="/profile">
-              <Avatar className="cursor-pointer">
-                  <AvatarImage src={userProfile.photoUrl || ''} data-ai-hint="person face" />
-                  <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </Link>
+          {isProfileLoaded && userProfile && (
+             <div className="flex items-center gap-4">
+                <Link href="/profile">
+                  <Avatar className="cursor-pointer">
+                      <AvatarImage src={userProfile.photoUrl || ''} data-ai-hint="person face" />
+                      <AvatarFallback>{userProfile.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
+                    <LogOut className="h-5 w-5" />
+                </Button>
+            </div>
           )}
         </div>
       </div>
@@ -51,13 +66,25 @@ function Header() {
 
 
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [analysisData, setAnalysisData] = useState<any>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const handleAnalysisUpdate = (data: any) => {
     // In a real app, this would update a global state or database
     console.log('New analysis data:', data);
     setAnalysisData(data);
   };
+  
+  if (authLoading || !user) {
+    return <DashboardLoader />;
+  }
 
   return (
     <SidebarProvider>

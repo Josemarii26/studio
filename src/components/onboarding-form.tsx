@@ -14,6 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
+import { useRouter } from 'next/navigation';
 
 
 const formSchema = z.object({
@@ -39,6 +40,7 @@ const STEPS = [
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const { userProfile, setUserProfile } = useUserStore();
+  const router = useRouter();
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -74,6 +76,7 @@ export function OnboardingForm() {
       dailyFatGoal,
       dailyCarbsGoal,
       bmi,
+      photoUrl: null, // Initialize photoUrl as null
     }
     
     setUserProfile(fullProfile);
@@ -208,7 +211,7 @@ export function OnboardingForm() {
             {currentStep === STEPS.length - 1 && (
                 <Button type="button" onClick={() => {
                     toast({ title: "Onboarding Complete!", description: "Redirecting to your dashboard."});
-                    setTimeout(() => window.location.href = '/dashboard', 1500);
+                    router.push('/dashboard');
                 }}>Go to Dashboard</Button>
             )}
           </CardFooter>

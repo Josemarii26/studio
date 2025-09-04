@@ -1,7 +1,28 @@
+
+'use client';
+
 import { OnboardingForm } from "@/components/onboarding-form";
 import { NutriTrackLogo } from "@/components/nutri-track-logo";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { DashboardLoader } from "@/components/dashboard-loader";
+
 
 export default function OnboardingPage() {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login');
+        }
+    }, [user, loading, router]);
+    
+    if (loading || !user) {
+        return <DashboardLoader />;
+    }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl">

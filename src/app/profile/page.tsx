@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, Target, TrendingUp, User as UserIcon, Award, Zap } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, Award, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { DashboardLoader } from '@/components/dashboard-loader';
+import { useAuth } from '@/hooks/use-auth';
 
 // Mock data - in a real app, this would be fetched from a server
 const performanceStats = {
@@ -67,16 +68,17 @@ function StatCard({ icon, label, value, unit }: { icon: React.ReactNode, label: 
 }
 
 export default function ProfilePage() {
-  const { userProfile, setUserProfile, isLoaded } = useUserStore();
+  const { user, loading: authLoading } = useAuth();
+  const { userProfile, setUserProfile, isLoaded: profileLoaded } = useUserStore();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isLoaded && !userProfile) {
-        router.push('/onboarding');
+    if (!authLoading && !user) {
+        router.push('/login');
     }
-  },[isLoaded, userProfile, router])
+  },[user, authLoading, router])
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -116,7 +118,7 @@ export default function ProfilePage() {
   };
 
 
-  if (!isLoaded || !userProfile) {
+  if (authLoading || !profileLoaded || !userProfile) {
     return <DashboardLoader />;
   }
 
@@ -131,7 +133,7 @@ export default function ProfilePage() {
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
             <Avatar className="h-24 w-24 border-4 border-primary cursor-pointer hover:opacity-80 transition-opacity" onClick={handleAvatarClick}>
               <AvatarImage src={userProfile.photoUrl || ''} data-ai-hint="person face" />
-              <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{userProfile.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
                 <h1 className="text-3xl font-bold font-headline">{userProfile.name}</h1>
