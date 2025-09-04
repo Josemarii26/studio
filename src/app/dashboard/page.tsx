@@ -32,7 +32,7 @@ function Header() {
               <MessageSquare className="mr-2" />
               Chat
           </Button>
-          <Link href="/onboarding">
+          <Link href="/profile">
             <Avatar className="cursor-pointer">
                 <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="person face" />
                 <AvatarFallback>U</AvatarFallback>
