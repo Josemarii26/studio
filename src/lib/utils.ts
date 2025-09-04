@@ -11,7 +11,7 @@ export function parseNutritionalAnalysis(
   analysisText: string,
   userProfile: UserProfile
 ): Omit<DayData, 'date' | 'creatineTaken' | 'proteinTaken'> {
-  const lines = analysisText.split('\n').filter(line => line.trim() !== '');
+  const lines = analysisText.split('\n');
 
   const meals: DayData['meals'] = {};
   const totals: DayData['totals'] = {
@@ -22,58 +22,47 @@ export function parseNutritionalAnalysis(
   };
   let observations = '';
 
-  // Regex for English and Spanish, with optional bolding
+  // Regex for English and Spanish, with optional bolding and multi-line flexibility
   const mealRegex = /^\*?\*?(\w+):\*?\*? (.*?)$/i;
   const nutritionRegex = /^\* ([\d,.]+) kcal \| ([\d,.]+) g (?:proteína|protein) \| ([\d,.]+) g (?:grasa|fat) \| ([\d,.]+) g (?:carbohidratos|carbohydrates)/i;
-  const totalCaloriesRegex = /^\* \**Calor(?:ías|ies):\** ([\d,.]+) kcal/i;
-  const totalProteinRegex = /^\* \**Prote(?:ínas|in):\** ([\d,.]+) g/i;
-  const totalFatRegex = /^\* \**(?:Grasas|Fats):\** ([\d,.]+) g/i;
-  const totalCarbsRegex = /^\* \**Carbohidratos|Carbohydrates:\** ([\d,.]+) g/i;
-  const observationRegex = /^💡 \**Observa(?:ciones|tions):\**\n?([\s\S]*)$/im;
-  
+  const totalCaloriesRegex = /Calor(?:ías|ies):[\s\n]*([\d,.]+) kcal/i;
+  const totalProteinRegex = /Prote(?:ínas|in):[\s\n]*([\d,.]+) g/i;
+  const totalFatRegex = /(?:Grasas|Fats):[\s\n]*([\d,.]+) g/i;
+  const totalCarbsRegex = /(?:Carbohidratos|Carbohydrates):[\s\n]*([\d,.]+) g/i;
+
   let currentMealType: keyof DayData['meals'] | null = null;
   let inTotalsSection = false;
-  let inObservationSection = false;
-  let observationLines: string[] = [];
+
+  const observationMatch = analysisText.match(/💡 \**Observa(?:ciones|tions):\**\n?([\s\S]*)/im);
+  if (observationMatch) {
+    observations = observationMatch[1].trim();
+  }
+  
+  const totalSectionMatch = analysisText.match(/(?: Totales del día:|Totals for the day:)[\s\S]*/i);
+
+  if (totalSectionMatch) {
+      const totalBlock = totalSectionMatch[0];
+      const calMatch = totalBlock.match(totalCaloriesRegex);
+      if (calMatch) totals.calories = parseFloat(calMatch[1].replace(/,/g, ''));
+      
+      const protMatch = totalBlock.match(totalProteinRegex);
+      if (protMatch) totals.protein = parseFloat(protMatch[1].replace(/,/g, ''));
+
+      const fatMatch = totalBlock.match(totalFatRegex);
+      if (fatMatch) totals.fat = parseFloat(fatMatch[1].replace(/,/g, ''));
+
+      const carbMatch = totalBlock.match(totalCarbsRegex);
+      if (carbMatch) totals.carbs = parseFloat(carbMatch[1].replace(/,/g, ''));
+  }
+
 
   for (const line of lines) {
-    if (inObservationSection) {
-        observationLines.push(line);
-        continue;
-    }
-
-    const obsMatch = line.match(/^💡 \**Observa(?:ciones|tions):\**/i);
-    if (obsMatch) {
-      inObservationSection = true;
-      const contentAfterTitle = analysisText.split(line)[1];
-      if (contentAfterTitle) {
-          observations = contentAfterTitle.trim();
-          break; 
-      }
-      continue;
-    }
-
     if (/^(?:🔢 Totales del día:|Totals for the day:)/.test(line)) {
-        inTotalsSection = true;
-        currentMealType = null;
-        continue;
+        break; // Stop processing meals when totals section is reached
     }
-    
-    if(inTotalsSection) {
-        const calMatch = line.match(totalCaloriesRegex);
-        if (calMatch) totals.calories = parseFloat(calMatch[1].replace(/,/g, ''));
-        const protMatch = line.match(totalProteinRegex);
-        if (protMatch) totals.protein = parseFloat(protMatch[1].replace(/,/g, ''));
-        const fatMatch = line.match(totalFatRegex);
-        if (fatMatch) totals.fat = parseFloat(fatMatch[1].replace(/,/g, ''));
-        const carbMatch = line.match(totalCarbsRegex);
-        if (carbMatch) totals.carbs = parseFloat(carbMatch[1].replace(/,/g, ''));
-        continue;
-    }
-    
+
     const mealMatch = line.match(mealRegex);
     if (mealMatch) {
-        inTotalsSection = false;
         const mealTypeStr = mealMatch[1].toLowerCase();
         const mealTypeMap: { [key: string]: keyof DayData['meals'] } = {
             desayuno: 'breakfast', breakfast: 'breakfast',
@@ -100,10 +89,6 @@ export function parseNutritionalAnalysis(
         meals[currentMealType]!.carbs = parseFloat(nutritionMatch[4].replace(/,/g, ''));
         currentMealType = null;
     }
-  }
-
-  if (observationLines.length > 0) {
-      observations = observationLines.join('\n').trim();
   }
 
   let status: 'green' | 'yellow' | 'red' = 'green';
