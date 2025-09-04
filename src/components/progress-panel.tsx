@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { DayData, UserProfile } from '@/lib/types';
-import { Flame, TrendingUp, Target } from 'lucide-react';
+import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
 import { isSameDay, subDays } from 'date-fns';
 import { useMemo, useState, useEffect } from 'react';
 import { useUserStore } from '@/hooks/use-user-store';
@@ -65,8 +65,17 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
                 </div>
                 <CardDescription className="mt-2">kcal</CardDescription>
             </Card>
+
+            <Card className="flex flex-col items-center justify-center p-6 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                <CardTitle className="mb-2 text-lg">BMI</CardTitle>
+                <div className="flex items-center gap-2">
+                    <HeartPulse className="h-10 w-10 text-status-red" />
+                    <span className="text-5xl font-bold">{userProfile.bmi}</span>
+                </div>
+                <CardDescription className="mt-2">Body Mass Index</CardDescription>
+            </Card>
             
-            <Card className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <Card className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5" />
