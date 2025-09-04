@@ -12,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { NutriTrackLogo } from './nutri-track-logo';
+import Link from 'next/link';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -55,12 +58,37 @@ export function AuthForm() {
         router.push('/onboarding');
       }
     } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: isLogin ? 'Login Failed' : 'Sign Up Failed',
-        description: error.message || 'An unexpected error occurred.',
-      });
+      console.error("Auth Error Code:", error.code);
+      let title = isLogin ? 'Login Failed' : 'Sign Up Failed';
+      let description = 'An unexpected error occurred. Please try again.';
+
+      switch (error.code) {
+        case 'auth/user-not-found':
+          title = 'Login Failed';
+          description = 'No account found with this email. Would you like to sign up?';
+          break;
+        case 'auth/wrong-password':
+          title = 'Login Failed';
+          description = 'Incorrect password. Please try again.';
+          break;
+        case 'auth/email-already-in-use':
+          title = 'Sign Up Failed';
+          description = 'This email is already associated with an account. Please sign in instead.';
+          break;
+        case 'auth/invalid-email':
+            title = 'Invalid Email';
+            description = 'The email address you entered is not valid.';
+            break;
+        case 'auth/weak-password':
+            title = 'Weak Password';
+            description = 'Your password is too weak. Please choose a stronger password.';
+            break;
+        default:
+            description = error.message;
+            break;
+      }
+
+      toast({ variant: 'destructive', title, description });
     } finally {
       setIsLoading(false);
     }
@@ -85,59 +113,85 @@ export function AuthForm() {
   }
 
   return (
-    <div className="space-y-4">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLogin ? 'Sign In' : 'Create Account'}
-          </Button>
-        </form>
-      </Form>
-      
-      <div className="text-center text-sm">
-        {isLogin ? "Don't have an account?" : 'Already have an account?'}
-        <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="px-1">
-          {isLogin ? 'Sign Up' : 'Sign In'}
-        </Button>
-      </div>
+      <Card className="w-full max-w-md border-0 shadow-none sm:border sm:shadow-sm">
+        <CardHeader className="text-center">
+            <div className="mb-4 flex flex-col items-center">
+                <Link href="/">
+                    <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
+                </Link>
+            </div>
+          <CardTitle className="text-2xl">{isLogin ? 'Welcome Back!' : 'Create Your Account'}</CardTitle>
+          <CardDescription>{isLogin ? 'Sign in to access your dashboard.' : 'Fill out the form below to get started.'}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLogin ? 'Sign In' : 'Create Account'}
+              </Button>
+            </form>
+          </Form>
+          
+          <div className="text-center text-sm">
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+            <Button variant="link" onClick={() => {
+                setIsLogin(!isLogin);
+                form.reset();
+            }} className="px-1">
+              {isLogin ? 'Sign Up' : 'Sign In'}
+            </Button>
+          </div>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
-        <GoogleIcon />
-        Sign in with Google
-      </Button>
-    </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
+            <GoogleIcon />
+            Sign in with Google
+          </Button>
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            By clicking continue, you agree to our{" "}
+            <Link href="#" className="underline underline-offset-4 hover:text-primary">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="#" className="underline underline-offset-4 hover:text-primary">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </CardContent>
+      </Card>
+
   );
 }
