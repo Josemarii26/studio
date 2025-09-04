@@ -8,6 +8,7 @@ import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
+import { DashboardGrid } from './dashboard-grid';
 
 const mockUserProfile: UserProfile = {
   name: 'Alex Doe',
@@ -101,51 +102,56 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-fade-in-up">
-        <div className="lg:col-span-3 space-y-8">
-            <Card className="shadow-lg h-full">
-                <CardContent className="p-2 sm:p-4">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      onDayClick={handleDayClick}
-                      className="p-0 [&_td]:p-0 w-full"
-                      classNames={{
-                        cell: 'w-full',
-                        day: "h-16 lg:h-24 w-full rounded-lg text-center text-sm p-1",
-                        head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
-                        head_row: "flex w-full mt-2 justify-around",
-                        row: "flex w-full mt-2 justify-around",
-                        month: "space-y-4 w-full",
-                        months: "w-full",
-                        table: "w-full"
-                      }}
-                      modifiers={modifiers}
-                      modifiersClassNames={{
-                        green: 'rdp-day_green',
-                        yellow: 'rdp-day_yellow',
-                        red: 'rdp-day_red',
-                      }}
-                    />
-                </CardContent>
-            </Card>
-             <CaloriesChart dailyData={dailyData} />
-        </div>
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-fade-in-up">
+          <div className="lg:col-span-3 space-y-8">
+              <Card className="shadow-lg h-full">
+                  <CardContent className="p-2 sm:p-4">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        onDayClick={handleDayClick}
+                        className="p-0 [&_td]:p-0 w-full"
+                        classNames={{
+                          cell: 'w-full',
+                          day: "h-16 lg:h-24 w-full rounded-lg text-center text-sm p-1",
+                          head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
+                          head_row: "flex w-full mt-2 justify-around",
+                          row: "flex w-full mt-2 justify-around",
+                          month: "space-y-4 w-full",
+                          months: "w-full",
+                          table: "w-full"
+                        }}
+                        modifiers={modifiers}
+                        modifiersClassNames={{
+                          green: 'rdp-day_green',
+                          yellow: 'rdp-day_yellow',
+                          red: 'rdp-day_red',
+                        }}
+                      />
+                  </CardContent>
+              </Card>
+              <CaloriesChart dailyData={dailyData} />
+          </div>
 
-        <div className="lg:col-span-1">
-            <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
-        </div>
+          <div className="lg:col-span-1">
+              <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
+          </div>
 
 
-      {selectedDayData && (
-        <DayDetailModal
-          dayData={selectedDayData}
-          userProfile={mockUserProfile}
-          isOpen={!!selectedDayData}
-          onClose={() => setSelectedDayData(null)}
-        />
-      )}
+        {selectedDayData && (
+          <DayDetailModal
+            dayData={selectedDayData}
+            userProfile={mockUserProfile}
+            isOpen={!!selectedDayData}
+            onClose={() => setSelectedDayData(null)}
+          />
+        )}
+      </div>
+      <div className="mx-auto @container">
+          <DashboardGrid />
+      </div>
     </div>
   );
 }

@@ -2,7 +2,6 @@
 'use client';
 
 import { useState } from 'react';
-import { DashboardGrid } from '@/components/dashboard-grid';
 import { NutritionalChat } from '@/components/nutritional-chat';
 import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -73,12 +72,7 @@ function DashboardContent({ onAnalysisUpdate }: { onAnalysisUpdate: (data: any) 
       <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", 
           open && "mr-[400px] xl:mr-[450px]"
       )}>
-        <div className="space-y-8">
-          <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
-          <div className="mx-auto @container">
-            <DashboardGrid />
-          </div>
-        </div>
+        <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
       </main>
   )
 }
