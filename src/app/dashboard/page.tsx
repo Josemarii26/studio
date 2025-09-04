@@ -20,6 +20,7 @@ import type { DayData, ChatMessage } from '@/lib/types';
 import { parseNutritionalAnalysis } from '@/lib/utils';
 import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { WalkthroughModal } from '@/components/walkthrough-modal';
 
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
@@ -78,6 +79,7 @@ export default function DashboardPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [showWalkthrough, setShowWalkthrough] = useState(false);
 
 
   // Authentication and onboarding checks
@@ -91,6 +93,26 @@ export default function DashboardPage() {
       router.push('/onboarding');
     }
   }, [user, authLoading, profileLoaded, userProfile, router]);
+
+
+  // Check if walkthrough should be shown
+  useEffect(() => {
+    if (user) {
+      const walkthroughKey = `walkthroughCompleted-${user.uid}`;
+      const completed = localStorage.getItem(walkthroughKey);
+      if (!completed) {
+        setShowWalkthrough(true);
+      }
+    }
+  }, [user]);
+
+  const handleWalkthroughComplete = () => {
+    if (user) {
+        const walkthroughKey = `walkthroughCompleted-${user.uid}`;
+        localStorage.setItem(walkthroughKey, 'true');
+        setShowWalkthrough(false);
+    }
+  };
 
 
   // Load data from Firestore when the component mounts or user changes
@@ -162,6 +184,7 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
+      <WalkthroughModal isOpen={showWalkthrough} onComplete={handleWalkthroughComplete} />
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <HeaderWithSidebar />
         <div className="flex flex-1">
