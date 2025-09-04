@@ -84,7 +84,8 @@ export function AuthForm() {
             description = 'Your password is too weak. Please choose a stronger password.';
             break;
         default:
-            description = error.message;
+            // For other unexpected errors, you might want to log them and show a generic message.
+            description = 'An unexpected error occurred. Please try again later.';
             break;
       }
 
@@ -99,13 +100,15 @@ export function AuthForm() {
     try {
         await signInWithGoogle();
         toast({ title: "Signed In Successfully!", description: "Welcome! Let's get your profile set up." });
+        // A real app should check if the user is new or returning.
+        // For now, we always go to onboarding.
         router.push('/onboarding');
     } catch (error: any) {
         console.error("Google Sign-In Error:", error);
         toast({
             variant: "destructive",
             title: "Google Sign-In Failed",
-            description: error.message || "Could not sign in with Google. Please try again."
+            description: "Could not sign in with Google at this time. Please try again or use email/password."
         });
     } finally {
         setIsLoading(false);
@@ -176,6 +179,7 @@ export function AuthForm() {
             </div>
           </div>
           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <GoogleIcon />
             Sign in with Google
           </Button>

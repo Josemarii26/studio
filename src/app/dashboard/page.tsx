@@ -67,6 +67,7 @@ function Header() {
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
+  const { isLoaded: profileLoaded, userProfile } = useUserStore();
   const router = useRouter();
   const [analysisData, setAnalysisData] = useState<any>(null);
 
@@ -74,7 +75,16 @@ export default function DashboardPage() {
     if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+    // Once auth is loaded, if there's a user but no profile, they need to onboard.
+    if (!authLoading && user && !profileLoaded) {
+      // Still waiting for profile to load
+      return;
+    }
+    if (!authLoading && user && !userProfile) {
+        router.push('/onboarding');
+    }
+
+  }, [user, authLoading, profileLoaded, userProfile, router]);
 
   const handleAnalysisUpdate = (data: any) => {
     // In a real app, this would update a global state or database
@@ -82,7 +92,7 @@ export default function DashboardPage() {
     setAnalysisData(data);
   };
   
-  if (authLoading || !user) {
+  if (authLoading || !profileLoaded || !userProfile) {
     return <DashboardLoader />;
   }
 
