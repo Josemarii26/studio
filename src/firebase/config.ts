@@ -8,4 +8,5 @@ export const firebaseConfig = {
   apiKey: "AIzaSyBvGccscK_xTE4Voa54V2XUglmL82bvy2c",
   authDomain: "nutritrackai-tfxng.firebaseapp.com",
   messagingSenderId: "673788699862",
+  measurementId: "G-XXXXXXXXXX"
 };
