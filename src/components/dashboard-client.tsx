@@ -95,30 +95,22 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
         <div className="animate-fade-in-up">
             <h1 className="text-3xl font-bold font-headline">Welcome back, {userProfile.name.split(' ')[0]}!</h1>
             <p className="text-muted-foreground">You're on track for your goal of {goalText[userProfile.goal]}. Let's review your progress.</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
-            {/* Main Content: Calendar and Chart (takes 2/3 width on large screens) */}
-            <div className="space-y-6 lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
                 <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
-                    <CardContent className="p-2 sm:p-4 flex justify-center">
+                    <CardContent className="p-2 sm:p-4 w-full">
                         <Calendar
                             mode="single"
                             selected={date}
                             onSelect={setDate}
                             onDayClick={handleDayClick}
-                            className="p-0"
-                            classNames={{
-                                cell: "w-full sm:w-12 h-12",
-                                day: "w-full sm:w-12 h-12 rounded-lg",
-                                head_cell: "w-full sm:w-12 font-normal text-[0.8rem]",
-                                row: "flex w-full mt-2",
-                                month: "space-y-4 w-full"
-                            }}
+                            className="p-0 w-full"
                             modifiers={modifiers}
                             modifiersClassNames={{
                                 green: 'rdp-day_green',
@@ -130,14 +122,11 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
                 </Card>
                 <CaloriesChart dailyData={dailyData} />
             </div>
-
-            {/* Side Panel: Progress (takes 1/3 width on large screens) */}
             <div className="lg:col-span-1">
-              <ProgressPanel dailyData={dailyData} />
+                <ProgressPanel dailyData={dailyData} />
             </div>
         </div>
       
-      {/* Full-width Image Grid */}
       <div className="mx-auto @container mt-8">
         <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">Your Journey</h2>
         <DashboardGrid />
