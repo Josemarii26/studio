@@ -62,7 +62,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const { user } = useAuth();
   const chatHistoryKey = user ? `chatHistory-${user.uid}` : null;
   
-  const todaysData = dailyData.find(d => isSameDay(d.date, startOfToday()));
+  const todaysData = dailyData.find(d => d.date && isSameDay(d.date, startOfToday()));
   const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0;
 
 
@@ -92,6 +92,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
             resetToInitialMessage();
         }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatHistoryKey]);
 
   useEffect(() => {
@@ -117,6 +118,19 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
             variant: "destructive",
             title: "Already Logged for Today",
             description: "You can only submit one nutritional analysis per day. You can see today's entry on the calendar.",
+        });
+        return;
+    }
+
+    const requiredKeywords = ['breakfast', 'lunch', 'dinner', 'snack'];
+    const messageContent = values.message.toLowerCase();
+    const hasKeyword = requiredKeywords.some(keyword => messageContent.includes(keyword));
+
+    if (!hasKeyword) {
+        toast({
+            variant: 'destructive',
+            title: 'Missing Meal Labels',
+            description: 'Please label your meals with "Breakfast", "Lunch", "Dinner", or "Snack" to get an accurate analysis.',
         });
         return;
     }
