@@ -23,6 +23,8 @@ export type DayData = {
   };
   status: 'green' | 'yellow' | 'red';
   observations: string;
+  creatineTaken?: boolean;
+  proteinTaken?: boolean;
 };
 
 export type UserProfile = {
@@ -34,6 +36,7 @@ export type UserProfile = {
   goalWeight: number; // in kg
   activityLevel: 'sedentary' | 'light' | 'moderate' | 'intense';
   goal: 'lose' | 'maintain' | 'gain';
+  supplementation: 'none' | 'creatine' | 'protein' | 'both';
   dailyCalorieGoal: number;
   dailyProteinGoal: number;
   dailyFatGoal: number;

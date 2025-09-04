@@ -26,6 +26,7 @@ const formSchema = z.object({
   goalWeight: z.coerce.number().min(30, "Goal weight must be a positive number."),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'intense']),
   goal: z.enum(['lose', 'maintain', 'gain']),
+  supplementation: z.enum(['none', 'creatine', 'protein', 'both']),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -34,7 +35,8 @@ const STEPS = [
   { id: '01', name: 'Personal Info', fields: ['name', 'age', 'gender'] },
   { id: '02', name: 'Physical Stats', fields: ['weight', 'height', 'goalWeight'] },
   { id: '03', name: 'Goals & Lifestyle', fields: ['activityLevel', 'goal'] },
-  { id: '04', name: 'Summary', fields: [] },
+  { id: '04', name: 'Supplementation', fields: ['supplementation'] },
+  { id: '05', name: 'Summary', fields: [] },
 ];
 
 export function OnboardingForm() {
@@ -44,7 +46,7 @@ export function OnboardingForm() {
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain' },
+    defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
 
   const processForm = (data: FormData) => {
@@ -184,8 +186,23 @@ export function OnboardingForm() {
                     )} />
                 </div>
             )}
+            
+            {currentStep === 3 && (
+                 <FormField control={form.control} name="supplementation" render={({ field }) => (
+                    <FormItem><FormLabel>Do you take any of these supplements?</FormLabel>
+                        <FormControl>
+                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2 pt-2">
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="none" /></FormControl><FormLabel className="font-normal">None</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="creatine" /></FormControl><FormLabel className="font-normal">Creatine</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="protein" /></FormControl><FormLabel className="font-normal">Protein Powder</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="both" /></FormControl><FormLabel className="font-normal">Both Creatine and Protein Powder</FormLabel></FormItem>
+                            </RadioGroup>
+                        </FormControl><FormMessage />
+                    </FormItem>
+                )} />
+            )}
 
-            {currentStep === 3 && userProfile && (
+            {currentStep === 4 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">Your Personalized Plan</h2>
                     <p className="text-muted-foreground">Based on your info, here are your initial targets.</p>

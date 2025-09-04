@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, Target, TrendingUp, Award, Zap } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -121,6 +121,17 @@ export default function ProfilePage() {
   if (authLoading || !profileLoaded || !userProfile) {
     return <DashboardLoader />;
   }
+  
+  const supplementText = () => {
+      if (!userProfile?.supplementation) return 'None';
+      switch (userProfile.supplementation) {
+          case 'none': return 'None';
+          case 'creatine': return 'Creatine';
+          case 'protein': return 'Protein Powder';
+          case 'both': return 'Creatine & Protein Powder';
+          default: return 'Not specified';
+      }
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -157,10 +168,10 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             {/* Personal Details */}
-            <Card className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <Card className="md:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               <CardHeader>
                 <CardTitle>Your Information</CardTitle>
                 <CardDescription>The personal details used for calculations.</CardDescription>
@@ -180,8 +191,20 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Nutrition Goals */}
+            {/* Supplementation */}
             <Card className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                <CardHeader>
+                    <CardTitle>Supplementation</CardTitle>
+                    <CardDescription>Your current supplement regimen.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center text-center space-y-4">
+                    <Pill className="w-12 h-12 text-primary" />
+                    <p className="text-lg font-medium">{supplementText()}</p>
+                </CardContent>
+            </Card>
+
+            {/* Nutrition Goals */}
+            <Card className="md:col-span-3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
               <CardHeader>
                 <CardTitle>Daily Nutrition Goals</CardTitle>
                  <CardDescription>Your recommended daily intake targets.</CardDescription>
@@ -191,18 +214,20 @@ export default function ProfilePage() {
                     <div className="flex justify-between text-lg font-medium"><span>Calories</span><span>{userProfile.dailyCalorieGoal.toLocaleString()} kcal</span></div>
                     <Progress value={(performanceStats.avgCalories / userProfile.dailyCalorieGoal) * 100} />
                  </div>
-                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm"><span>Protein</span><span>{userProfile.dailyProteinGoal}g</span></div>
-                    <Progress value={(130 / userProfile.dailyProteinGoal) * 100} className="h-2" />
-                 </div>
-                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm"><span>Fat</span><span>{userProfile.dailyFatGoal}g</span></div>
-                    <Progress value={(90 / userProfile.dailyFatGoal) * 100} className="h-2" />
-                 </div>
-                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm"><span>Carbs</span><span>{userProfile.dailyCarbsGoal}g</span></div>
-                     <Progress value={(160 / userProfile.dailyCarbsGoal) * 100} className="h-2" />
-                 </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm"><span>Protein</span><span>{userProfile.dailyProteinGoal}g</span></div>
+                        <Progress value={(130 / userProfile.dailyProteinGoal) * 100} className="h-2" />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm"><span>Fat</span><span>{userProfile.dailyFatGoal}g</span></div>
+                        <Progress value={(90 / userProfile.dailyFatGoal) * 100} className="h-2" />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm"><span>Carbs</span><span>{userProfile.dailyCarbsGoal}g</span></div>
+                        <Progress value={(160 / userProfile.dailyCarbsGoal) * 100} className="h-2" />
+                    </div>
+                  </div>
               </CardContent>
             </Card>
           </div>

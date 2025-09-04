@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A nutritional chat analysis AI agent.
@@ -17,6 +18,8 @@ export type NutritionalChatAnalysisInput = z.infer<typeof NutritionalChatAnalysi
 
 const NutritionalChatAnalysisOutputSchema = z.object({
   analysis: z.string().describe('The nutritional analysis of the meals.'),
+  creatineTaken: z.boolean().describe('Whether the user mentioned taking creatine.'),
+  proteinTaken: z.boolean().describe('Whether the user mentioned taking protein powder.'),
 });
 export type NutritionalChatAnalysisOutput = z.infer<typeof NutritionalChatAnalysisOutputSchema>;
 
@@ -30,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'nutritionalChatAnalysisPrompt',
   input: {schema: NutritionalChatAnalysisInputSchema},
   output: {schema: NutritionalChatAnalysisOutputSchema},
-  prompt: `Analize this description of meals and return EXACTLY this format:
+  prompt: `Analyze this description of meals. Also, check if the user mentions taking "creatine" or "protein powder" and set the creatineTaken and proteinTaken booleans appropriately. Return EXACTLY this format:
 
 **📅 [Fecha] – Registro de comidas**
 

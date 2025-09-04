@@ -36,7 +36,7 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
 
 export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', role: 'assistant', content: "Hi there! Describe the meals you had today, and I'll analyze them for you. For example: `For breakfast I had two scrambled eggs with spinach and a slice of whole wheat toast. For lunch, a turkey sandwich on rye with a side of apple slices...`", timestamp: new Date() }
+    { id: '1', role: 'assistant', content: "Hi there! Describe the meals you had today, and I'll analyze them for you. For example: `For breakfast I had two scrambled eggs with spinach and a slice of whole wheat toast. For lunch, a turkey sandwich on rye with a side of apple slices...` Also mention if you took supplements like creatine or protein powder.", timestamp: new Date() }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -65,6 +65,8 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
       setMessages(prev => [...prev, assistantMessage]);
       onAnalysisUpdate({
         // In a real app, parse `result.analysis` and update state
+        creatineTaken: result.creatineTaken,
+        proteinTaken: result.proteinTaken,
       });
       toast({
         title: "Analysis Complete",

@@ -7,9 +7,8 @@ import type { DayData, UserProfile, Meal } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
 import { Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { Carrot, Pizza, Cookie, Soup } from 'lucide-react';
+import { Carrot, Pizza, Cookie, Soup, CheckCircle2, XCircle, Pill } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
 
 interface DayDetailModalProps {
   dayData: DayData;
@@ -33,7 +32,7 @@ const mealIcons: { [key: string]: ReactNode } = {
 
 
 export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDetailModalProps) {
-  const { date, meals, totals, observations } = dayData;
+  const { date, meals, totals, observations, creatineTaken, proteinTaken } = dayData;
   
   const macroData = [
     { name: 'Protein', value: totals.protein, fill: 'var(--color-protein)' },
@@ -96,7 +95,30 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
                 </div>
             </div>
         </div>
-        <div>
+        
+        {userProfile.supplementation !== 'none' && (
+            <div>
+                 <h3 className="mb-4 text-lg font-semibold">Supplement Intake</h3>
+                 <Card>
+                    <CardContent className="p-4 grid grid-cols-2 gap-4">
+                        {(userProfile.supplementation === 'creatine' || userProfile.supplementation === 'both') && (
+                            <div className="flex items-center gap-2">
+                                {creatineTaken ? <CheckCircle2 className="w-5 h-5 text-status-green" /> : <XCircle className="w-5 h-5 text-status-red" />}
+                                <span className="font-medium">Creatine</span>
+                            </div>
+                        )}
+                        {(userProfile.supplementation === 'protein' || userProfile.supplementation === 'both') && (
+                            <div className="flex items-center gap-2">
+                                {proteinTaken ? <CheckCircle2 className="w-5 h-5 text-status-green" /> : <XCircle className="w-5 h-5 text-status-red" />}
+                                <span className="font-medium">Protein Powder</span>
+                            </div>
+                        )}
+                    </CardContent>
+                 </Card>
+            </div>
+        )}
+
+        <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold">Logged Meals</h3>
             <div className="space-y-4">
               {Object.entries(meals).length > 0 ? Object.entries(meals).map(([mealType, mealData]) => mealData && (
