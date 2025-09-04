@@ -15,10 +15,9 @@ import { DashboardLoader } from './dashboard-loader';
 
 interface DashboardClientProps {
   dailyData: DayData[];
-  setDailyData: (data: DayData[]) => void;
 }
 
-export function DashboardClient({ dailyData, setDailyData }: DashboardClientProps) {
+export function DashboardClient({ dailyData }: DashboardClientProps) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);

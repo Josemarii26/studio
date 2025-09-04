@@ -26,6 +26,8 @@ const formSchema = z.object({
 interface NutritionalChatProps {
   onAnalysisUpdate: (data: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => void;
   dailyData: DayData[];
+  messages: ChatMessage[];
+  setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
 }
 
 const SimpleMarkdown = ({ text }: { text: string }) => {
@@ -53,8 +55,7 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
     );
 };
 
-export function NutritionalChat({ onAnalysisUpdate, dailyData }: NutritionalChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMessages }: NutritionalChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -127,21 +128,15 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData }: NutritionalChat
 
     try {
       const result = await nutritionalChatAnalysis({ mealDescription: values.message });
-      const assistantMessage: ChatMessage = { id: String(Date.now() + 1), role: 'assistant', content: result.analysis, timestamp: new Date() };
-      setMessages(prev => [...prev, assistantMessage]);
-      onAnalysisUpdate(result);
-      toast({
-        title: "Analysis Complete",
-        description: "Your meal has been logged and your dashboard is updated.",
-      });
+      onAnalysisUpdate(result); // The parent now handles adding assistant/system messages
     } catch (error) {
       console.error(error);
-      const errorMessage: ChatMessage = { id: String(Date.now() + 1), role: 'system', content: 'Sorry, I couldn\'t analyze that. The format might be incorrect. Please try again.', timestamp: new Date() };
+      const errorMessage: ChatMessage = { id: String(Date.now() + 1), role: 'system', content: 'An unexpected server error occurred. Please try again later.', timestamp: new Date() };
       setMessages(prev => [...prev, errorMessage]);
       toast({
         variant: "destructive",
-        title: "Analysis Failed",
-        description: "There was an error processing your request.",
+        title: "Server Error",
+        description: "There was an error processing your request on the server.",
       });
     } finally {
       setIsLoading(false);

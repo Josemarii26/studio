@@ -16,13 +16,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
-import type { DayData } from '@/lib/types';
+import type { DayData, ChatMessage } from '@/lib/types';
 import { parseNutritionalAnalysis } from '@/lib/utils';
 import { startOfToday, isSameDay } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 
-function Header() {
-  const { toggleSidebar } = useSidebar();
+function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const { signOut } = useAuth();
   const router = useRouter();
@@ -76,6 +76,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const { toast } = useToast();
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
 
   // Authentication and onboarding checks
   useEffect(() => {
@@ -116,6 +119,25 @@ export default function DashboardPage() {
     if (!userProfile) return;
 
     const parsedData = parseNutritionalAnalysis(result.analysis, userProfile);
+    
+    // Check if parsing failed (indicated by 0 calories)
+    if(parsedData.totals.calories === 0) {
+        toast({
+            variant: "destructive",
+            title: "Analysis Failed",
+            description: "I couldn't understand that. Please try rephrasing your meal description.",
+        });
+        // Add a system error message to the chat
+        const errorMessage: ChatMessage = { 
+            id: String(Date.now() + 1), 
+            role: 'system', 
+            content: 'Sorry, I couldn\'t analyze that. The format might be incorrect or missing details. Please try again.', 
+            timestamp: new Date() 
+        };
+        setChatMessages(prev => [...prev, errorMessage]);
+        return;
+    }
+
     const today = startOfToday();
     const newDayData: DayData = {
       date: today,
@@ -128,6 +150,10 @@ export default function DashboardPage() {
         const otherDays = prevData.filter(d => !isSameDay(d.date, today));
         return [...otherDays, newDayData];
     });
+
+    // Add successful analysis to chat
+    const assistantMessage: ChatMessage = { id: String(Date.now() + 1), role: 'assistant', content: result.analysis, timestamp: new Date() };
+    setChatMessages(prev => [...prev, assistantMessage]);
   };
   
   if (authLoading || !profileLoaded || !userProfile || isLoadingData) {
@@ -137,18 +163,28 @@ export default function DashboardPage() {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
-        <Header />
+        <HeaderWithSidebar />
         <div className="flex flex-1">
             <DashboardContent>
-              <DashboardClient dailyData={dailyData} setDailyData={setDailyData} />
+              <DashboardClient dailyData={dailyData} />
             </DashboardContent>
             <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
-                <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} dailyData={dailyData} />
+                <NutritionalChat 
+                    onAnalysisUpdate={handleAnalysisUpdate} 
+                    dailyData={dailyData}
+                    messages={chatMessages}
+                    setMessages={setChatMessages}
+                />
             </Sidebar>
         </div>
       </div>
     </SidebarProvider>
   );
+}
+
+function HeaderWithSidebar() {
+  const { toggleSidebar } = useSidebar();
+  return <Header toggleSidebar={toggleSidebar} />
 }
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
