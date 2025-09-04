@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const mockUserProfile: UserProfile = {
   name: 'Alex Doe',
@@ -100,7 +101,7 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-fade-in-up">
         <div className="lg:col-span-3">
             <Card className="shadow-lg h-full">
                 <CardContent className="p-2 sm:p-4">

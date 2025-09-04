@@ -30,7 +30,7 @@ export function DashboardGrid() {
     }
 
   return (
-    <div className="masonry-grid">
+    <div className="masonry-grid animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         {gridItems.map((item, index) => (
             <Card key={index} className={`masonry-item overflow-hidden ${item.className || ''}`}>
                 <CardContent className="p-0 relative">
@@ -41,7 +41,7 @@ export function DashboardGrid() {
                                 alt={item.hint}
                                 data-ai-hint={item.hint}
                                 fill
-                                className="object-cover transition-transform duration-500 ease-in-out hover:scale-110"
+                                className="object-cover animated-image"
                             />
                             <div className="absolute inset-0 bg-black/20"></div>
                         </div>

@@ -10,11 +10,15 @@ import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
+import { cn } from '@/lib/utils';
 
 function Header() {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, open } = useSidebar();
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
+    <header className={cn(
+      "sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 transition-all duration-300 ease-in-out",
+      open && "pr-[400px] xl:pr-[450px]"
+    )}>
       <a href="/" className="flex items-center gap-2">
         <NutriTrackLogo className="h-8 w-8 text-primary" />
         <h1 className="text-2xl font-bold text-foreground font-headline">
@@ -28,7 +32,7 @@ function Header() {
         </Button>
         <a href="/onboarding">
           <Avatar className="cursor-pointer">
-              <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="person face" className="animated-image" />
+              <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="person face" />
               <AvatarFallback>U</AvatarFallback>
           </Avatar>
         </a>
@@ -52,17 +56,24 @@ export default function Home() {
       <div className="flex min-h-screen w-full flex-col bg-background">
         <Header />
         <div className="flex flex-1">
-            <Sidebar side="right" className="w-[400px] xl:w-[450px]">
+            <DashboardContent onAnalysisUpdate={handleAnalysisUpdate} />
+            <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
                 <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
             </Sidebar>
-            <main className="flex-1 p-4 md:p-6 lg:p-8">
-              <div className="space-y-8">
-                <DashboardClient onAnalysisUpdate={handleAnalysisUpdate} />
-                <DashboardGrid />
-              </div>
-            </main>
         </div>
       </div>
     </SidebarProvider>
   );
+}
+
+function DashboardContent({ onAnalysisUpdate }: { onAnalysisUpdate: (data: any) => void; }) {
+  const { open } = useSidebar();
+  return (
+      <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", open && "pr-[400px] xl:pr-[450px]")}>
+        <div className="space-y-8">
+          <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
+          <DashboardGrid />
+        </div>
+      </main>
+  )
 }
