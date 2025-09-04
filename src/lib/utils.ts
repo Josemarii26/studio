@@ -33,6 +33,9 @@ export function parseNutritionalAnalysis(
     const mealMatch = line.match(mealHeaderRegex);
     if (mealMatch) {
       currentMealType = mealMatch[1].toLowerCase() as keyof DayData['meals'];
+      if (meals[currentMealType]) {
+          // Avoid overwriting existing meal, handle as needed
+      }
       meals[currentMealType] = {
         description: mealMatch[2].trim(),
         calories: 0, protein: 0, fat: 0, carbs: 0,
