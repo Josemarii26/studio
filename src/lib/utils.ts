@@ -18,7 +18,7 @@ export function parseNutritionalAnalysis(
 
   const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack)\*?\*?:\s*(.*)/i;
   const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\|\s*([\d,.]*)\s*g fat\s*\|\s*([\d,.]*)\s*g carbohydrates/i;
-  const observationsRegex = /^💡\s*\*?Observations\*?\*?:\s*(.*)/i;
+  const observationsRegex = /^💡\s*\*?Observations\*?\*?:(.*)/i;
 
   let currentMealType: keyof DayData['meals'] | null = null;
   let inObservationsSection = false;
@@ -55,12 +55,14 @@ export function parseNutritionalAnalysis(
     const obsMatch = line.match(observationsRegex);
     if (obsMatch) {
         inObservationsSection = true;
-        if (obsMatch[1].trim()) {
+        if (obsMatch[1] && obsMatch[1].trim()) {
             tempObservations.push(obsMatch[1].trim());
         }
         continue;
     }
   }
+
+  observations = tempObservations.join('\n').trim();
 
   // Calculate totals by summing up parsed meals
   const totals: DayData['totals'] = Object.values(meals).reduce(
@@ -75,8 +77,6 @@ export function parseNutritionalAnalysis(
     },
     { calories: 0, protein: 0, fat: 0, carbs: 0 }
   );
-
-  observations = tempObservations.join('\n').trim();
 
   let status: 'green' | 'yellow' | 'red' = 'green';
   const calorieDiff = Math.abs(totals.calories - userProfile.dailyCalorieGoal);
