@@ -6,11 +6,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { addDays, isSameDay } from 'date-fns';
+import { addDays, isSameDay, startOfToday } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { DashboardGrid } from './dashboard-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
+import { parseNutritionalAnalysis } from '@/lib/utils';
 
 const generateMockData = (userProfile: UserProfile | null) => {
     const data: DayData[] = [];
@@ -59,7 +60,15 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
 
   useEffect(() => {
     if (isLoaded && userProfile) {
-      setDailyData(generateMockData(userProfile));
+        const mockData = generateMockData(userProfile);
+        
+        const today = startOfToday();
+        const todayData = dailyData.find(d => isSameDay(d.date, today));
+        if (todayData) {
+            setDailyData([todayData, ...mockData]);
+        } else {
+            setDailyData(mockData);
+        }
     }
   }, [isLoaded, userProfile]);
 
@@ -77,6 +86,28 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
         });
     }
   };
+  
+   const handleAnalysis = (analysisResult: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => {
+    if (!userProfile) return;
+
+    const parsedData = parseNutritionalAnalysis(analysisResult.analysis, userProfile);
+    const today = startOfToday();
+    const newDayData: DayData = {
+      date: today,
+      ...parsedData,
+      creatineTaken: analysisResult.creatineTaken,
+      proteinTaken: analysisResult.proteinTaken,
+    };
+    
+    setDailyData(prevData => {
+        const otherDays = prevData.filter(d => !isSameDay(d.date, today));
+        return [newDayData, ...otherDays];
+    });
+
+    onAnalysisUpdate(newDayData); // Propagate up if needed
+    setSelectedDayData(newDayData); // Open the modal with the new data
+  };
+
 
   const modifiers = useMemo(() => ({
     green: dailyData.filter(d => d.status === 'green').map(d => d.date),
@@ -103,14 +134,14 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
-            <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up">
+            <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up w-full">
                 <CardContent className="p-0 sm:p-0">
                     <Calendar
                         mode="single"
                         selected={date}
                         onSelect={setDate}
                         onDayClick={handleDayClick}
-                        className="p-0"
+                        className="p-0 w-full"
                         modifiers={modifiers}
                         modifiersClassNames={{
                             green: 'rdp-day_green',

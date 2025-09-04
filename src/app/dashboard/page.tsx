@@ -86,22 +86,25 @@ export default function DashboardPage() {
 
 
   const handleAnalysisUpdate = (data: any) => {
-    console.log('New analysis data:', data);
     setAnalysisData(data);
   };
   
   if (authLoading || !profileLoaded || !userProfile) {
     return <DashboardLoader />;
   }
+  
+  const dashboardClient = <DashboardClient onAnalysisUpdate={handleAnalysisUpdate} />;
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <Header />
         <div className="flex flex-1">
-            <DashboardContent onAnalysisUpdate={handleAnalysisUpdate} />
+            <DashboardContent>
+              {dashboardClient}
+            </DashboardContent>
             <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
-                <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
+                <NutritionalChat onAnalysisUpdate={(result) => dashboardClient.props.onAnalysisUpdate(result)} />
             </Sidebar>
         </div>
       </div>
@@ -109,13 +112,13 @@ export default function DashboardPage() {
   );
 }
 
-function DashboardContent({ onAnalysisUpdate }: { onAnalysisUpdate: (data: any) => void; }) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const { open } = useSidebar();
   return (
       <main className={cn("flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ease-in-out", 
           open && "mr-[400px] xl:mr-[450px]"
       )}>
-        <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
+        {children}
       </main>
   )
 }

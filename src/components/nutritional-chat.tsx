@@ -22,7 +22,7 @@ const formSchema = z.object({
 });
 
 interface NutritionalChatProps {
-  onAnalysisUpdate: (data: Partial<DayData>) => void;
+  onAnalysisUpdate: (data: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => void;
 }
 
 const SimpleMarkdown = ({ text }: { text: string }) => {
@@ -63,11 +63,7 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
       const result = await nutritionalChatAnalysis({ mealDescription: values.message });
       const assistantMessage: ChatMessage = { id: String(Date.now() + 1), role: 'assistant', content: result.analysis, timestamp: new Date() };
       setMessages(prev => [...prev, assistantMessage]);
-      onAnalysisUpdate({
-        // In a real app, parse `result.analysis` and update state
-        creatineTaken: result.creatineTaken,
-        proteinTaken: result.proteinTaken,
-      });
+      onAnalysisUpdate(result);
       toast({
         title: "Analysis Complete",
         description: "Your meal has been logged and your dashboard is updated.",
