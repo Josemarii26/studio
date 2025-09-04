@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
+import { ArrowDown } from 'lucide-react';
 
 const mockUserProfile: UserProfile = {
   name: 'Alex Doe',
@@ -26,7 +27,6 @@ const mockUserProfile: UserProfile = {
 
 const generateMockData = () => {
     const data: DayData[] = [];
-    // Use a fixed date to avoid issues with new Date() on server vs client
     const startDate = new Date();
     for(let i = 0; i < 20; i++) {
         const date = addDays(startDate, -i);
@@ -97,42 +97,57 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
   
   if (!isClient) {
     // Render a skeleton or null on the server to avoid hydration errors
-    return null;
+    return <div className="min-h-screen"></div>;
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-3">
-      <div className="lg:col-span-2">
-        <Card className="shadow-lg overflow-hidden">
-          <CardHeader>
-            <CardTitle>Your Monthly Overview</CardTitle>
-            <CardDescription>Click on a day to see details or log meals.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              onDayClick={handleDayClick}
-              className="p-0 [&_td]:p-0"
-              classNames={{
-                cell: 'w-full',
-                day: "h-20 w-full rounded-lg text-center text-sm p-1",
-              }}
-              modifiers={modifiers}
-              modifiersClassNames={{
-                green: 'rdp-day_green',
-                yellow: 'rdp-day_yellow',
-                red: 'rdp-day_red',
-              }}
-            />
-          </CardContent>
-        </Card>
-      </div>
+    <div className="flex flex-col">
+        <section className="relative flex h-screen min-h-[700px] flex-col items-center justify-center p-4 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-background to-muted/50 -z-10"></div>
+            <h1 className="text-4xl md:text-6xl font-bold font-headline animate-fade-in-down">Your Nutritional Journey</h1>
+            <p className="mt-4 max-w-2xl text-lg text-muted-foreground animate-fade-in-up">
+                Visualize your progress, one day at a time. Click a date to see your meal details.
+            </p>
+            <div className="w-full max-w-4xl mt-8">
+                <Card className="shadow-2xl animate-fade-in-up delay-300">
+                    <CardContent className="p-2 sm:p-4">
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          onDayClick={handleDayClick}
+                          className="p-0 [&_td]:p-0 w-full"
+                          classNames={{
+                            cell: 'w-full',
+                            day: "h-16 lg:h-24 w-full rounded-lg text-center text-sm p-1",
+                            head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
+                            head_row: "flex w-full mt-2 justify-around",
+                            row: "flex w-full mt-2 justify-around",
+                            month: "space-y-4 w-full",
+                            months: "w-full",
+                            table: "w-full"
+                          }}
+                          modifiers={modifiers}
+                          modifiersClassNames={{
+                            green: 'rdp-day_green',
+                            yellow: 'rdp-day_yellow',
+                            red: 'rdp-day_red',
+                          }}
+                        />
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="absolute bottom-8 animate-bounce">
+                <ArrowDown className="h-8 w-8 text-muted-foreground" />
+            </div>
+        </section>
 
-      <div className="lg:col-span-1">
-        <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
-      </div>
+        <section id="progress" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-muted/50">
+            <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Your Progress at a Glance</h2>
+                 <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
+            </div>
+        </section>
 
       {selectedDayData && (
         <DayDetailModal

@@ -26,6 +26,7 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
     }, []);
 
     const weeklyData = useMemo(() => {
+        if (!isClient) return [];
         const startDate = new Date();
         return Array.from({ length: 7 }).map((_, i) => {
             const date = subDays(startDate, i);
@@ -36,9 +37,10 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
                 goal: userProfile.dailyCalorieGoal
             };
         }).reverse();
-    }, [dailyData, userProfile.dailyCalorieGoal]);
+    }, [dailyData, userProfile.dailyCalorieGoal, isClient]);
 
     const greenDaysStreak = useMemo(() => {
+        if (!isClient) return 0;
         const sortedData = [...dailyData].sort((a,b) => b.date.getTime() - a.date.getTime());
         let streak = 0;
         let today = new Date();
@@ -62,23 +64,23 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
             }
         }
         return streak;
-    }, [dailyData]);
+    }, [dailyData, isClient]);
 
 
     return (
-        <div className="space-y-8">
-            <Card>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="lg:col-span-3">
                 <CardHeader>
                     <CardTitle>Weekly Calorie Intake</CardTitle>
                     <CardDescription>Your calories vs. your daily goal for the last 7 days.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                    <ChartContainer config={chartConfig} className="h-[250px] w-full">
                         <ResponsiveContainer>
-                            <BarChart data={weeklyData} margin={{ top: 20 }}>
+                            <BarChart data={weeklyData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
                                 <CartesianGrid vertical={false} />
                                 <XAxis dataKey="date" tickLine={false} tickMargin={10} axisLine={false} />
-                                <YAxis hide />
+                                <YAxis />
                                 <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" hideLabel />} />
                                 <Bar dataKey="calories" fill="var(--color-calories)" radius={8} />
                                 <Line type="monotone" dataKey="goal" stroke="var(--color-goal)" strokeWidth={2} dot={false} strokeDasharray="3 3" />
@@ -88,25 +90,24 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-                 <Card className="flex flex-col items-center justify-center p-6 text-center">
-                    <CardTitle className="mb-2 text-lg">Streak</CardTitle>
-                    <div className="flex items-center gap-2">
-                        <Flame className="h-10 w-10 text-destructive" />
-                        <span className="text-5xl font-bold">{greenDaysStreak}</span>
-                    </div>
-                    <CardDescription className="mt-2">on-target days</CardDescription>
-                </Card>
-                 <Card className="flex flex-col items-center justify-center p-6 text-center">
-                    <CardTitle className="mb-2 text-lg">Daily Goal</CardTitle>
-                    <div className="flex items-center gap-2">
-                        <Target className="h-10 w-10 text-primary" />
-                        <span className="text-4xl font-bold">{isClient ? userProfile.dailyCalorieGoal.toLocaleString() : userProfile.dailyCalorieGoal}</span>
-                    </div>
-                    <CardDescription className="mt-2">kcal</CardDescription>
-                </Card>
-            </div>
-
+            <Card className="flex flex-col items-center justify-center p-6 text-center">
+                <CardTitle className="mb-2 text-lg">Streak</CardTitle>
+                <div className="flex items-center gap-2">
+                    <Flame className="h-10 w-10 text-destructive" />
+                    <span className="text-5xl font-bold">{greenDaysStreak}</span>
+                </div>
+                <CardDescription className="mt-2">on-target days</CardDescription>
+            </Card>
+            
+            <Card className="flex flex-col items-center justify-center p-6 text-center">
+                <CardTitle className="mb-2 text-lg">Daily Goal</CardTitle>
+                <div className="flex items-center gap-2">
+                    <Target className="h-10 w-10 text-primary" />
+                    <span className="text-4xl font-bold">{isClient ? userProfile.dailyCalorieGoal.toLocaleString() : userProfile.dailyCalorieGoal}</span>
+                </div>
+                <CardDescription className="mt-2">kcal</CardDescription>
+            </Card>
+            
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">

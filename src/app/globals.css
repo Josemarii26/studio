@@ -93,4 +93,7 @@
   .rdp-day_red {
     @apply border border-status-red bg-status-red/10 shadow-sm;
   }
+  .animated-image {
+      @apply transition-transform duration-300 ease-in-out hover:scale-105;
+  }
 }
