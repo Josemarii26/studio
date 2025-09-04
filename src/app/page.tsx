@@ -9,15 +9,19 @@ import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
+import { DashboardGrid } from '@/components/dashboard-grid';
 import { cn } from '@/lib/utils';
 
 function Header() {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, open } = useSidebar();
   return (
     <header className={cn(
       "sticky top-0 z-40 h-16 border-b bg-background/80 backdrop-blur-sm"
     )}>
-      <div className={cn("flex h-full items-center justify-between gap-4 px-4 sm:px-6")}>
+      <div className={cn(
+        "flex h-full items-center justify-between gap-4 px-4 sm:px-6 transition-all duration-300 ease-in-out",
+        open && "mr-[400px] xl:mr-[450px]"
+      )}>
         <a href="/" className="flex items-center gap-2">
           <NutriTrackLogo className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-headline">
@@ -73,6 +77,9 @@ function DashboardContent({ onAnalysisUpdate }: { onAnalysisUpdate: (data: any) 
           open && "mr-[400px] xl:mr-[450px]"
       )}>
         <DashboardClient onAnalysisUpdate={onAnalysisUpdate} />
+        <div className="mx-auto @container mt-8">
+            <DashboardGrid />
+        </div>
       </main>
   )
 }
