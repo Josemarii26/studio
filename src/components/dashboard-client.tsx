@@ -90,42 +90,43 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-3/4 flex flex-col gap-8 animate-fade-in-up">
-              <Card className="shadow-lg bg-background/50 backdrop-blur-xl">
-                  <CardContent className="p-2 sm:p-4">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        onDayClick={handleDayClick}
-                        className="p-0 [&_td]:p-1"
-                        classNames={{
-                            cell: "w-full h-auto aspect-square p-1",
-                            day: "h-full w-full rounded-lg flex items-center justify-center",
-                            head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
-                            head_row: "flex w-full mt-2",
-                            row: "flex w-full mt-2",
-                            month: "space-y-4 w-full",
-                            months: "w-full",
-                            table: "w-full border-separate border-spacing-0"
-                        }}
-                        modifiers={modifiers}
-                        modifiersClassNames={{
-                          green: 'rdp-day_green',
-                          yellow: 'rdp-day_yellow',
-                          red: 'rdp-day_red',
-                        }}
-                      />
-                  </CardContent>
-              </Card>
-              <CaloriesChart dailyData={dailyData} />
-          </div>
-
-          <div className="lg:w-1/4">
+        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+            <div className="lg:w-3/4 animate-fade-in-up">
+                 <Card className="shadow-lg bg-background/50 backdrop-blur-xl h-full">
+                    <CardContent className="p-2 sm:p-4">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={setDate}
+                            onDayClick={handleDayClick}
+                            className="p-0 [&_td]:p-1"
+                            classNames={{
+                                cell: "w-full h-auto aspect-square p-1",
+                                day: "h-full w-full rounded-lg flex items-center justify-center",
+                                head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] pb-2",
+                                head_row: "flex w-full mt-2",
+                                row: "flex w-full mt-2",
+                                month: "space-y-4 w-full",
+                                months: "w-full",
+                                table: "w-full border-separate border-spacing-0"
+                            }}
+                            modifiers={modifiers}
+                            modifiersClassNames={{
+                            green: 'rdp-day_green',
+                            yellow: 'rdp-day_yellow',
+                            red: 'rdp-day_red',
+                            }}
+                        />
+                    </CardContent>
+                </Card>
+            </div>
+             <div className="lg:w-1/4">
               <ProgressPanel dailyData={dailyData} />
           </div>
-      </div>
+        </div>
+      
+        <CaloriesChart dailyData={dailyData} />
+      
       <div className="mx-auto @container mt-8">
         <DashboardGrid />
       </div>
