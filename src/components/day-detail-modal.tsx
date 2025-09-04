@@ -34,19 +34,12 @@ const mealIcons: { [key: string]: ReactNode } = {
 
 export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDetailModalProps) {
   const { date, meals, totals, observations } = dayData;
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
   
   const macroData = [
     { name: 'Protein', value: totals.protein, fill: 'var(--color-protein)' },
     { name: 'Carbs', value: totals.carbs, fill: 'var(--color-carbs)' },
     { name: 'Fat', value: totals.fat, fill: 'var(--color-fat)' },
   ];
-
-  const totalMacros = totals.protein + totals.carbs + totals.fat;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -82,8 +75,8 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose }: DayDet
                             <CardTitle>Calories</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center gap-2">
-                            <div className="text-5xl font-bold text-primary">{isClient ? totals.calories.toLocaleString() : totals.calories}</div>
-                            <div className="text-muted-foreground">/ {isClient ? userProfile.dailyCalorieGoal.toLocaleString() : userProfile.dailyCalorieGoal} kcal goal</div>
+                            <div className="text-5xl font-bold text-primary">{totals.calories.toLocaleString()}</div>
+                            <div className="text-muted-foreground">/ {userProfile.dailyCalorieGoal.toLocaleString()} kcal goal</div>
                         </CardContent>
                     </Card>
                      <div className="grid grid-rows-3 gap-2">

@@ -9,26 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import type { UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useUserStore } from '@/hooks/use-user-store';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 // Mock data - in a real app, this would be fetched from a server
-const userProfile: UserProfile = {
-  name: 'Alex Doe',
-  age: 30,
-  gender: 'male',
-  weight: 80,
-  height: 180,
-  goalWeight: 75,
-  activityLevel: 'moderate',
-  goal: 'lose',
-  dailyCalorieGoal: 2200,
-  dailyProteinGoal: 150,
-  dailyFatGoal: 70,
-  dailyCarbsGoal: 250,
-  bmi: 24.7,
-};
-
 const performanceStats = {
     currentStreak: 12,
     avgCalories: 2145,
@@ -79,6 +65,20 @@ function StatCard({ icon, label, value, unit }: { icon: React.ReactNode, label: 
 }
 
 export default function ProfilePage() {
+  const { userProfile, isLoaded } = useUserStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !userProfile) {
+        router.push('/onboarding');
+    }
+  },[isLoaded, userProfile, router])
+
+
+  if (!isLoaded || !userProfile) {
+    return <div className="flex min-h-screen items-center justify-center">Loading profile...</div>;
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <ProfileHeader />
@@ -89,7 +89,7 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center gap-4 text-center animate-fade-in-up">
             <Avatar className="h-24 w-24 border-4 border-primary">
               <AvatarImage src="https://picsum.photos/200/200" data-ai-hint="person face" />
-              <AvatarFallback>AD</AvatarFallback>
+              <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
                 <h1 className="text-3xl font-bold font-headline">{userProfile.name}</h1>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                  <div className="space-y-2">
                     <div className="flex justify-between text-lg font-medium"><span>Calories</span><span>{userProfile.dailyCalorieGoal.toLocaleString()} kcal</span></div>
-                    <Progress value={(2145 / userProfile.dailyCalorieGoal) * 100} />
+                    <Progress value={(performanceStats.avgCalories / userProfile.dailyCalorieGoal) * 100} />
                  </div>
                  <div className="space-y-2">
                     <div className="flex justify-between text-sm"><span>Protein</span><span>{userProfile.dailyProteinGoal}g</span></div>

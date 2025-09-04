@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
+import type { UserProfile } from '@/lib/types';
+import { useUserStore } from '@/hooks/use-user-store';
+
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -35,7 +38,7 @@ const STEPS = [
 
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [summary, setSummary] = useState<{ bmi: number, calories: number } | null>(null);
+  const { userProfile, setUserProfile } = useUserStore();
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -59,7 +62,21 @@ export function OnboardingForm() {
     const heightInMeters = data.height / 100;
     const bmi = parseFloat((data.weight / (heightInMeters * heightInMeters)).toFixed(1));
 
-    setSummary({ bmi, calories: dailyCalories });
+    // Basic macro calculation (40% Carbs, 30% Protein, 30% Fat)
+    const dailyProteinGoal = Math.round((dailyCalories * 0.30) / 4);
+    const dailyFatGoal = Math.round((dailyCalories * 0.30) / 9);
+    const dailyCarbsGoal = Math.round((dailyCalories * 0.40) / 4);
+
+    const fullProfile: UserProfile = {
+      ...data,
+      dailyCalorieGoal: dailyCalories,
+      dailyProteinGoal,
+      dailyFatGoal,
+      dailyCarbsGoal,
+      bmi,
+    }
+    
+    setUserProfile(fullProfile);
     setCurrentStep(prev => prev + 1);
   };
 
@@ -165,22 +182,27 @@ export function OnboardingForm() {
                 </div>
             )}
 
-            {currentStep === 3 && summary && (
+            {currentStep === 3 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">Your Personalized Plan</h2>
                     <p className="text-muted-foreground">Based on your info, here are your initial targets.</p>
                     <div className="grid grid-cols-2 gap-4 pt-4">
-                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">Your BMI</div><div className="text-3xl font-bold">{summary.bmi}</div></div>
-                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">Daily Calorie Goal</div><div className="text-3xl font-bold">{summary.calories.toLocaleString()}</div><div className="text-xs">kcal/day</div></div>
+                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">Your BMI</div><div className="text-3xl font-bold">{userProfile.bmi}</div></div>
+                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">Daily Calorie Goal</div><div className="text-3xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</div><div className="text-xs">kcal/day</div></div>
                     </div>
                 </div>
             )}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0}>Back</Button>
-            {currentStep < STEPS.length - 1 && (
+            {currentStep < STEPS.length - 2 && (
                 <Button type="button" onClick={next}>
-                    {currentStep === STEPS.length - 2 ? 'Calculate & Finish' : 'Next Step'}
+                    {'Next Step'}
+                </Button>
+            )}
+             {currentStep === STEPS.length - 2 && (
+                <Button type="button" onClick={next}>
+                    Calculate & Finish
                 </Button>
             )}
             {currentStep === STEPS.length - 1 && (

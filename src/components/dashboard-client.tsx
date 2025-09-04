@@ -9,33 +9,20 @@ import { DayDetailModal } from './day-detail-modal';
 import { addDays, isSameDay } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { DashboardGrid } from './dashboard-grid';
+import { useUserStore } from '@/hooks/use-user-store';
 
-const mockUserProfile: UserProfile = {
-  name: 'Alex Doe',
-  age: 30,
-  gender: 'male',
-  weight: 80,
-  height: 180,
-  goalWeight: 75,
-  activityLevel: 'moderate',
-  goal: 'lose',
-  dailyCalorieGoal: 2200,
-  dailyProteinGoal: 150,
-  dailyFatGoal: 70,
-  dailyCarbsGoal: 250,
-  bmi: 24.7,
-};
-
-const generateMockData = () => {
+const generateMockData = (userProfile: UserProfile | null) => {
     const data: DayData[] = [];
     const startDate = new Date();
+    if (!userProfile) return data;
+
     for(let i = 0; i < 20; i++) {
         const date = addDays(startDate, -i);
-        const calories = 2000 + Math.floor(Math.random() * 800 - 400);
+        const calories = userProfile.dailyCalorieGoal + Math.floor(Math.random() * 800 - 400);
         let status: 'green' | 'yellow' | 'red' = 'green';
-        if (Math.abs(calories - mockUserProfile.dailyCalorieGoal) > 400) {
+        if (Math.abs(calories - userProfile.dailyCalorieGoal) > 400) {
             status = 'red';
-        } else if (Math.abs(calories - mockUserProfile.dailyCalorieGoal) > 200) {
+        } else if (Math.abs(calories - userProfile.dailyCalorieGoal) > 200) {
             status = 'yellow';
         }
         data.push({
@@ -64,16 +51,16 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
-  const [isClient, setIsClient] = useState(false);
-  const [date, setDate] = useState<Date | undefined>();
+  const { userProfile, isLoaded } = useUserStore();
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
 
   useEffect(() => {
-    setIsClient(true);
-    setDate(new Date());
-    setDailyData(generateMockData());
-  }, []);
+    if (isLoaded) {
+      setDailyData(generateMockData(userProfile));
+    }
+  }, [isLoaded, userProfile]);
 
   const handleDayClick = (day: Date) => {
     const dataForDay = dailyData.find(d => isSameDay(d.date, day));
@@ -96,9 +83,9 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
     red: dailyData.filter(d => d.status === 'red').map(d => d.date),
   }), [dailyData]);
   
-  if (!isClient) {
+  if (!isLoaded) {
     // Render a skeleton or null on the server to avoid hydration errors
-    return <div className="min-h-screen"></div>;
+    return <div className="min-h-screen p-8">Loading dashboard...</div>;
   }
 
   return (
@@ -136,17 +123,17 @@ export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
           </div>
 
           <div className="lg:col-span-1">
-              <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
+              <ProgressPanel dailyData={dailyData} />
           </div>
       </div>
       <div className="mx-auto @container mt-8">
         <DashboardGrid />
       </div>
 
-      {selectedDayData && (
+      {selectedDayData && userProfile && (
         <DayDetailModal
           dayData={selectedDayData}
-          userProfile={mockUserProfile}
+          userProfile={userProfile}
           isOpen={!!selectedDayData}
           onClose={() => setSelectedDayData(null)}
         />

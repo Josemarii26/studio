@@ -5,21 +5,17 @@ import type { DayData, UserProfile } from '@/lib/types';
 import { Flame, TrendingUp, Target } from 'lucide-react';
 import { isSameDay, subDays } from 'date-fns';
 import { useMemo, useState, useEffect } from 'react';
+import { useUserStore } from '@/hooks/use-user-store';
 
 interface ProgressPanelProps {
     dailyData: DayData[];
-    userProfile: UserProfile;
 }
 
-export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+export function ProgressPanel({ dailyData }: ProgressPanelProps) {
+    const { userProfile, isLoaded } = useUserStore();
     
     const greenDaysStreak = useMemo(() => {
-        if (!isClient) return 0;
+        if (!isLoaded) return 0;
         const sortedData = [...dailyData].sort((a,b) => b.date.getTime() - a.date.getTime());
         let streak = 0;
         let today = new Date();
@@ -43,7 +39,11 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
             }
         }
         return streak;
-    }, [dailyData, isClient]);
+    }, [dailyData, isLoaded]);
+
+    if (!isLoaded || !userProfile) {
+        return <div>Loading...</div>
+    }
 
 
     return (
@@ -61,7 +61,7 @@ export function ProgressPanel({ dailyData, userProfile }: ProgressPanelProps) {
                 <CardTitle className="mb-2 text-lg">Daily Goal</CardTitle>
                 <div className="flex items-center gap-2">
                     <Target className="h-10 w-10 text-primary" />
-                    <span className="text-4xl font-bold">{isClient ? userProfile.dailyCalorieGoal.toLocaleString() : userProfile.dailyCalorieGoal}</span>
+                    <span className="text-4xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</span>
                 </div>
                 <CardDescription className="mt-2">kcal</CardDescription>
             </Card>
