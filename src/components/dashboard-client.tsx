@@ -1,0 +1,132 @@
+'use client';
+import { useState, useMemo } from 'react';
+import type { DayData, UserProfile } from '@/lib/types';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ProgressPanel } from './progress-panel';
+import { DayDetailModal } from './day-detail-modal';
+import { addDays, format, isSameDay } from 'date-fns';
+
+const mockUserProfile: UserProfile = {
+  name: 'Alex Doe',
+  age: 30,
+  gender: 'male',
+  weight: 80,
+  height: 180,
+  goalWeight: 75,
+  activityLevel: 'moderate',
+  goal: 'lose',
+  dailyCalorieGoal: 2200,
+  dailyProteinGoal: 150,
+  dailyFatGoal: 70,
+  dailyCarbsGoal: 250,
+  bmi: 24.7,
+};
+
+const generateMockData = () => {
+    const data: DayData[] = [];
+    for(let i = 0; i < 20; i++) {
+        const date = addDays(new Date(), -i);
+        const calories = 2000 + Math.floor(Math.random() * 800 - 400);
+        let status: 'green' | 'yellow' | 'red' = 'green';
+        if (Math.abs(calories - mockUserProfile.dailyCalorieGoal) > 400) {
+            status = 'red';
+        } else if (Math.abs(calories - mockUserProfile.dailyCalorieGoal) > 200) {
+            status = 'yellow';
+        }
+        data.push({
+            date,
+            meals: {
+                breakfast: { description: 'Oatmeal with berries and nuts', calories: 450, protein: 15, fat: 15, carbs: 65 },
+                lunch: { description: 'Grilled chicken salad with avocado', calories: 600, protein: 45, fat: 30, carbs: 30 },
+                dinner: { description: `Salmon fillet with quinoa and roasted asparagus`, calories: 750, protein: 50, fat: 35, carbs: 55 },
+                snack: { description: 'Greek yogurt', calories: 200, protein: 20, fat: 10, carbs: 10 },
+            },
+            totals: {
+                calories,
+                protein: 130,
+                fat: 90,
+                carbs: 160,
+            },
+            status,
+            observations: 'A well-balanced day. Protein intake is excellent. Keep it up!',
+        });
+    }
+    return data;
+}
+
+interface DashboardClientProps {
+  onAnalysisUpdate: (data: any) => void;
+}
+
+export function DashboardClient({ onAnalysisUpdate }: DashboardClientProps) {
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [dailyData, setDailyData] = useState<DayData[]>(generateMockData());
+  const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
+
+  const handleDayClick = (day: Date) => {
+    const dataForDay = dailyData.find(d => isSameDay(d.date, day));
+    if (dataForDay) {
+      setSelectedDayData(dataForDay);
+    } else {
+        setSelectedDayData({
+            date: day,
+            meals: {},
+            totals: { calories: 0, protein: 0, fat: 0, carbs: 0 },
+            status: 'yellow',
+            observations: "No data logged for this day. Use the chat to add your meals!"
+        });
+    }
+  };
+
+  const modifiers = useMemo(() => ({
+    green: dailyData.filter(d => d.status === 'green').map(d => d.date),
+    yellow: dailyData.filter(d => d.status === 'yellow').map(d => d.date),
+    red: dailyData.filter(d => d.status === 'red').map(d => d.date),
+  }), [dailyData]);
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-3">
+      <div className="lg:col-span-2">
+        <Card className="shadow-lg overflow-hidden">
+          <CardHeader>
+            <CardTitle>Your Monthly Overview</CardTitle>
+            <CardDescription>Click on a day to see details or log meals.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              onDayClick={handleDayClick}
+              className="p-0 [&_td]:p-0"
+              classNames={{
+                cell: 'w-full',
+                day: "h-20 w-full rounded-lg text-center text-sm p-1",
+              }}
+              modifiers={modifiers}
+              modifiersClassNames={{
+                green: 'green',
+                yellow: 'yellow',
+                red: 'red',
+              }}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="lg:col-span-1">
+        <ProgressPanel dailyData={dailyData} userProfile={mockUserProfile} />
+      </div>
+
+      {selectedDayData && (
+        <DayDetailModal
+          dayData={selectedDayData}
+          userProfile={mockUserProfile}
+          isOpen={!!selectedDayData}
+          onClose={() => setSelectedDayData(null)}
+        />
+      )}
+    </div>
+  );
+}
