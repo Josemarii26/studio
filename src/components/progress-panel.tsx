@@ -20,13 +20,12 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
         let streak = 0;
         let today = new Date();
         
-        // Find first entry that is today or in the past
         const startIndex = sortedData.findIndex(d => isSameDay(d.date, today) || d.date < today);
         if (startIndex === -1) return 0;
         
         let currentDate = sortedData[startIndex].date;
         if (!isSameDay(currentDate, today) && !isSameDay(currentDate, subDays(today,1))) {
-             return 0; // No data for today or yesterday, streak is 0
+             return 0; 
         }
         
         for (let i = startIndex; i < sortedData.length; i++) {
@@ -53,7 +52,7 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     }
 
     return (
-        <div className="grid gap-4 grid-cols-1">
+        <div className="flex flex-col h-full gap-4">
             <Card className="flex flex-col items-center justify-center p-6 text-center animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                 <CardTitle className="mb-2 text-lg">Streak</CardTitle>
                 <div className="flex items-center gap-2">
@@ -81,7 +80,7 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
                 <CardDescription className="mt-2">Body Mass Index</CardDescription>
             </Card>
             
-            <Card className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <Card className="animate-fade-in-up flex-1" style={{ animationDelay: '0.4s' }}>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5" />
