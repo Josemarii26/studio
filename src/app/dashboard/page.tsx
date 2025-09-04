@@ -73,27 +73,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (authLoading) {
-      // Wait until Firebase auth state is loaded
       return;
     }
     if (!user) {
-      // If no user, redirect to login
       router.push('/login');
       return;
     }
-    // Only check for profile once auth is loaded and user is present.
-    if (profileLoaded) {
-      // If profile is loaded and it's null, then onboard.
-      if (!userProfile) {
-        router.push('/onboarding');
-      }
-      // If profile exists, stay on dashboard.
+    if (profileLoaded && !userProfile) {
+      router.push('/onboarding');
     }
   }, [user, authLoading, profileLoaded, userProfile, router]);
 
 
   const handleAnalysisUpdate = (data: any) => {
-    // In a real app, this would update a global state or database
     console.log('New analysis data:', data);
     setAnalysisData(data);
   };
@@ -104,7 +96,7 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full flex-col bg-background">
+      <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <Header />
         <div className="flex flex-1">
             <DashboardContent onAnalysisUpdate={handleAnalysisUpdate} />

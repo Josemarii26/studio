@@ -51,8 +51,8 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     }
 
     return (
-        <div className="grid gap-4 grid-cols-1">
-            <Card className="p-6 text-center animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <div className="grid gap-6 grid-cols-1 animate-fade-in-up">
+            <Card className="p-6 text-center shadow-lg">
                 <CardTitle className="mb-2 text-lg">Streak</CardTitle>
                 <div className="flex items-center justify-center gap-2">
                     <Flame className="h-10 w-10 text-destructive" />
@@ -61,7 +61,7 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
                 <CardDescription className="mt-2">on-target days</CardDescription>
             </Card>
             
-            <Card className="p-6 text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <Card className="p-6 text-center shadow-lg">
                 <CardTitle className="mb-2 text-lg">Daily Goal</CardTitle>
                 <div className="flex items-center justify-center gap-2">
                     <Target className="h-10 w-10 text-primary" />
@@ -70,7 +70,7 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
                 <CardDescription className="mt-2">kcal</CardDescription>
             </Card>
             
-            <Card className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5" />

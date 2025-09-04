@@ -13,8 +13,6 @@ const gridItems = [
     { type: 'image', src: 'https://picsum.photos/600/400', hint: 'vegetables variety', className: '' },
     { type: 'image', src: 'https://picsum.photos/600/800', hint: 'hydration water', className: 'row-span-2' },
     { type: 'stat', title: 'Goal', value: 'Lose Weight' },
-    { type: 'image', src: 'https://picsum.photos/800/600', hint: 'running sunset', className: 'col-span-2 row-span-2' },
-    { type: 'image', src: 'https://picsum.photos/600/600', hint: 'healthy breakfast', className: '' },
 ];
 
 
@@ -26,34 +24,34 @@ export function DashboardGrid() {
     }, []);
 
     if (!isClient) {
-        return null;
+        return null; // Or a loader
     }
 
-  return (
-    <div className="masonry-grid animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-        {gridItems.map((item, index) => (
-            <Card key={index} className={`masonry-item overflow-hidden ${item.className || ''}`}>
-                <CardContent className="p-0 relative">
-                   {item.type === 'image' ? (
-                        <div className="relative w-full h-full aspect-[4/3] overflow-hidden">
-                            <Image
-                                src={item.src}
-                                alt={item.hint}
-                                data-ai-hint={item.hint}
-                                fill
-                                className="object-cover animated-image"
-                            />
-                            <div className="absolute inset-0 bg-black/20"></div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/50 aspect-square">
-                            <h3 className="text-sm text-muted-foreground">{item.title}</h3>
-                            <p className="text-3xl font-bold text-primary">{item.value}</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        ))}
-    </div>
-  );
+    return (
+        <div className="masonry-grid animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            {gridItems.map((item, index) => (
+                <Card key={index} className="masonry-item overflow-hidden shadow-lg border-transparent hover:border-primary transition-all duration-300">
+                    <CardContent className="p-0 relative">
+                    {item.type === 'image' ? (
+                            <div className="relative w-full h-full aspect-[4/3] overflow-hidden">
+                                <Image
+                                    src={item.src}
+                                    alt={item.hint}
+                                    data-ai-hint={item.hint}
+                                    fill
+                                    className="object-cover animated-image"
+                                />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/50 aspect-square">
+                                <h3 className="text-sm text-muted-foreground">{item.title}</h3>
+                                <p className="text-3xl font-bold text-primary">{item.value}</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
 }
