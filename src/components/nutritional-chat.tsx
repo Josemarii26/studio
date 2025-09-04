@@ -95,7 +95,7 @@ export function NutritionalChat({ onAnalysisUpdate }: NutritionalChatProps) {
           <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
         </div>
       </CardHeader>
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex flex-1 flex-col min-h-0">
         <ScrollArea className="flex-1 p-4">
             <div className="space-y-6 pr-4">
               {messages.map(message => (

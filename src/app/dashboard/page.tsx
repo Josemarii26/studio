@@ -100,7 +100,7 @@ export default function DashboardPage() {
         <Header />
         <div className="flex flex-1">
             <DashboardContent onAnalysisUpdate={handleAnalysisUpdate} />
-            <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l mt-16">
+            <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
                 <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
             </Sidebar>
         </div>
