@@ -92,6 +92,12 @@
     animation: fade-in-up 0.5s ease-out forwards;
     opacity: 0;
   }
+  .bg-grid-pattern {
+    background-image:
+        linear-gradient(to right, hsl(var(--primary) / 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+    }
 }
 
 

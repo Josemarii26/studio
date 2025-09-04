@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -185,7 +186,7 @@ export function OnboardingForm() {
             {currentStep === STEPS.length - 1 && (
                 <Button type="button" onClick={() => {
                     toast({ title: "Onboarding Complete!", description: "Redirecting to your dashboard."});
-                    setTimeout(() => window.location.href = '/', 1500);
+                    setTimeout(() => window.location.href = '/dashboard', 1500);
                 }}>Go to Dashboard</Button>
             )}
           </CardFooter>
