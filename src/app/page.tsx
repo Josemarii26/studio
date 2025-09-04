@@ -8,9 +8,10 @@ import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
-import { SidebarProvider, Sidebar, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 
 function Header() {
+  const { toggleSidebar } = useSidebar();
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
       <a href="/" className="flex items-center gap-2">
@@ -20,12 +21,10 @@ function Header() {
         </h1>
       </a>
       <div className="flex items-center gap-4">
-        <SidebarTrigger>
-            <Button variant="outline">
-                <MessageSquare className="mr-2" />
-                Chat
-            </Button>
-        </SidebarTrigger>
+        <Button variant="outline" onClick={() => toggleSidebar()}>
+          <MessageSquare className="mr-2" />
+          Chat
+        </Button>
         <a href="/onboarding">
           <Avatar className="cursor-pointer">
               <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="person face" className="animated-image" />
@@ -55,7 +54,9 @@ export default function Home() {
             <Sidebar side="right" className="w-[400px] xl:w-[450px]">
                 <NutritionalChat onAnalysisUpdate={handleAnalysisUpdate} />
             </Sidebar>
-            <DashboardGrid />
+            <main className="flex-1 p-4 md:p-6 lg:p-8">
+              <DashboardGrid />
+            </main>
         </div>
       </div>
     </SidebarProvider>

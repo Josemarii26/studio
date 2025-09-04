@@ -58,7 +58,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true,
+      defaultOpen = false,
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -214,11 +214,15 @@ const Sidebar = React.forwardRef<
         </Sheet>
       )
     }
+    
+    if(!effectiveOpen) {
+      return null;
+    }
 
     return (
       <div
         ref={ref}
-        className={cn("group peer hidden md:block text-sidebar-foreground", !effectiveOpen && "hidden")}
+        className={cn("group peer hidden md:block text-sidebar-foreground")}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -227,11 +231,10 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-0 transition-[left,right,width] ease-linear md:flex",
+            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
             side === "left"
               ? "left-0"
               : "right-0",
-             effectiveOpen ? "w-[--sidebar-width]" : "w-0",
             className
           )}
         >
@@ -266,10 +269,7 @@ const SidebarTrigger = React.forwardRef<
         toggleSidebar()
       }}
       {...props}
-    >
-      <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+    />
   )
 })
 SidebarTrigger.displayName = "SidebarTrigger"

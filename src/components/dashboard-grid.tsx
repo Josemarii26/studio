@@ -30,32 +30,30 @@ export function DashboardGrid() {
     }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="masonry-grid">
-            {gridItems.map((item, index) => (
-                <Card key={index} className={`masonry-item overflow-hidden ${item.className || ''}`}>
-                    <CardContent className="p-0 relative">
-                       {item.type === 'image' ? (
-                            <div className="relative w-full h-full overflow-hidden">
-                                <Image
-                                    src={item.src}
-                                    alt={item.hint}
-                                    data-ai-hint={item.hint}
-                                    fill
-                                    className="object-cover transition-transform duration-500 ease-in-out hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-black/20"></div>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/50">
-                                <h3 className="text-sm text-muted-foreground">{item.title}</h3>
-                                <p className="text-3xl font-bold text-primary">{item.value}</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    </main>
+    <div className="masonry-grid">
+        {gridItems.map((item, index) => (
+            <Card key={index} className={`masonry-item overflow-hidden ${item.className || ''}`}>
+                <CardContent className="p-0 relative">
+                   {item.type === 'image' ? (
+                        <div className="relative w-full h-full aspect-[4/3] overflow-hidden">
+                            <Image
+                                src={item.src}
+                                alt={item.hint}
+                                data-ai-hint={item.hint}
+                                fill
+                                className="object-cover transition-transform duration-500 ease-in-out hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/20"></div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/50 aspect-square">
+                            <h3 className="text-sm text-muted-foreground">{item.title}</h3>
+                            <p className="text-3xl font-bold text-primary">{item.value}</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        ))}
+    </div>
   );
 }
