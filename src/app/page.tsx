@@ -8,7 +8,7 @@ import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarHeader, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
 
 export default function Home() {
   const [analysisData, setAnalysisData] = useState<any>(null);
@@ -31,12 +31,12 @@ export default function Home() {
           </a>
           <div className="flex items-center gap-4">
             <SidebarTrigger asChild>
-                <Button variant="outline">
-                  <span>
-                    <MessageSquare />
-                    Chat
-                  </span>
-                </Button>
+              <Button variant="outline">
+                <span className="flex items-center gap-2">
+                  <MessageSquare />
+                  Chat
+                </span>
+              </Button>
             </SidebarTrigger>
             <Avatar className="cursor-pointer">
               <a href="/onboarding">
