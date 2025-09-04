@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
   output: {schema: NutritionalChatAnalysisOutputSchema},
   prompt: `You are a nutrition expert. Your first and most important task is to respond ONLY in English. All titles, units, and observations must be in English, regardless of the user's input language.
 
-Analyze the user's description of their meals for the day.
+Analyze the user's description of their meals for the day. To ensure accurate parsing, you MUST identify sections labeled with the keywords "Breakfast", "Lunch", "Dinner", or "Snack". If the user's description does not contain at least one of these keywords, you should respond with an error message stating that you couldn't find any meals and that they should label them clearly.
 
 Your response must include:
 1. A detailed breakdown of each meal (Breakfast, Lunch, Dinner, Snack) with its estimated calories, protein, fat, and carbohydrates.

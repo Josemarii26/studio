@@ -17,6 +17,7 @@ export function parseNutritionalAnalysis(
   const lines = analysisText.split('\n').filter(line => line.trim() !== '');
 
   // Regex for parsing each part of the AI's response
+  // This is now stricter to only match the exact meal types.
   const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack)\*?\*?:\s*(.*)/i;
   const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\|\s*([\d,.]*)\s*g fat\s*\|\s*([\d,.]*)\s*g carbohydrates/i;
   
@@ -51,10 +52,17 @@ export function parseNutritionalAnalysis(
   if (obsStartIndex !== -1) {
     // Get the first line, removing the "Observations:" part
     const firstObsLine = lines[obsStartIndex].replace(observationsRegex, '').trim();
-    const restObsLines = lines.slice(obsStartIndex + 1);
-    
-    // Join them all together
-    observations = [firstObsLine, ...restObsLines].join('\n').trim();
+    // Get all the subsequent lines until the next section or end of text
+    const subsequentLines = [];
+    for (let i = obsStartIndex + 1; i < lines.length; i++) {
+        // Stop if we hit another major section like "Totals"
+        if (/^\*?\*?Totals for the day/.test(lines[i])) {
+            break;
+        }
+        subsequentLines.push(lines[i]);
+    }
+
+    observations = [firstObsLine, ...subsequentLines].join('\n').trim();
   }
 
 
