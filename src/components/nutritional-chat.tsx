@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { isSameDay, startOfToday } from 'date-fns';
+import { loadChatHistory, saveChatHistory } from '@/firebase/firestore';
 
 const formSchema = z.object({
   message: z.string().min(10, { message: 'Please describe your meals in more detail.' }),
@@ -76,11 +77,11 @@ const KeywordChecker = ({ message }: { message: string }) => {
 
 export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMessages }: NutritionalChatProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const chatHistoryKey = user ? `chatHistory-${user.uid}` : null;
   
   const todaysData = dailyData.find(d => d.date && isSameDay(d.date, startOfToday()));
   const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0;
@@ -92,42 +93,38 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
 
   const messageValue = form.watch('message');
 
-
   const resetToInitialMessage = () => {
     setMessages([
         { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
     ]);
   }
 
+  // Load chat history from Firestore on mount
   useEffect(() => {
-    if (chatHistoryKey) {
-        const storedHistory = localStorage.getItem(chatHistoryKey);
-        if (storedHistory) {
-            try {
-                const parsedHistory = JSON.parse(storedHistory);
-                // Make sure we have a valid array before setting state
-                if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
-                     setMessages(parsedHistory.map((msg: any) => ({ ...msg, timestamp: new Date(msg.timestamp) })));
-                } else {
-                    resetToInitialMessage();
-                }
-            } catch (error) {
-                console.error("Failed to parse chat history:", error);
+    async function loadHistory() {
+        if (user) {
+            setIsHistoryLoading(true);
+            const history = await loadChatHistory(user.uid);
+            if (history.length > 0) {
+                setMessages(history);
+            } else {
                 resetToInitialMessage();
             }
-        } else {
-            resetToInitialMessage();
+            setIsHistoryLoading(false);
         }
     }
+    loadHistory();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatHistoryKey]);
+  }, [user]);
 
+  // Save chat history to Firestore whenever it changes
   useEffect(() => {
-    if (chatHistoryKey && messages.length > 0) {
-      localStorage.setItem(chatHistoryKey, JSON.stringify(messages));
+    if (user && !isHistoryLoading && messages.length > 0) {
+        saveChatHistory(user.uid, messages);
     }
-  }, [messages, chatHistoryKey]);
+  }, [messages, user, isHistoryLoading]);
 
+  // Auto-scroll to bottom of chat
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
     if (viewport) {
@@ -201,6 +198,11 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
       </CardHeader>
       <CardContent className="flex-1 p-4 flex flex-col min-h-0">
           <ScrollArea className="flex-1 -mr-4" ref={scrollAreaRef}>
+            {isHistoryLoading ? (
+                <div className="flex h-full items-center justify-center">
+                    <Loader className="h-6 w-6 animate-spin text-primary" />
+                </div>
+            ) : (
               <div className="space-y-6 pr-4">
                 {messages.map(message => (
                   <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
@@ -244,6 +246,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                   </div>
                 )}
               </div>
+            )}
           </ScrollArea>
       </CardContent>
       <CardFooter className="border-t p-4">
@@ -283,7 +286,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                     </FormItem>
                   )}
                 />
-                <Button type="submit" size="icon" disabled={isLoading}>
+                <Button type="submit" size="icon" disabled={isLoading || isHistoryLoading}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>

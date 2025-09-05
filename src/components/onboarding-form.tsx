@@ -15,6 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 
 const formSchema = z.object({
@@ -41,6 +42,7 @@ const STEPS = [
 
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, setUserProfile } = useUserStore();
   const router = useRouter();
   
@@ -49,7 +51,8 @@ export function OnboardingForm() {
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
 
-  const processForm = (data: FormData) => {
+  const processForm = async (data: FormData) => {
+    setIsSubmitting(true);
     let bmr;
     if (data.gender === 'male') {
       bmr = 88.362 + (13.397 * data.weight) + (4.799 * data.height) - (5.677 * data.age);
@@ -81,7 +84,8 @@ export function OnboardingForm() {
       photoUrl: null, // Initialize photoUrl as null
     }
     
-    setUserProfile(fullProfile);
+    await setUserProfile(fullProfile);
+    setIsSubmitting(false);
     setCurrentStep(prev => prev + 1);
   };
 
@@ -216,12 +220,13 @@ export function OnboardingForm() {
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0}>Back</Button>
             {currentStep < STEPS.length - 2 && (
-                <Button type="button" onClick={next}>
+                <Button type="button" onClick={next} disabled={isSubmitting}>
                     {'Next Step'}
                 </Button>
             )}
              {currentStep === STEPS.length - 2 && (
-                <Button type="button" onClick={next}>
+                <Button type="button" onClick={next} disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Calculate & Finish
                 </Button>
             )}

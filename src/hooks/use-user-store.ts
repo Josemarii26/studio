@@ -1,59 +1,60 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { UserProfile } from '@/lib/types';
 import { useAuth } from './use-auth';
+import { loadUserProfile, saveUserProfile } from '@/firebase/firestore';
 
 // This hook now manages the user's *profile data*, which is separate from their *auth state*.
-// The profile data is stored in localStorage, keyed by the user's UID.
+// The profile data is now fetched from and saved to Firestore.
 
 export function useUserStore() {
   const { user } = useAuth();
   const [userProfile, setUserProfileState] = useState<UserProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Effect to load profile from localStorage when user object changes
+  // Effect to load profile from Firestore when user object changes
   useEffect(() => {
-    if (user) {
-      try {
-        const item = window.localStorage.getItem(`userProfile-${user.uid}`);
-        if (item) {
-          setUserProfileState(JSON.parse(item));
-        } else {
-          // If no profile exists for this user, it means they need to go through onboarding.
-          setUserProfileState(null);
+    const loadProfile = async () => {
+      if (user) {
+        setIsLoaded(false); // Start loading
+        try {
+          const profile = await loadUserProfile(user.uid);
+          setUserProfileState(profile);
+        } catch (error) {
+          console.error("Failed to load userProfile from Firestore", error);
+          setUserProfileState(null); // Fallback to null on error
+        } finally {
+          setIsLoaded(true); // Finish loading
         }
-      } catch (error) {
-        console.error("Failed to parse userProfile from localStorage", error);
-        setUserProfileState(null); // Fallback to null on error
-      } finally {
+      } else {
+        // If there is no user, there's no profile to load.
+        setUserProfileState(null);
         setIsLoaded(true);
       }
-    } else {
-      // If there is no user, there's no profile to load.
-      setUserProfileState(null);
-      setIsLoaded(true);
-    }
+    };
+    
+    loadProfile();
   }, [user]);
 
-  // Function to save the profile to localStorage
-  const setUserProfile = (profile: UserProfile | null) => {
-    if (user) {
+  // Function to save the profile to Firestore
+  const setUserProfile = useCallback(async (profile: UserProfile | null) => {
+    if (user && profile) {
       try {
-        if (profile) {
-          window.localStorage.setItem(`userProfile-${user.uid}`, JSON.stringify(profile));
-        } else {
-          window.localStorage.removeItem(`userProfile-${user.uid}`);
-        }
+        await saveUserProfile(user.uid, profile);
         setUserProfileState(profile);
       } catch (error) {
-        console.error("Failed to save userProfile to localStorage", error);
+        console.error("Failed to save userProfile to Firestore", error);
       }
+    } else if (user && !profile) {
+        // Handle profile deletion if needed, though not a current feature.
+        // For now, we'll just clear the state.
+        setUserProfileState(null);
     } else {
         console.error("Cannot set user profile: no authenticated user.")
     }
-  };
+  }, [user]);
 
   return { userProfile, setUserProfile, isLoaded };
 }
