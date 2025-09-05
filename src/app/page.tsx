@@ -38,22 +38,29 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative text-center py-20 sm:py-32 px-4 flex flex-col items-center justify-center overflow-hidden">
+        <section className="relative py-20 sm:py-32 px-4 overflow-hidden">
              <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
-             <div className="relative z-10">
-                <h1 className="text-4xl md:text-6xl font-extrabold mb-4 animate-fade-in-up font-headline" style={{ animationDelay: '0.1s' }}>
-                    Transform Your Nutrition with AI
-                </h1>
-                <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                    Stop guessing. Start tracking. NutriTrackAI analyzes your meals to give you personalized insights and help you reach your health goals faster.
-                </p>
-                <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                    <Button asChild size="lg">
-                        <Link href="/login">
-                            Start Your Journey Free <ArrowRight className="ml-2" />
-                        </Link>
-                    </Button>
+             <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
+                <div className="md:w-2/3 text-center md:text-left">
+                    <h1 className="text-4xl md:text-6xl font-extrabold mb-4 animate-fade-in-up font-headline" style={{ animationDelay: '0.1s' }}>
+                        Transform Your Nutrition with AI
+                    </h1>
+                    <p className="max-w-2xl mx-auto md:mx-0 text-lg md:text-xl text-muted-foreground mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        Stop guessing. Start tracking. NutriTrackAI analyzes your meals to give you personalized insights and help you reach your health goals faster.
+                    </p>
+                    <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                        <Button asChild size="lg">
+                            <Link href="/login">
+                                Start Your Journey Free <ArrowRight className="ml-2" />
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+                <div className="md:w-1/3 w-full max-w-sm md:max-w-none animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                    <div className="relative w-full aspect-square">
+                        <Image src="https://picsum.photos/600/600" alt="Healthy food" data-ai-hint="healthy food" className="rounded-2xl shadow-2xl" layout="fill" objectFit="cover" />
+                    </div>
                 </div>
             </div>
         </section>
