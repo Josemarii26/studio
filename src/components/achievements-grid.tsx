@@ -137,7 +137,7 @@ export function AchievementsGrid({ dailyData, userProfile }: { dailyData: DayDat
 
 
     return (
-        <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-6 animate-fade-in-up">
+        <div className="grid grid-cols-1 @[800px]:grid-cols-2 gap-6 animate-fade-in-up">
             <AchievementCategory 
                 title="Bronze Achievements"
                 achievements={groupedAchievements.bronze}

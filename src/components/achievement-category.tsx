@@ -22,13 +22,13 @@ const tierStyles: { [key in AchievementTier]: { card: string, iconContainer: str
         title: 'text-slate-400'
     },
     gold: { 
-        card: 'border-yellow-500/40 bg-yellow-900/10',
+        card: 'border-yellow-500/40 bg-yellow-950/10',
         iconContainer: 'bg-yellow-500/10',
         icon: 'text-yellow-500',
         title: 'text-yellow-500',
     },
     special: { 
-        card: 'border-primary/40 bg-primary-950/10 animated-special-border',
+        card: 'border-primary/40 bg-primary/10 animated-special-border',
         iconContainer: 'bg-primary/10',
         icon: 'text-primary',
         title: 'text-primary',
