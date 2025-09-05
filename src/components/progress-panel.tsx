@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { DayData } from '@/lib/types';
 import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
-import { isSameDay, subDays } from 'date-fns';
+import { isSameDay, subDays, startOfToday } from 'date-fns';
 import { useMemo } from 'react';
 import { useUserStore } from '@/hooks/use-user-store';
 
@@ -16,25 +16,36 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     
     const greenDaysStreak = useMemo(() => {
         if (!isLoaded || !dailyData || dailyData.length === 0) return 0;
+        
         const sortedData = [...dailyData].sort((a,b) => b.date.getTime() - a.date.getTime());
         let streak = 0;
-        let today = new Date();
+        let today = startOfToday();
         
-        const startIndex = sortedData.findIndex(d => d.date && (isSameDay(d.date, today) || d.date < today));
-        if (startIndex === -1) return 0;
+        // Find the starting point for the streak check (either today or the most recent logged day)
+        const startIndex = sortedData.findIndex(d => d.date && d.date <= today);
+        if (startIndex === -1) return 0; // No data on or before today
         
         let currentDate = sortedData[startIndex].date;
-        if (!currentDate || (!isSameDay(currentDate, today) && !isSameDay(currentDate, subDays(today,1)))) {
+
+        // A streak can only be current if the last log was for today or yesterday.
+        if (!isSameDay(currentDate, today) && !isSameDay(currentDate, subDays(today,1))) {
              return 0; 
         }
         
+        // Iterate backwards from the starting point
         for (let i = startIndex; i < sortedData.length; i++) {
             const day = sortedData[i];
-            if (day.date && isSameDay(day.date, currentDate) && day.status === 'green') {
-                streak++;
-                currentDate = subDays(currentDate, 1);
+            // Check if the day from our data matches the day we're expecting in the streak
+            if (day.date && isSameDay(day.date, currentDate)) {
+                if (day.status === 'green') {
+                    streak++;
+                    currentDate = subDays(currentDate, 1); // Move to the previous day for the next check
+                } else {
+                    break; // Streak broken
+                }
             } else {
-                break;
+                // If the expected day is missing from the data, the streak is broken
+                break; 
             }
         }
         return streak;
