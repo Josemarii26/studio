@@ -188,7 +188,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
           <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
         </div>
       </CardHeader>
-      <div className="flex-1 p-4 min-h-0">
+      <CardContent className="flex-1 p-4 overflow-hidden">
           <ScrollArea className="h-full" ref={scrollAreaRef}>
               <div className="space-y-6 pr-4">
                 {messages.map(message => (
@@ -224,7 +224,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                 )}
               </div>
           </ScrollArea>
-      </div>
+      </CardContent>
       <CardFooter className="border-t p-4">
         {hasSuccessfulLogForToday ? (
             <div className="w-full text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg flex items-center gap-2 justify-center">
@@ -273,5 +273,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     </div>
   );
 }
+
+    
 
     
