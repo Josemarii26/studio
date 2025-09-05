@@ -191,7 +191,7 @@ export default function DashboardPage() {
             <DashboardContent>
               <DashboardClient dailyData={dailyData} />
             </DashboardContent>
-            <Sidebar side="right" className="w-[400px] xl:w-[450px] border-l">
+            <Sidebar side="right" className="border-l">
                 <NutritionalChat 
                     onAnalysisUpdate={handleAnalysisUpdate} 
                     dailyData={dailyData}

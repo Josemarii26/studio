@@ -231,7 +231,7 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex mt-16",
+            "fixed top-16 h-[calc(100vh-4rem)] z-10 hidden w-[400px] xl:w-[450px] transition-[left,right,width] ease-linear md:flex",
             side === "left"
               ? "left-0"
               : "right-0",
