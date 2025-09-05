@@ -1,12 +1,12 @@
 
-// This configuration is public and safe to use in the client-side.
-// It's sourced from the Firebase project settings.
+// This configuration is now sourced from environment variables
+// for better security and build-time configuration.
 export const firebaseConfig = {
-  projectId: "nutritrackai-tfxng",
-  appId: "1:673788699862:web:6f6fa002571bc29dd95577",
-  storageBucket: "nutritrackai-tfxng.firebasestorage.app",
-  apiKey: "AIzaSyBvGccscK_xTE4Voa54V2XUglmL82bvy2c",
-  authDomain: "nutritrackai-tfxng.firebaseapp.com",
-  messagingSenderId: "673788699862",
-  measurementId: "G-XXXXXXXXXX"
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
 };
