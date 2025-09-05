@@ -109,6 +109,15 @@
     .animate-pulse-ring {
       animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+    @keyframes animated-border-glow {
+        0% { border-color: hsl(var(--primary) / 0.5); }
+        50% { border-color: hsl(var(--accent) / 0.5); }
+        100% { border-color: hsl(var(--primary) / 0.5); }
+    }
+    .animated-special-border {
+        border-width: 1px;
+        animation: animated-border-glow 3s linear infinite;
+    }
 }
 
 
