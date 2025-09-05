@@ -10,25 +10,25 @@ import { cn } from '@/lib/utils';
 
 const tierStyles: { [key in AchievementTier]: { card: string, iconContainer: string, icon: string, title: string } } = {
     bronze: { 
-        card: 'border-amber-700/30 bg-amber-950/10',
+        card: 'border-amber-700/30',
         iconContainer: 'bg-amber-700/10',
         icon: 'text-amber-600',
         title: 'text-amber-600',
     },
     silver: { 
-        card: 'border-slate-400/40 bg-slate-900/10',
+        card: 'border-slate-400/40',
         iconContainer: 'bg-slate-400/10',
         icon: 'text-slate-400',
         title: 'text-slate-400'
     },
     gold: { 
-        card: 'border-yellow-500/40 bg-yellow-950/10',
+        card: 'border-yellow-500/40',
         iconContainer: 'bg-yellow-500/10',
         icon: 'text-yellow-500',
         title: 'text-yellow-500',
     },
     special: { 
-        card: 'border-primary/40 bg-primary/10 animated-special-border',
+        card: 'border-primary/40 animated-special-border',
         iconContainer: 'bg-primary/10',
         icon: 'text-primary',
         title: 'text-primary',
@@ -85,7 +85,7 @@ export function AchievementCategory({ title, achievements, tier }: { title: stri
     const styles = tierStyles[tier];
 
     return (
-        <Card className={cn("flex flex-col", styles.card)}>
+        <Card className={cn("flex flex-col bg-card/50 backdrop-blur-sm", styles.card)}>
             <CardHeader>
                 <div className="flex items-center gap-3">
                     <div className={cn('h-10 w-10 flex items-center justify-center rounded-lg', styles.iconContainer, styles.icon)}>
