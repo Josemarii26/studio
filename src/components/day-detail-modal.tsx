@@ -32,6 +32,8 @@ const mealIcons: { [key: string]: ReactNode } = {
   snack: <Cookie className="h-5 w-5 mr-2 text-muted-foreground" />,
 };
 
+const MEAL_ORDER: (keyof DayData['meals'])[] = ['breakfast', 'lunch', 'snack', 'dinner'];
+
 
 export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToChat }: DayDetailModalProps) {
   const { date, meals, totals, observations, creatineTaken, proteinTaken } = dayData;
@@ -133,27 +135,34 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToCh
         <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold">Logged Meals</h3>
             <div className="space-y-4">
-              {hasData ? Object.entries(meals).map(([mealType, mealData]) => mealData && (
-                <Card key={mealType}>
-                    <CardHeader className="p-4 flex flex-row items-center justify-between">
-                        <div className="flex items-center">
-                            {mealIcons[mealType]}
-                            <CardTitle className="text-base capitalize">{mealType}</CardTitle>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                            <span className="font-semibold">{mealData.calories} kcal</span>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                        <p className="text-muted-foreground mb-2">{mealData.description}</p>
-                        <div className="text-xs text-muted-foreground flex items-center gap-4">
-                            <span><span className="font-medium text-foreground">{mealData.protein}g</span> Protein</span>
-                            <span><span className="font-medium text-foreground">{mealData.fat}g</span> Fat</span>
-                            <span><span className="font-medium text-foreground">{mealData.carbs}g</span> Carbs</span>
-                        </div>
-                    </CardContent>
-                </Card>
-              )) : (
+              {hasData ? (
+                MEAL_ORDER.map(mealType => {
+                    const mealData = meals[mealType];
+                    if (!mealData) return null;
+                    
+                    return (
+                        <Card key={mealType}>
+                            <CardHeader className="p-4 flex flex-row items-center justify-between">
+                                <div className="flex items-center">
+                                    {mealIcons[mealType]}
+                                    <CardTitle className="text-base capitalize">{mealType}</CardTitle>
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                    <span className="font-semibold">{mealData.calories} kcal</span>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <p className="text-muted-foreground mb-2">{mealData.description}</p>
+                                <div className="text-xs text-muted-foreground flex items-center gap-4">
+                                    <span><span className="font-medium text-foreground">{mealData.protein}g</span> Protein</span>
+                                    <span><span className="font-medium text-foreground">{mealData.fat}g</span> Fat</span>
+                                    <span><span className="font-medium text-foreground">{mealData.carbs}g</span> Carbs</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })
+              ) : (
                 <div className="text-center text-muted-foreground py-8">No meals logged for this day.</div>
               )}
             </div>
