@@ -59,6 +59,9 @@ export default function RootLayout({
       <head>
         <title>NutriTrackAI</title>
         <meta name="description" content="Track your nutrition with the power of AI." />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#34d399" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
