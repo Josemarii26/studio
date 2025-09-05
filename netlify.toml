@@ -1,0 +1,26 @@
+
+# This file configures the build and deployment settings for Netlify.
+[build]
+  # This section configures the build command and publish directory.
+  # These are likely already set in the Netlify UI, but it's good practice to have them here.
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # This tells Netlify's Next.js runtime to not perform its own Firebase validation,
+  # as we are handling it manually.
+  NEXT_AOT_SKIP_FIREBASE_VALIDATION = "true"
+
+# This section configures the secrets scanning feature.
+[build.processing.secrets]
+  # We are telling the scanner to specifically ignore these keys.
+  # It will no longer stop the build when it finds them.
+  omit_keys = [
+    "NEXT_PUBLIC_FIREBASE_API_KEY",
+    "NEXT_PUBLIC_FIREBASE_APP_ID",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
+    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"
+  ]
