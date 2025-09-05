@@ -188,44 +188,42 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
           <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 p-4 overflow-y-auto">
-          <div className="h-full">
-            <ScrollArea className="h-full" ref={scrollAreaRef}>
-                <div className="space-y-6 pr-4">
-                  {messages.map(message => (
-                    <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
-                      {message.role !== 'user' && (
-                        <Avatar className="h-8 w-8 border bg-background">
-                          <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div className={cn(
-                        'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
-                        message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
-                        message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
-                        )}>
-                        <SimpleMarkdown text={message.content} />
-                      </div>
-                      {message.role === 'user' && (
-                        <Avatar className="h-8 w-8 border bg-background">
-                          <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex items-start gap-3">
+      <CardContent className="flex-1 p-4 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 -mr-4" ref={scrollAreaRef}>
+              <div className="space-y-6 pr-4">
+                {messages.map(message => (
+                  <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
+                    {message.role !== 'user' && (
                       <Avatar className="h-8 w-8 border bg-background">
                         <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
                       </Avatar>
-                      <div className="rounded-lg p-3 text-sm bg-muted">
-                          <Loader className="h-5 w-5 animate-spin text-primary" />
-                      </div>
+                    )}
+                    <div className={cn(
+                      'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
+                      message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                      message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
+                      )}>
+                      <SimpleMarkdown text={message.content} />
                     </div>
-                  )}
-                </div>
-            </ScrollArea>
-          </div>
+                    {message.role === 'user' && (
+                      <Avatar className="h-8 w-8 border bg-background">
+                        <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-8 w-8 border bg-background">
+                      <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-lg p-3 text-sm bg-muted">
+                        <Loader className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  </div>
+                )}
+              </div>
+          </ScrollArea>
       </CardContent>
       <CardFooter className="border-t p-4">
         {hasSuccessfulLogForToday ? (
@@ -250,8 +248,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                         <Textarea
                           {...field}
                           placeholder="Describe your meals..."
-                          rows={1}
-                          className="min-h-0 resize-none"
+                          className="resize-none"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                               e.preventDefault();
