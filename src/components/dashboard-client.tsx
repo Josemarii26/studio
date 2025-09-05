@@ -8,7 +8,7 @@ import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { isSameDay, startOfYesterday, differenceInDays, isToday } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
-import { DashboardGrid } from './dashboard-grid';
+import { AchievementsGrid } from './achievements-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
 import { useSidebar } from './ui/sidebar';
@@ -143,7 +143,8 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             green: 'rdp-day_green',
                             yellow: 'rdp-day_yellow',
                             red: 'rdp-day_red',
-                            missed: 'rdp-day_missed'
+                            missed: 'rdp-day_missed',
+                            selected: '',
                         }}
                     />
                 </CardContent>
@@ -161,7 +162,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
       
       <div className="mx-auto @container mt-8">
         <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">Your Journey</h2>
-        <DashboardGrid />
+        <AchievementsGrid dailyData={dailyData} userProfile={userProfile} />
       </div>
 
       {selectedDayData && userProfile && (
