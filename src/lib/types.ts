@@ -51,3 +51,14 @@ export type ChatMessage = {
   content: string;
   timestamp: Date;
 };
+
+export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'special';
+
+export interface Achievement {
+    id: string;
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+    isUnlocked: boolean;
+    tier: AchievementTier;
+}

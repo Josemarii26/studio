@@ -2,88 +2,31 @@
 'use client';
 import { useMemo } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Flame, Star, Target, Zap, TrendingUp, CalendarDays, ThumbsUp, Crown, Sparkles, Trophy } from 'lucide-react';
-import { isSameDay, subDays, startOfToday, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
-import { cn } from '@/lib/utils';
-
-interface AchievementsGridProps {
-    dailyData: DayData[];
-    userProfile: UserProfile;
-}
-
-type AchievementTier = 'bronze' | 'silver' | 'gold' | 'special';
-
-interface Achievement {
-    id: string;
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    isUnlocked: boolean;
-    tier: AchievementTier;
-}
-
-const tierStyles: { [key in AchievementTier]: string } = {
-    bronze: 'border-amber-700/40 bg-gradient-to-br from-amber-900/10 to-card shadow-md',
-    silver: 'border-slate-400/50 bg-gradient-to-br from-slate-500/10 to-card shadow-lg',
-    gold: 'border-yellow-500/50 bg-gradient-to-br from-yellow-600/10 to-card shadow-xl',
-    special: 'border-primary/50 bg-gradient-to-br from-primary/10 to-card shadow-2xl animated-special-border',
-};
-
-const iconStyles: { [key in AchievementTier]: string } = {
-    bronze: 'bg-amber-700/10 text-amber-600',
-    silver: 'bg-slate-400/10 text-slate-400',
-    gold: 'bg-yellow-500/10 text-yellow-500',
-    special: 'bg-primary/10 text-primary',
-};
+import { Award, Flame, Star, Target, Zap, TrendingUp, CalendarDays, ThumbsUp, Crown, Sparkles, Trophy, ChefHat, Dumbbell, Sun, Moon } from 'lucide-react';
+import { isSameDay, subDays, startOfToday, startOfWeek, endOfWeek, isWithinInterval, getDay } from 'date-fns';
+import { AchievementCategory } from './achievement-category';
+import type { Achievement, AchievementTier } from '@/lib/types';
 
 
-const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
-    const isUnlocked = achievement.isUnlocked;
-    return (
-        <Card className={cn(
-            'masonry-item transition-all duration-500',
-            isUnlocked ? tierStyles[achievement.tier] : 'bg-muted/60 opacity-60'
-        )}>
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
-                <div className={cn(
-                    'flex h-12 w-12 items-center justify-center rounded-lg shrink-0',
-                    isUnlocked ? iconStyles[achievement.tier] : 'bg-muted-foreground/10 text-muted-foreground'
-                )}>
-                    {achievement.icon}
-                </div>
-                <div>
-                    <CardTitle className="text-base">{achievement.title}</CardTitle>
-                </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-                <p className={cn(
-                    'text-sm',
-                    isUnlocked ? 'text-card-foreground' : 'text-muted-foreground'
-                )}>
-                    {achievement.description}
-                </p>
-            </CardContent>
-        </Card>
-    );
-};
+export function AchievementsGrid({ dailyData, userProfile }: { dailyData: DayData[], userProfile: UserProfile }) {
 
-export function AchievementsGrid({ dailyData, userProfile }: AchievementsGridProps) {
-
-    const streakData = useMemo(() => {
-        if (!dailyData || dailyData.length === 0) return { greenDaysStreak: 0, perfectWeeks: 0 };
+    const calculatedData = useMemo(() => {
+        if (!dailyData || dailyData.length === 0) {
+            return { greenDaysStreak: 0, perfectWeeks: 0, perfectMacrosDays: 0, loggedWeekends: 0 };
+        }
 
         const sortedData = [...dailyData].sort((a, b) => b.date.getTime() - a.date.getTime());
         let greenDaysStreak = 0;
         let perfectWeeks = 0;
-        
+        let perfectMacrosDays = 0;
+        let loggedWeekends = 0;
+
         // --- Streak Calculation ---
         let today = startOfToday();
         const startIndex = sortedData.findIndex(d => d.date && d.date <= today);
         if (startIndex !== -1) {
             let currentDate = sortedData[startIndex].date;
-            // A streak can only be current if the last log was for today or yesterday.
-            if (isSameDay(currentDate, today) || isSameDay(currentDate, subDays(today,1))) {
+            if (isSameDay(currentDate, today) || isSameDay(currentDate, subDays(today, 1))) {
                 for (let i = startIndex; i < sortedData.length; i++) {
                     const day = sortedData[i];
                     if (day.date && isSameDay(day.date, currentDate)) {
@@ -96,11 +39,25 @@ export function AchievementsGrid({ dailyData, userProfile }: AchievementsGridPro
             }
         }
         
-        // --- Perfect Week Calculation ---
+        // --- Week, Macro, and Weekend Calculation ---
         const weeks = new Set<string>();
         sortedData.forEach(d => {
             const weekKey = `${startOfWeek(d.date).getTime()}`;
             weeks.add(weekKey);
+            
+            // Perfect Macros
+            const pDiff = Math.abs(d.totals.protein - userProfile.dailyProteinGoal);
+            const cDiff = Math.abs(d.totals.carbs - userProfile.dailyCarbsGoal);
+            const fDiff = Math.abs(d.totals.fat - userProfile.dailyFatGoal);
+            if(d.status === 'green' && pDiff < 10 && cDiff < 20 && fDiff < 10) {
+                perfectMacrosDays++;
+            }
+
+            // Weekend Warrior
+            const dayOfWeek = getDay(d.date); // Sunday is 0, Saturday is 6
+            if(dayOfWeek === 0 || dayOfWeek === 6) {
+                loggedWeekends++;
+            }
         });
 
         weeks.forEach(weekKey => {
@@ -112,10 +69,10 @@ export function AchievementsGrid({ dailyData, userProfile }: AchievementsGridPro
             }
         });
 
-        return { greenDaysStreak, perfectWeeks };
-    }, [dailyData]);
+        return { greenDaysStreak, perfectWeeks, perfectMacrosDays, loggedWeekends };
+    }, [dailyData, userProfile]);
     
-    const { greenDaysStreak, perfectWeeks } = streakData;
+    const { greenDaysStreak, perfectWeeks, perfectMacrosDays, loggedWeekends } = calculatedData;
     const totalDaysTracked = dailyData.length;
 
     const goalReached = useMemo(() => {
@@ -123,45 +80,84 @@ export function AchievementsGrid({ dailyData, userProfile }: AchievementsGridPro
         const { weight, goalWeight, goal } = userProfile;
         if (goal === 'lose') return weight <= goalWeight;
         if (goal === 'gain') return weight >= goalWeight;
+        if (goal === 'maintain') return Math.abs(weight - goalWeight) <= 1; // Allow 1kg tolerance for maintenance
         return false;
     }, [userProfile]);
 
-
     const achievements: Achievement[] = [
-        // --- Bronze ---
-        { id: 'first-log', tier: 'bronze', icon: <Star className="h-6 w-6" />, title: 'The First Step', description: 'Log your first day of meals. The journey begins!', isUnlocked: totalDaysTracked >= 1 },
-        { id: 'first-green', tier: 'bronze', icon: <ThumbsUp className="h-6 w-6" />, title: 'Nailed It', description: 'Have your first "on-target" day. The first of many!', isUnlocked: dailyData.some(d => d.status === 'green') },
-        { id: 'ai-power', tier: 'bronze', icon: <Zap className="h-6 w-6" />, title: 'AI Power', description: 'Use the AI chat to log your meals for the first time.', isUnlocked: totalDaysTracked >= 1 },
+        // --- Bronze Tier ---
+        { id: 'first-log', tier: 'bronze', icon: <Star className="h-6 w-6" />, title: 'The First Step', description: 'Log your first day of meals.', isUnlocked: totalDaysTracked >= 1 },
+        { id: 'ai-power', tier: 'bronze', icon: <Zap className="h-6 w-6" />, title: 'AI Power', description: 'Use the AI chat to log your meals.', isUnlocked: totalDaysTracked >= 1 },
+        { id: 'first-green', tier: 'bronze', icon: <ThumbsUp className="h-6 w-6" />, title: 'Nailed It', description: 'Have your first "on-target" day.', isUnlocked: dailyData.some(d => d.status === 'green') },
         { id: 'profile-pic', tier: 'bronze', icon: <Sparkles className="h-6 w-6" />, title: 'Looking Good!', description: 'Set your first profile picture.', isUnlocked: !!userProfile.photoUrl },
+        { id: 'weekend-warrior', tier: 'bronze', icon: <Sun className="h-6 w-6" />, title: 'Weekend Warrior', description: 'Log your meals on a weekend day.', isUnlocked: loggedWeekends > 0 },
+        { id: 'perfect-macros-1', tier: 'bronze', icon: <ChefHat className="h-6 w-6" />, title: 'Budding Chef', description: 'Hit all your macro targets perfectly for the first time.', isUnlocked: perfectMacrosDays >= 1 },
+       
+        // --- Silver Tier ---
+        { id: 'streak-3', tier: 'silver', icon: <Flame className="h-6 w-6" />, title: 'On a Roll', description: 'Achieve a 3-day on-target streak.', isUnlocked: greenDaysStreak >= 3 },
+        { id: 'tracked-10', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: 'Consistency is Key', description: 'Successfully log 10 total days.', isUnlocked: totalDaysTracked >= 10 },
+        { id: 'perfect-week-1', tier: 'silver', icon: <Trophy className="h-6 w-6" />, title: 'Perfect Week', description: 'Achieve a perfect 7/7 "on-target" days in a single week.', isUnlocked: perfectWeeks >= 1 },
+        { id: 'streak-7', tier: 'silver', icon: <Award className="h-6 w-6" />, title: 'Week of Dedication', description: 'Complete a 7-day on-target streak.', isUnlocked: greenDaysStreak >= 7 },
+        { id: 'perfect-macros-5', tier: 'silver', icon: <ChefHat className="h-6 w-6" />, title: 'Macro Specialist', description: 'Hit all your macro targets perfectly on 5 different days.', isUnlocked: perfectMacrosDays >= 5 },
+        { id: 'tracked-20', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: 'Dedicated Tracker', description: 'Successfully log 20 total days.', isUnlocked: totalDaysTracked >= 20 },
 
-        // --- Silver ---
-        { id: 'streak-3', tier: 'silver', icon: <Flame className="h-6 w-6" />, title: 'On a Roll', description: 'Achieve a 3-day streak of on-target calorie intake.', isUnlocked: greenDaysStreak >= 3 },
-        { id: 'streak-7', tier: 'silver', icon: <Award className="h-6 w-6" />, title: 'Week of Dedication', description: 'Complete a 7-day streak. Your consistency is paying off!', isUnlocked: greenDaysStreak >= 7 },
-        { id: 'tracked-10', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: 'Consistency is Key', description: 'Successfully log 10 days in total.', isUnlocked: totalDaysTracked >= 10 },
-        { id: 'perfect-week', tier: 'silver', icon: <Trophy className="h-6 w-6" />, title: 'Perfect Week', description: 'Achieve a perfect 7/7 "on-target" days in a single week.', isUnlocked: perfectWeeks >= 1 },
-
-        // --- Gold ---
+        // --- Gold Tier ---
         { id: 'streak-14', tier: 'gold', icon: <Flame className="h-6 w-6" />, title: 'Unstoppable', description: 'Maintain an incredible 14-day on-target streak.', isUnlocked: greenDaysStreak >= 14 },
-        { id: 'tracked-30', tier: 'gold', icon: <CalendarDays className="h-6 w-6" />, title: '30-Day Club', description: 'Log an entire month of meals. That\'s commitment!', isUnlocked: totalDaysTracked >= 30 },
+        { id: 'tracked-30', tier: 'gold', icon: <CalendarDays className="h-6 w-6" />, title: '30-Day Club', description: 'Log an entire month of meals.', isUnlocked: totalDaysTracked >= 30 },
+        { id: 'perfect-week-2', tier: 'gold', icon: <Trophy className="h-6 w-6" />, title: 'Double Down', description: 'Achieve two separate "Perfect Weeks".', isUnlocked: perfectWeeks >= 2 },
+        { id: 'perfect-macros-15', tier: 'gold', icon: <ChefHat className="h-6 w-6" />, title: 'Macro Virtuoso', description: 'Hit all your macro targets perfectly on 15 different days.', isUnlocked: perfectMacrosDays >= 15 },
+        { id: 'tracked-50', tier: 'gold', icon: <TrendingUp className="h-6 w-6" />, title: 'Seasoned Pro', description: 'Log a total of 50 days of meals.', isUnlocked: totalDaysTracked >= 50 },
         { id: 'streak-30', tier: 'gold', icon: <Crown className="h-6 w-6" />, title: 'Habit Formed', description: 'Achieve a legendary 30-day on-target streak.', isUnlocked: greenDaysStreak >= 30 },
         
-        // --- Special ---
-        { id: 'goal-reached', tier: 'special', icon: <Target className="h-6 w-6" />, title: 'Goal Reached!', description: 'You did it! You have successfully reached your goal weight.', isUnlocked: goalReached },
+        // --- Special Tier ---
+        { id: 'goal-reached', tier: 'special', icon: <Target className="h-6 w-6" />, title: 'Goal Reached!', description: 'You did it! You have successfully reached your weight goal.', isUnlocked: goalReached },
+        { id: 'tracked-100', tier: 'special', icon: <Dumbbell className="h-6 w-6" />, title: 'Century Club', description: 'Log 100 days. Your commitment is extraordinary!', isUnlocked: totalDaysTracked >= 100 },
+        { id: 'night-owl', tier: 'special', icon: <Moon className="h-6 w-6" />, title: 'Night Owl', description: 'Log your meals after 10 PM.', isUnlocked: dailyData.some(d => d.date.getHours() >= 22)},
     ];
 
-    const tierOrder: { [key in AchievementTier]: number } = { special: 0, gold: 1, silver: 2, bronze: 3 };
-    const sortedAchievements = [...achievements].sort((a, b) => {
-        if (a.isUnlocked !== b.isUnlocked) {
-            return Number(b.isUnlocked) - Number(a.isUnlocked);
+    const groupedAchievements = useMemo(() => {
+        const groups: { [key in AchievementTier]: Achievement[] } = {
+            bronze: [],
+            silver: [],
+            gold: [],
+            special: [],
+        };
+
+        achievements.forEach(ach => {
+            groups[ach.tier].push(ach);
+        });
+
+        // Sort within each group
+        for (const tier in groups) {
+            groups[tier as AchievementTier].sort((a, b) => Number(b.isUnlocked) - Number(a.isUnlocked));
         }
-        return tierOrder[a.tier] - tierOrder[b.tier];
-    });
+
+        return groups;
+    }, [achievements]);
+
 
     return (
-        <div className="masonry-grid animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            {sortedAchievements.map((achievement) => (
-                <AchievementCard key={achievement.id} achievement={achievement} />
-            ))}
+        <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-6 animate-fade-in-up">
+            <AchievementCategory 
+                title="Bronze Achievements"
+                achievements={groupedAchievements.bronze}
+                tier="bronze"
+            />
+            <AchievementCategory 
+                title="Silver Achievements"
+                achievements={groupedAchievements.silver}
+                tier="silver"
+            />
+            <AchievementCategory 
+                title="Gold Achievements"
+                achievements={groupedAchievements.gold}
+                tier="gold"
+            />
+            <AchievementCategory 
+                title="Special Achievements"
+                achievements={groupedAchievements.special}
+                tier="special"
+            />
         </div>
     );
 }

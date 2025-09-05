@@ -144,7 +144,8 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             yellow: 'rdp-day_yellow',
                             red: 'rdp-day_red',
                             missed: 'rdp-day_missed',
-                            selected: '',
+                            selected: 'bg-transparent text-foreground hover:bg-transparent',
+                            today: 'ring-2 ring-primary/80 animate-pulse-ring'
                         }}
                     />
                 </CardContent>
@@ -160,7 +161,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
         </div>
       </div>
       
-      <div className="mx-auto @container mt-8">
+      <div className="mx-auto mt-8">
         <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">Your Journey</h2>
         <AchievementsGrid dailyData={dailyData} userProfile={userProfile} />
       </div>
