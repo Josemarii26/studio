@@ -58,8 +58,8 @@ export default function LandingPage() {
                     </div>
                 </div>
                 <div className="md:w-1/3 w-full max-w-sm md:max-w-none animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                    <div className="relative w-full aspect-square">
-                        <Image src="https://picsum.photos/600/600" alt="Healthy food" data-ai-hint="healthy food" className="rounded-2xl shadow-2xl" layout="fill" objectFit="cover" />
+                    <div className="relative w-full">
+                        <img src="https://dl.dropboxusercontent.com/scl/fi/wdguxx6bng7hh81to8smk/landing1.png?rlkey=qzl31ocnin23rk0snzsmome36&st=tj63e8jb&dl=0" alt="Healthy food" data-ai-hint="healthy food" className="" layout="fill" objectFit="cover" />
                     </div>
                 </div>
             </div>
@@ -99,8 +99,8 @@ export default function LandingPage() {
                         </Link>
                     </Button>
                 </div>
-                <div className="relative w-full aspect-square max-w-md mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                   <Image src="https://picsum.photos/800/800" alt="Dashboard preview" data-ai-hint="nutrition dashboard" className="rounded-xl shadow-2xl" layout="fill" objectFit="cover" />
+                <div className="relative w-full max-w-md mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                   <img src="https://dl.dropboxusercontent.com/scl/fi/ltwe98jqokr838ttfvgdv/landing2.png?rlkey=xtiq5bj8dfb0jgfrehaiwbodr&st=glw3agay&dl=0" alt="Dashboard preview" data-ai-hint="nutrition dashboard" className="" layout="fill" objectFit="cover" />
                 </div>
             </div>
         </section>
