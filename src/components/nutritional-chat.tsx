@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, Loader, Info, CheckCircle2, XCircle } from 'lucide-react';
+import { Send, Bot, User, Loader, Info, CheckCircle2, XCircle, Copy, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -76,6 +76,7 @@ const KeywordChecker = ({ message }: { message: string }) => {
 
 export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMessages }: NutritionalChatProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -133,6 +134,16 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
       viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
+  
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({ title: 'Copied to clipboard!'});
+      setCopiedMessageId(id);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    }).catch(err => {
+      toast({ variant: 'destructive', title: 'Failed to copy', description: 'Could not copy text to clipboard.' });
+    });
+  }
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if(hasSuccessfulLogForToday) {
@@ -199,11 +210,21 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                       </Avatar>
                     )}
                     <div className={cn(
-                      'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
+                      'relative max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap group',
                       message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
                       message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
                       )}>
                       <SimpleMarkdown text={message.content} />
+                       {message.role === 'assistant' && (
+                         <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -bottom-2 -right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-muted/80 hover:bg-muted"
+                            onClick={() => handleCopy(message.content, message.id)}
+                         >
+                            {copiedMessageId === message.id ? <Check className="h-4 w-4 text-status-green"/> : <Copy className="h-4 w-4"/>}
+                         </Button>
+                       )}
                     </div>
                     {message.role === 'user' && (
                       <Avatar className="h-8 w-8 border bg-background">
@@ -249,6 +270,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                           {...field}
                           placeholder="Describe your meals..."
                           className="resize-none"
+                          rows={4}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                               e.preventDefault();
