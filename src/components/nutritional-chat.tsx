@@ -128,8 +128,9 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   }, [messages, chatHistoryKey]);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
 
@@ -187,42 +188,42 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
           <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
         </div>
       </CardHeader>
-      <div className="flex flex-1 flex-col min-h-0">
-        <ScrollArea className="flex-1 p-4">
-            <div ref={scrollAreaRef} className="space-y-6 pr-4">
-              {messages.map(message => (
-                <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
-                  {message.role !== 'user' && (
+      <div className="flex-1 p-4 min-h-0">
+          <ScrollArea className="h-full" ref={scrollAreaRef}>
+              <div className="space-y-6 pr-4">
+                {messages.map(message => (
+                  <div key={message.id} className={cn('flex items-start gap-3', message.role === 'user' ? 'justify-end' : '')}>
+                    {message.role !== 'user' && (
+                      <Avatar className="h-8 w-8 border bg-background">
+                        <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div className={cn(
+                      'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
+                      message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                      message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
+                      )}>
+                      <SimpleMarkdown text={message.content} />
+                    </div>
+                    {message.role === 'user' && (
+                      <Avatar className="h-8 w-8 border bg-background">
+                        <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex items-start gap-3">
                     <Avatar className="h-8 w-8 border bg-background">
                       <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
                     </Avatar>
-                  )}
-                  <div className={cn(
-                    'max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap',
-                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted',
-                    message.role === 'system' && 'w-full text-center bg-transparent text-destructive'
-                    )}>
-                    <SimpleMarkdown text={message.content} />
+                    <div className="rounded-lg p-3 text-sm bg-muted">
+                        <Loader className="h-5 w-5 animate-spin text-primary" />
+                    </div>
                   </div>
-                  {message.role === 'user' && (
-                    <Avatar className="h-8 w-8 border bg-background">
-                      <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                    </Avatar>
-                  )}
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-8 w-8 border bg-background">
-                    <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
-                  </Avatar>
-                  <div className="rounded-lg p-3 text-sm bg-muted">
-                      <Loader className="h-5 w-5 animate-spin text-primary" />
-                  </div>
-                </div>
-              )}
-            </div>
-        </ScrollArea>
+                )}
+              </div>
+          </ScrollArea>
       </div>
       <CardFooter className="border-t p-4">
         {hasSuccessfulLogForToday ? (
