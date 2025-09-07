@@ -7,6 +7,7 @@ import { ArrowRight, Bot, Zap, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useI18n, useCurrentLocale } from '@/locales/client';
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
@@ -34,11 +35,14 @@ export default function LandingPage() {
                 NutriTrackAI
             </h1>
         </Link>
-        <Button asChild>
-            <Link href={`/${locale}/login`}>
-                {t('landing.get-started')} <ArrowRight className="ml-2" />
-            </Link>
-        </Button>
+        <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+            <Button asChild>
+                <Link href={`/${locale}/login`}>
+                    {t('landing.get-started')} <ArrowRight className="ml-2" />
+                </Link>
+            </Button>
+        </div>
       </header>
 
       <main className="flex-1">
