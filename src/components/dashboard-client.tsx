@@ -76,7 +76,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   }, [dailyData]);
 
 
-  const modifiers = useMemo(() => {
+  const modifiers = () => {
     const loggedDates = dailyData.map(d => d.date.toDateString());
     const yesterday = startOfYesterday();
     
@@ -104,7 +104,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
         missed: missedDays,
         disabled: { after: new Date() }, // Disable future days
     }
-  }, [dailyData]);
+  };
   
   if (!isProfileLoaded || !userProfile) {
     return <DashboardLoader />;
@@ -138,7 +138,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                         onSelect={setDate}
                         onDayClick={handleDayClick}
                         className="p-0 w-full"
-                        modifiers={modifiers}
+                        modifiers={modifiers()}
                         modifiersClassNames={{
                             green: 'rdp-day_green',
                             yellow: 'rdp-day_yellow',
