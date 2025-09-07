@@ -1,3 +1,4 @@
+
 {
   "landing": {
     "get-started": "Empezar",
@@ -120,7 +121,7 @@
   },
   "profile": {
     "back-btn": "Volver al Panel",
-    "goal-prefix": "Meta: {goal} Peso",
+    "goal-prefix": "Meta: {goal}",
     "summary-title": "Resumen de Rendimiento",
     "summary-desc": "Un vistazo rápido a tu progreso y hábitos.",
     "streak-card": "Racha Actual",
@@ -201,10 +202,10 @@
     "silver-title": "Logros de Plata",
     "gold-title": "Logros de Oro",
     "special-title": "Logros Especiales",
-    "bronze-unlocked": "{unlockedCount} / {totalCount} Desbloqueados. Hitos básicos para empezar.",
-    "silver-unlocked": "{unlockedCount} / {totalCount} Desbloqueados. Gran consistencia y dedicación.",
-    "gold-unlocked": "{unlockedCount} / {totalCount} Desbloqueados. Logros verdaderamente impresionantes.",
-    "special-unlocked": "{unlockedCount} / {totalCount} Desbloqueados. Hazañas legendarias y únicas.",
+    "unlocked-bronze": "{unlockedCount} / {totalCount} Desbloqueados. Hitos básicos para empezar.",
+    "unlocked-silver": "{unlockedCount} / {totalCount} Desbloqueados. Gran consistencia y dedicación.",
+    "unlocked-gold": "{unlockedCount} / {totalCount} Desbloqueados. Logros verdaderamente impresionantes.",
+    "unlocked-special": "{unlockedCount} / {totalCount} Desbloqueados. Hazañas legendarias y únicas.",
     "view-more": "Ver Más",
     "view-less": "Ver Menos",
     "first-log-title": "El Primer Paso",

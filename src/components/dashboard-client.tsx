@@ -12,6 +12,7 @@ import { AchievementsGrid } from './achievements-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
 import { useSidebar } from './ui/sidebar';
+import { useI18n } from '@/locales/client';
 
 
 interface DashboardClientProps {
@@ -19,23 +20,24 @@ interface DashboardClientProps {
 }
 
 function CalendarLegend() {
+    const t = useI18n();
     return (
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-status-green/50 border border-status-green" />
-                <span>On Target</span>
+                <span>{t('dashboard.legend-on-target')}</span>
             </div>
             <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-status-yellow/50 border border-status-yellow" />
-                <span>Close</span>
+                <span>{t('dashboard.legend-close')}</span>
             </div>
             <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-status-red/50 border border-status-red" />
-                <span>Off Target</span>
+                <span>{t('dashboard.legend-off-target')}</span>
             </div>
             <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-muted/80 border border-muted-foreground/30" />
-                <span>Missed</span>
+                <span>{t('dashboard.legend-missed')}</span>
             </div>
         </div>
     )
@@ -46,6 +48,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   const { toggleSidebar } = useSidebar();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
+  const t = useI18n();
 
 
   const handleDayClick = (day: Date) => {
@@ -58,7 +61,9 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
             meals: {},
             totals: { calories: 0, protein: 0, fat: 0, carbs: 0 },
             status: 'yellow',
-            observations: "No data logged for this day. Use the chat to add your meals!"
+            observations: t('dashboard.modal-no-data'),
+            creatineTaken: false,
+            proteinTaken: false
         });
     }
   };
@@ -113,11 +118,13 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     return <DashboardLoader />;
   }
 
-  const goalText = {
-    lose: 'losing weight',
-    maintain: 'maintaining your weight',
-    gain: 'gaining muscle',
+  const goalTextMap: { [key: string]: string } = {
+    lose: t('dashboard.goal-lose'),
+    maintain: t('dashboard.goal-maintain'),
+    gain: t('dashboard.goal-gain'),
   };
+
+  const goalText = goalTextMap[userProfile.goal] || '';
   
   const handleGoToChat = () => {
     setSelectedDayData(null);
@@ -127,8 +134,8 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   return (
     <div className="space-y-8">
         <div className="animate-fade-in-up">
-            <h1 className="text-3xl font-bold font-headline">Welcome back, {userProfile.name.split(' ')[0]}!</h1>
-            <p className="text-muted-foreground">You're on track for your goal of {goalText[userProfile.goal]}. Let's review your progress.</p>
+            <h1 className="text-3xl font-bold font-headline">{t('dashboard.welcome-back', {name: userProfile.name.split(' ')[0]})}</h1>
+            <p className="text-muted-foreground">{t('dashboard.welcome-subtitle', { goal: goalText })}</p>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -147,7 +154,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             yellow: 'rdp-day_yellow',
                             red: 'rdp-day_red',
                             missed: 'rdp-day_missed',
-                            selected: 'text-foreground hover:bg-transparent',
+                            selected: 'text-foreground',
                             today: 'ring-2 ring-primary/80 animate-pulse-ring'
                         }}
                     />
@@ -165,7 +172,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
       </div>
       
       <div className="mx-auto mt-8">
-        <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">Your Journey</h2>
+        <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">{t('dashboard.achievements-title')}</h2>
         <AchievementsGrid dailyData={dailyData} userProfile={userProfile} />
       </div>
 

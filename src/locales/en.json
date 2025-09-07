@@ -1,3 +1,4 @@
+
 {
   "landing": {
     "get-started": "Get Started",
@@ -120,7 +121,7 @@
   },
   "profile": {
     "back-btn": "Back to Dashboard",
-    "goal-prefix": "Goal: {goal} Weight",
+    "goal-prefix": "Goal: {goal}",
     "summary-title": "Performance Summary",
     "summary-desc": "A quick look at your progress and habits.",
     "streak-card": "Current Streak",
@@ -201,10 +202,10 @@
     "silver-title": "Silver Achievements",
     "gold-title": "Gold Achievements",
     "special-title": "Special Achievements",
-    "bronze-unlocked": "{unlockedCount} / {totalCount} Unlocked. Basic milestones to get you started.",
-    "silver-unlocked": "{unlockedCount} / {totalCount} Unlocked. Great consistency and dedication.",
-    "gold-unlocked": "{unlockedCount} / {totalCount} Unlocked. Truly impressive achievements.",
-    "special-unlocked": "{unlockedCount} / {totalCount} Unlocked. Legendary and unique feats.",
+    "unlocked-bronze": "{unlockedCount} / {totalCount} Unlocked. Basic milestones to get you started.",
+    "unlocked-silver": "{unlockedCount} / {totalCount} Unlocked. Great consistency and dedication.",
+    "unlocked-gold": "{unlockedCount} / {totalCount} Unlocked. Truly impressive achievements.",
+    "unlocked-special": "{unlockedCount} / {totalCount} Unlocked. Legendary and unique feats.",
     "view-more": "View More",
     "view-less": "View Less",
     "first-log-title": "The First Step",

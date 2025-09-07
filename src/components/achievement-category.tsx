@@ -6,7 +6,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Award, Medal, Gem, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/locales/client';
 
+const tierIcons: { [key in AchievementTier]: React.ReactNode } = {
+    bronze: <Award className="h-6 w-6" />,
+    silver: <Medal className="h-6 w-6" />,
+    gold: <Gem className="h-6 w-6" />,
+    special: <Sparkles className="h-6 w-6" />,
+};
 
 const tierStyles: { [key in AchievementTier]: { card: string, iconContainer: string, icon: string, title: string } } = {
     bronze: { 
@@ -34,21 +41,6 @@ const tierStyles: { [key in AchievementTier]: { card: string, iconContainer: str
         title: 'text-primary',
     },
 };
-
-const tierIcons: { [key in AchievementTier]: React.ReactNode } = {
-    bronze: <Award className="h-6 w-6" />,
-    silver: <Medal className="h-6 w-6" />,
-    gold: <Gem className="h-6 w-6" />,
-    special: <Sparkles className="h-6 w-6" />,
-};
-
-const tierUnlockedCountText: { [key in AchievementTier]: string } = {
-    bronze: 'Basic milestones to get you started.',
-    silver: 'Great consistency and dedication.',
-    gold: 'Truly impressive achievements.',
-    special: 'Legendary and unique feats.',
-};
-
 
 const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
     const isUnlocked = achievement.isUnlocked;
@@ -78,11 +70,14 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
 
 export function AchievementCategory({ title, achievements, tier }: { title: string, achievements: Achievement[], tier: AchievementTier }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const t = useI18n();
     
     const unlockedCount = achievements.filter(a => a.isUnlocked).length;
     const totalCount = achievements.length;
     const visibleAchievements = isExpanded ? achievements : achievements.slice(0, 3);
     const styles = tierStyles[tier];
+    
+    const unlockedTextKey = `achievements.unlocked-${tier}` as const;
 
     return (
         <Card className={cn("flex flex-col bg-card/50 backdrop-blur-sm", styles.card)}>
@@ -94,7 +89,7 @@ export function AchievementCategory({ title, achievements, tier }: { title: stri
                     <div>
                         <CardTitle className={cn('text-xl', styles.title)}>{title}</CardTitle>
                         <CardDescription>
-                            {unlockedCount} / {totalCount} Unlocked. {tierUnlockedCountText[tier]}
+                           {t(unlockedTextKey, { unlockedCount, totalCount })}
                         </CardDescription>
                     </div>
                 </div>
@@ -111,7 +106,7 @@ export function AchievementCategory({ title, achievements, tier }: { title: stri
                         className="w-full text-muted-foreground"
                         onClick={() => setIsExpanded(!isExpanded)}
                     >
-                        {isExpanded ? 'View Less' : 'View More'}
+                        {isExpanded ? t('achievements.view-less') : t('achievements.view-more')}
                         {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
                     </Button>
                 </CardFooter>

@@ -6,9 +6,11 @@ import { Award, Flame, Star, Target, Zap, TrendingUp, CalendarDays, ThumbsUp, Cr
 import { isSameDay, subDays, startOfToday, startOfWeek, endOfWeek, isWithinInterval, getDay } from 'date-fns';
 import { AchievementCategory } from './achievement-category';
 import type { Achievement, AchievementTier } from '@/lib/types';
+import { useI18n } from '@/locales/client';
 
 
 export function AchievementsGrid({ dailyData, userProfile }: { dailyData: DayData[], userProfile: UserProfile }) {
+    const t = useI18n();
 
     const calculatedData = useMemo(() => {
         if (!dailyData || dailyData.length === 0) {
@@ -86,33 +88,33 @@ export function AchievementsGrid({ dailyData, userProfile }: { dailyData: DayDat
 
     const achievements: Achievement[] = [
         // --- Bronze Tier ---
-        { id: 'first-log', tier: 'bronze', icon: <Star className="h-6 w-6" />, title: 'The First Step', description: 'Log your first day of meals.', isUnlocked: totalDaysTracked >= 1 },
-        { id: 'ai-power', tier: 'bronze', icon: <Zap className="h-6 w-6" />, title: 'AI Power', description: 'Use the AI chat to log your meals.', isUnlocked: totalDaysTracked >= 1 },
-        { id: 'first-green', tier: 'bronze', icon: <ThumbsUp className="h-6 w-6" />, title: 'Nailed It', description: 'Have your first "on-target" day.', isUnlocked: dailyData.some(d => d.status === 'green') },
-        { id: 'profile-pic', tier: 'bronze', icon: <Sparkles className="h-6 w-6" />, title: 'Looking Good!', description: 'Set your first profile picture.', isUnlocked: !!userProfile.photoUrl },
-        { id: 'weekend-warrior', tier: 'bronze', icon: <Sun className="h-6 w-6" />, title: 'Weekend Warrior', description: 'Log your meals on a weekend day.', isUnlocked: loggedWeekends > 0 },
-        { id: 'perfect-macros-1', tier: 'bronze', icon: <ChefHat className="h-6 w-6" />, title: 'Budding Chef', description: 'Hit all your macro targets perfectly for the first time.', isUnlocked: perfectMacrosDays >= 1 },
+        { id: 'first-log', tier: 'bronze', icon: <Star className="h-6 w-6" />, title: t('achievements.first-log-title'), description: t('achievements.first-log-desc'), isUnlocked: totalDaysTracked >= 1 },
+        { id: 'ai-power', tier: 'bronze', icon: <Zap className="h-6 w-6" />, title: t('achievements.ai-power-title'), description: t('achievements.ai-power-desc'), isUnlocked: totalDaysTracked >= 1 },
+        { id: 'first-green', tier: 'bronze', icon: <ThumbsUp className="h-6 w-6" />, title: t('achievements.first-green-title'), description: t('achievements.first-green-desc'), isUnlocked: dailyData.some(d => d.status === 'green') },
+        { id: 'profile-pic', tier: 'bronze', icon: <Sparkles className="h-6 w-6" />, title: t('achievements.profile-pic-title'), description: t('achievements.profile-pic-desc'), isUnlocked: !!userProfile.photoUrl },
+        { id: 'weekend-warrior', tier: 'bronze', icon: <Sun className="h-6 w-6" />, title: t('achievements.weekend-warrior-title'), description: t('achievements.weekend-warrior-desc'), isUnlocked: loggedWeekends > 0 },
+        { id: 'perfect-macros-1', tier: 'bronze', icon: <ChefHat className="h-6 w-6" />, title: t('achievements.budding-chef-title'), description: t('achievements.budding-chef-desc'), isUnlocked: perfectMacrosDays >= 1 },
        
         // --- Silver Tier ---
-        { id: 'streak-3', tier: 'silver', icon: <Flame className="h-6 w-6" />, title: 'On a Roll', description: 'Achieve a 3-day on-target streak.', isUnlocked: greenDaysStreak >= 3 },
-        { id: 'tracked-10', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: 'Consistency is Key', description: 'Successfully log 10 total days.', isUnlocked: totalDaysTracked >= 10 },
-        { id: 'perfect-week-1', tier: 'silver', icon: <Trophy className="h-6 w-6" />, title: 'Perfect Week', description: 'Achieve a perfect 7/7 "on-target" days in a single week.', isUnlocked: perfectWeeks >= 1 },
-        { id: 'streak-7', tier: 'silver', icon: <Award className="h-6 w-6" />, title: 'Week of Dedication', description: 'Complete a 7-day on-target streak.', isUnlocked: greenDaysStreak >= 7 },
-        { id: 'perfect-macros-5', tier: 'silver', icon: <ChefHat className="h-6 w-6" />, title: 'Macro Specialist', description: 'Hit all your macro targets perfectly on 5 different days.', isUnlocked: perfectMacrosDays >= 5 },
-        { id: 'tracked-20', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: 'Dedicated Tracker', description: 'Successfully log 20 total days.', isUnlocked: totalDaysTracked >= 20 },
+        { id: 'streak-3', tier: 'silver', icon: <Flame className="h-6 w-6" />, title: t('achievements.on-a-roll-title'), description: t('achievements.on-a-roll-desc'), isUnlocked: greenDaysStreak >= 3 },
+        { id: 'tracked-10', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: t('achievements.consistency-title'), description: t('achievements.consistency-desc'), isUnlocked: totalDaysTracked >= 10 },
+        { id: 'perfect-week-1', tier: 'silver', icon: <Trophy className="h-6 w-6" />, title: t('achievements.perfect-week-title'), description: t('achievements.perfect-week-desc'), isUnlocked: perfectWeeks >= 1 },
+        { id: 'streak-7', tier: 'silver', icon: <Award className="h-6 w-6" />, title: t('achievements.week-dedication-title'), description: t('achievements.week-dedication-desc'), isUnlocked: greenDaysStreak >= 7 },
+        { id: 'perfect-macros-5', tier: 'silver', icon: <ChefHat className="h-6 w-6" />, title: t('achievements.macro-specialist-title'), description: t('achievements.macro-specialist-desc'), isUnlocked: perfectMacrosDays >= 5 },
+        { id: 'tracked-20', tier: 'silver', icon: <CalendarDays className="h-6 w-6" />, title: t('achievements.dedicated-tracker-title'), description: t('achievements.dedicated-tracker-desc'), isUnlocked: totalDaysTracked >= 20 },
 
         // --- Gold Tier ---
-        { id: 'streak-14', tier: 'gold', icon: <Flame className="h-6 w-6" />, title: 'Unstoppable', description: 'Maintain an incredible 14-day on-target streak.', isUnlocked: greenDaysStreak >= 14 },
-        { id: 'tracked-30', tier: 'gold', icon: <CalendarDays className="h-6 w-6" />, title: '30-Day Club', description: 'Log an entire month of meals.', isUnlocked: totalDaysTracked >= 30 },
-        { id: 'perfect-week-2', tier: 'gold', icon: <Trophy className="h-6 w-6" />, title: 'Double Down', description: 'Achieve two separate "Perfect Weeks".', isUnlocked: perfectWeeks >= 2 },
-        { id: 'perfect-macros-15', tier: 'gold', icon: <ChefHat className="h-6 w-6" />, title: 'Macro Virtuoso', description: 'Hit all your macro targets perfectly on 15 different days.', isUnlocked: perfectMacrosDays >= 15 },
-        { id: 'tracked-50', tier: 'gold', icon: <TrendingUp className="h-6 w-6" />, title: 'Seasoned Pro', description: 'Log a total of 50 days of meals.', isUnlocked: totalDaysTracked >= 50 },
-        { id: 'streak-30', tier: 'gold', icon: <Crown className="h-6 w-6" />, title: 'Habit Formed', description: 'Achieve a legendary 30-day on-target streak.', isUnlocked: greenDaysStreak >= 30 },
+        { id: 'streak-14', tier: 'gold', icon: <Flame className="h-6 w-6" />, title: t('achievements.unstoppable-title'), description: t('achievements.unstoppable-desc'), isUnlocked: greenDaysStreak >= 14 },
+        { id: 'tracked-30', tier: 'gold', icon: <CalendarDays className="h-6 w-6" />, title: t('achievements.30-day-club-title'), description: t('achievements.30-day-club-desc'), isUnlocked: totalDaysTracked >= 30 },
+        { id: 'perfect-week-2', tier: 'gold', icon: <Trophy className="h-6 w-6" />, title: t('achievements.double-down-title'), description: t('achievements.double-down-desc'), isUnlocked: perfectWeeks >= 2 },
+        { id: 'perfect-macros-15', tier: 'gold', icon: <ChefHat className="h-6 w-6" />, title: t('achievements.macro-virtuoso-title'), description: t('achievements.macro-virtuoso-desc'), isUnlocked: perfectMacrosDays >= 15 },
+        { id: 'tracked-50', tier: 'gold', icon: <TrendingUp className="h-6 w-6" />, title: t('achievements.seasoned-pro-title'), description: t('achievements.seasoned-pro-desc'), isUnlocked: totalDaysTracked >= 50 },
+        { id: 'streak-30', tier: 'gold', icon: <Crown className="h-6 w-6" />, title: t('achievements.habit-formed-title'), description: t('achievements.habit-formed-desc'), isUnlocked: greenDaysStreak >= 30 },
         
         // --- Special Tier ---
-        { id: 'goal-reached', tier: 'special', icon: <Target className="h-6 w-6" />, title: 'Goal Reached!', description: 'You did it! You have successfully reached your weight goal.', isUnlocked: goalReached },
-        { id: 'tracked-100', tier: 'special', icon: <Dumbbell className="h-6 w-6" />, title: 'Century Club', description: 'Log 100 days. Your commitment is extraordinary!', isUnlocked: totalDaysTracked >= 100 },
-        { id: 'night-owl', tier: 'special', icon: <Moon className="h-6 w-6" />, title: 'Night Owl', description: 'Log your meals after 10 PM.', isUnlocked: dailyData.some(d => d.date.getHours() >= 22)},
+        { id: 'goal-reached', tier: 'special', icon: <Target className="h-6 w-6" />, title: t('achievements.goal-reached-title'), description: t('achievements.goal-reached-desc'), isUnlocked: goalReached },
+        { id: 'tracked-100', tier: 'special', icon: <Dumbbell className="h-6 w-6" />, title: t('achievements.century-club-title'), description: t('achievements.century-club-desc'), isUnlocked: totalDaysTracked >= 100 },
+        { id: 'night-owl', tier: 'special', icon: <Moon className="h-6 w-6" />, title: t('achievements.night-owl-title'), description: t('achievements.night-owl-desc'), isUnlocked: dailyData.some(d => d.date.getHours() >= 22)},
     ];
 
     const groupedAchievements = useMemo(() => {
@@ -133,28 +135,29 @@ export function AchievementsGrid({ dailyData, userProfile }: { dailyData: DayDat
         }
 
         return groups;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [achievements]);
 
 
     return (
         <div className="grid grid-cols-1 @[800px]:grid-cols-2 gap-6 animate-fade-in-up">
             <AchievementCategory 
-                title="Bronze Achievements"
+                title={t('achievements.bronze-title')}
                 achievements={groupedAchievements.bronze}
                 tier="bronze"
             />
             <AchievementCategory 
-                title="Silver Achievements"
+                title={t('achievements.silver-title')}
                 achievements={groupedAchievements.silver}
                 tier="silver"
             />
             <AchievementCategory 
-                title="Gold Achievements"
+                title={t('achievements.gold-title')}
                 achievements={groupedAchievements.gold}
                 tier="gold"
             />
             <AchievementCategory 
-                title="Special Achievements"
+                title={t('achievements.special-title')}
                 achievements={groupedAchievements.special}
                 tier="special"
             />

@@ -7,12 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ChartTooltipContent, ChartTooltip, ChartContainer } from '@/components/ui/chart';
 import type { DayData } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
+import { useI18n } from '@/locales/client';
 
 interface CaloriesChartProps {
   dailyData: DayData[];
 }
 
 export function CaloriesChart({ dailyData }: CaloriesChartProps) {
+  const t = useI18n();
+
   const last7DaysData = useMemo(() => {
     const today = new Date();
     const data = [];
@@ -30,14 +33,14 @@ export function CaloriesChart({ dailyData }: CaloriesChartProps) {
   return (
     <Card className="shadow-lg animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
       <CardHeader>
-        <CardTitle>Weekly Calorie Intake</CardTitle>
-        <CardDescription>Calories consumed over the last 7 days.</CardDescription>
+        <CardTitle>{t('dashboard.chart-title')}</CardTitle>
+        <CardDescription>{t('dashboard.chart-desc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
             config={{
                 calories: {
-                    label: 'Calories',
+                    label: t('profile.goals-calories'),
                     color: 'hsl(var(--chart-1))',
                 },
             }}

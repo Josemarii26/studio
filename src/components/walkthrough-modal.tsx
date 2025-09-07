@@ -7,46 +7,48 @@ import { Button } from '@/components/ui/button';
 import { NutriTrackLogo } from './nutri-track-logo';
 import { Calendar, MessageSquare, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import { useI18n } from '@/locales/client';
 
 interface WalkthroughModalProps {
   isOpen: boolean;
   onComplete: () => void;
 }
 
-const steps = [
-  {
-    icon: <NutriTrackLogo className="h-12 w-12 text-primary" />,
-    title: "Welcome to NutriTrackAI!",
-    description: "Let's take a quick tour to get you started on your nutritional journey.",
-    image: "https://picsum.photos/600/401",
-    imageHint: "welcome illustration",
-  },
-  {
-    icon: <Calendar className="h-12 w-12 text-primary" />,
-    title: "The Calendar Dashboard",
-    description: "This is your mission control. Every day you log your meals, the calendar will light up with a color showing how close you were to your goals. Green is on-target, yellow is close, and red is a bit off.",
-    image: "https://picsum.photos/600/402",
-    imageHint: "calendar interface",
-  },
-  {
-    icon: <MessageSquare className="h-12 w-12 text-primary" />,
-    title: "The AI Chat",
-    description: "This is where the magic happens. Instead of manually entering every item, just tell the AI what you ate throughout the day. You can only successfully log your meals once per day, so give it a full summary!",
-    highlightedText: "IMPORTANT: The idea is to do this once at the end of the day.",
-    image: "https://picsum.photos/600/403",
-    imageHint: "chatbot conversation",
-  },
-  {
-    icon: <User className="h-12 w-12 text-primary" />,
-    title: "Your Profile & Goals",
-    description: "Click your avatar in the top right to visit your profile. You can see all your stats, goals, and even change your profile picture. That's it! You're all set to start tracking.",
-    image: "https://picsum.photos/600/404",
-    imageHint: "user profile page",
-  },
-];
-
 export function WalkthroughModal({ isOpen, onComplete }: WalkthroughModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const t = useI18n();
+
+  const steps = [
+    {
+      icon: <NutriTrackLogo className="h-12 w-12 text-primary" />,
+      title: t('walkthrough.step1-title'),
+      description: t('walkthrough.step1-desc'),
+      image: "https://picsum.photos/600/401",
+      imageHint: "welcome illustration",
+    },
+    {
+      icon: <Calendar className="h-12 w-12 text-primary" />,
+      title: t('walkthrough.step2-title'),
+      description: t('walkthrough.step2-desc'),
+      image: "https://picsum.photos/600/402",
+      imageHint: "calendar interface",
+    },
+    {
+      icon: <MessageSquare className="h-12 w-12 text-primary" />,
+      title: t('walkthrough.step3-title'),
+      description: t('walkthrough.step3-desc'),
+      highlightedText: t('walkthrough.step3-highlight'),
+      image: "https://picsum.photos/600/403",
+      imageHint: "chatbot conversation",
+    },
+    {
+      icon: <User className="h-12 w-12 text-primary" />,
+      title: t('walkthrough.step4-title'),
+      description: t('walkthrough.step4-desc'),
+      image: "https://picsum.photos/600/404",
+      imageHint: "user profile page",
+    },
+  ];
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -91,14 +93,14 @@ export function WalkthroughModal({ isOpen, onComplete }: WalkthroughModalProps) 
             {currentStep > 0 ? (
                 <Button variant="outline" onClick={handlePrev}>
                     <ArrowLeft className="mr-2"/>
-                    Previous
+                    {t('walkthrough.prev-btn')}
                 </Button>
             ) : (
                 <div></div> // Placeholder to keep the 'Next' button on the right
             )}
           
             <Button onClick={handleNext}>
-                {currentStep === steps.length - 1 ? "Let's Go!" : "Next"}
+                {currentStep === steps.length - 1 ? t('dashboard.walkthrough-complete-btn') : t('walkthrough.next-btn')}
                 {currentStep < steps.length - 1 && <ArrowRight className="ml-2"/>}
             </Button>
         </DialogFooter>

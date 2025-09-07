@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { isSameDay, startOfToday } from 'date-fns';
 import { loadChatHistory, saveChatHistory } from '@/firebase/firestore';
+import { useI18n } from '@/locales/client';
 
 const formSchema = z.object({
   message: z.string().min(10, { message: 'Please describe your meals in more detail.' }),
@@ -57,6 +58,7 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
 };
 
 const KeywordChecker = ({ message }: { message: string }) => {
+    const t = useI18n();
     const keywords = ['breakfast', 'lunch', 'dinner', 'snack'];
     const lowerCaseMessage = message.toLowerCase();
 
@@ -67,7 +69,7 @@ const KeywordChecker = ({ message }: { message: string }) => {
                 return (
                     <div key={keyword} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
                         {isPresent ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        <span className="capitalize">{keyword}</span>
+                        <span className="capitalize">{t(`chat.${keyword}` as any)}</span>
                     </div>
                 )
             })}
@@ -82,6 +84,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const t = useI18n();
   
   const todaysData = dailyData.find(d => d.date && isSameDay(d.date, startOfToday()));
   const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0;
@@ -95,7 +98,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
 
   const resetToInitialMessage = () => {
     setMessages([
-        { id: '1', role: 'assistant', content: "Hi! Tell me what you ate today, including any supplements. I'll analyze it for you.", timestamp: new Date() }
+        { id: '1', role: 'assistant', content: t('chat.initial-message'), timestamp: new Date() }
     ]);
   }
 
@@ -134,11 +137,11 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      toast({ title: 'Copied to clipboard!'});
+      toast({ title: t('chat.copied')});
       setCopiedMessageId(id);
       setTimeout(() => setCopiedMessageId(null), 2000);
     }).catch(err => {
-      toast({ variant: 'destructive', title: 'Failed to copy', description: 'Could not copy text to clipboard.' });
+      toast({ variant: 'destructive', title: t('chat.copy-failed'), description: t('chat.copy-failed-desc') });
     });
   }
 
@@ -146,8 +149,8 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     if(hasSuccessfulLogForToday) {
         toast({
             variant: "destructive",
-            title: "Already Logged for Today",
-            description: "You can only submit one nutritional analysis per day. You can see today's entry on the calendar.",
+            title: t('chat.log-today-error'),
+            description: t('chat.log-today-error-desc'),
         });
         return;
     }
@@ -159,8 +162,8 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     if (keywordsFound.length < 2) {
         toast({
             variant: 'destructive',
-            title: 'Missing Meal Labels',
-            description: 'Please label at least two meals (e.g., "Breakfast" and "Lunch") to get an accurate analysis.',
+            title: t('chat.missing-labels-error'),
+            description: t('chat.missing-labels-error-desc'),
         });
         return;
     }
@@ -175,12 +178,12 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
       onAnalysisUpdate(result); // The parent now handles adding assistant/system messages
     } catch (error) {
       console.error(error);
-      const errorMessage: ChatMessage = { id: String(Date.now() + 1), role: 'system', content: 'An unexpected server error occurred. Please try again later.', timestamp: new Date() };
+      const errorMessage: ChatMessage = { id: String(Date.now() + 1), role: 'system', content: t('chat.server-error'), timestamp: new Date() };
       setMessages(prev => [...prev, errorMessage]);
       toast({
         variant: "destructive",
-        title: "Server Error",
-        description: "There was an error processing your request on the server.",
+        title: t('chat.server-error-toast'),
+        description: t('chat.server-error-toast-desc'),
       });
     } finally {
       setIsLoading(false);
@@ -192,8 +195,8 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
       <CardHeader className="flex flex-row items-center gap-3 border-b">
         <NutriTrackLogo className="h-8 w-8 text-primary" />
         <div>
-          <CardTitle>Nutritional Chat</CardTitle>
-          <CardDescription>Your AI-powered nutrition assistant.</CardDescription>
+          <CardTitle>{t('chat.title')}</CardTitle>
+          <CardDescription>{t('chat.description')}</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-4 flex flex-col min-h-0">
@@ -253,13 +256,13 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
         {hasSuccessfulLogForToday ? (
             <div className="w-full text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg flex items-center gap-2 justify-center">
                 <Info className="h-4 w-4" />
-                You've already logged your meals for today.
+                {t('chat.already-logged')}
             </div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full flex-col gap-2">
                <div className="p-2 rounded-md bg-muted/50">
-                  <p className="text-xs text-muted-foreground mb-2">Please include at least two labels for an accurate analysis:</p>
+                  <p className="text-xs text-muted-foreground mb-2">{t('chat.keyword-helper')}</p>
                   <KeywordChecker message={messageValue || ''} />
                </div>
               <div className="flex w-full items-start gap-2">
@@ -271,7 +274,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                       <FormControl>
                         <Textarea
                           {...field}
-                          placeholder="Describe your meals..."
+                          placeholder={t('chat.placeholder')}
                           className="resize-none"
                           rows={4}
                           onKeyDown={(e) => {
@@ -297,5 +300,3 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     </div>
   );
 }
-
-    
