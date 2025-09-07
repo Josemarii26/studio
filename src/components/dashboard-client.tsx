@@ -97,7 +97,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     }
 
     const today = startOfToday();
-    const hasDataForToday = dailyData.some(d => isSameDay(d.date, today) && d.totals.calories > 0);
+    const hasDataForToday = dailyData.some(d => isSameDay(d.date, today));
 
     return {
         green: dailyData.filter(d => d.status === 'green').map(d => d.date),
