@@ -42,19 +42,17 @@ You MUST identify meals labeled with keywords.
 If the user's description does not contain at least one of these keywords (in either language), you must respond with an error message in the user's language, stating that you couldn't find any meals and that they should label them clearly.
 
 Your response must include:
-1.  A detailed breakdown of each meal with its estimated calories, protein, fat, and carbohydrates.
+1.  A detailed breakdown of each meal with its estimated calories, protein, fat, and carbohydrates. The format for this breakdown is strict.
 2.  A summary of the day's total calories, protein, fat, and carbs.
 3.  A brief "Observations" ("Observaciones" in Spanish) section with insights about the day's intake.
 4.  An analysis of whether the user mentioned taking "creatine" ("creatina" in Spanish) or "protein powder" ("proteína en polvo" in Spanish) and setting the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
 
 **IMPORTANT**: Structure your response EXACTLY like the example below, using the user's language for all titles and units.
 
-**[Date] – Meal Log / Registro de Comidas**
-
 **Breakfast / Desayuno:** [description]
 * [calories] kcal | [protein] g protein / proteína | [fat] g fat / grasa | [carbs] g carbohydrates / carbohidratos
 
-[Repeat for each meal]
+[Repeat for each meal, including Lunch/Almuerzo, Dinner/Cena, and Snack/Merienda if present]
 
 **Totals for the day / Totales del día:**
 * **Calories / Calorías:** [total] kcal
@@ -79,4 +77,3 @@ const nutritionalChatAnalysisFlow = ai.defineFlow(
     return output!;
   }
 );
-
