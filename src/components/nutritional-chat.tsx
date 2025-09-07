@@ -59,17 +59,22 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
 
 const KeywordChecker = ({ message }: { message: string }) => {
     const t = useI18n();
-    const keywords = ['breakfast', 'lunch', 'dinner', 'snack'];
+    const keywords = {
+        'breakfast': 'desayuno',
+        'lunch': 'almuerzo',
+        'dinner': 'cena',
+        'merienda': 'merienda',
+    };
     const lowerCaseMessage = message.toLowerCase();
 
     return (
         <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-            {keywords.map(keyword => {
-                const isPresent = lowerCaseMessage.includes(keyword);
+            {Object.entries(keywords).map(([en, es]) => {
+                const isPresent = lowerCaseMessage.includes(en) || lowerCaseMessage.includes(es);
                 return (
-                    <div key={keyword} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
+                    <div key={en} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
                         {isPresent ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        <span className="capitalize">{t(`chat.${keyword}` as any)}</span>
+                        <span className="capitalize">{t(`chat.${en}` as any)}</span>
                     </div>
                 )
             })}
@@ -155,11 +160,21 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
         return;
     }
 
-    const requiredKeywords = ['breakfast', 'lunch', 'dinner', 'snack'];
+    const keywords = ['breakfast', 'lunch', 'dinner', 'merienda', 'desayuno', 'almuerzo', 'cena'];
     const messageContent = values.message.toLowerCase();
-    const keywordsFound = requiredKeywords.filter(keyword => messageContent.includes(keyword));
+    
+    let keywordsFoundCount = 0;
+    const foundKeywords = new Set();
+    
+    if (messageContent.includes('breakfast') || messageContent.includes('desayuno')) foundKeywords.add('breakfast');
+    if (messageContent.includes('lunch') || messageContent.includes('almuerzo')) foundKeywords.add('lunch');
+    if (messageContent.includes('dinner') || messageContent.includes('cena')) foundKeywords.add('dinner');
+    if (messageContent.includes('merienda')) foundKeywords.add('merienda'); // 'snack' was already updated to 'merienda' previously
 
-    if (keywordsFound.length < 2) {
+    keywordsFoundCount = foundKeywords.size;
+
+
+    if (keywordsFoundCount < 2) {
         toast({
             variant: 'destructive',
             title: t('chat.missing-labels-error'),
