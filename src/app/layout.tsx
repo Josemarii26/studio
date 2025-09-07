@@ -83,7 +83,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuthProvider>
             {isAppLoading && <SplashScreen />}
-            <div className={cn("transition-opacity duration-500", isAppLoading ? 'opacity-0' : 'opacity-100')}>
+            <div className={cn(isAppLoading && "opacity-0")}>
               {children}
             </div>
             <Toaster />
