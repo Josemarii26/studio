@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,18 +12,14 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { useAuth } from '@/hooks/use-auth';
+import { loadDailyDataForUser } from '@/firebase/firestore';
+import type { DayData } from '@/lib/types';
+import { isSameDay, subDays, startOfToday } from 'date-fns';
 
-// Mock data - in a real app, this would be fetched from a server
-const performanceStats = {
-    currentStreak: 12,
-    avgCalories: 2145,
-    daysTracked: 20,
-    goalProgress: 60, // percentage
-};
 
 function ProfileHeader() {
   return (
@@ -73,12 +69,68 @@ export default function ProfilePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [dailyData, setDailyData] = useState<DayData[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
         router.push('/login');
     }
   },[user, authLoading, router])
+  
+  // Load daily data from Firestore when the component mounts or user changes
+  useEffect(() => {
+    async function loadData() {
+      if (user) {
+        setIsLoadingData(true);
+        const data = await loadDailyDataForUser(user.uid);
+        setDailyData(data);
+        setIsLoadingData(false);
+      }
+    }
+    loadData();
+  }, [user]);
+
+  const performanceStats = useMemo(() => {
+    if (!dailyData || dailyData.length === 0) {
+        return { currentStreak: 0, avgCalories: 0, daysTracked: 0, goalProgress: 0, avgProtein: 0, avgFat: 0, avgCarbs: 0 };
+    }
+
+    // --- Calculate Days Tracked & Averages ---
+    const daysTracked = dailyData.length;
+    const totalCalories = dailyData.reduce((sum, day) => sum + day.totals.calories, 0);
+    const avgCalories = daysTracked > 0 ? Math.round(totalCalories / daysTracked) : 0;
+    const avgProtein = daysTracked > 0 ? Math.round(dailyData.reduce((sum, day) => sum + day.totals.protein, 0) / daysTracked) : 0;
+    const avgFat = daysTracked > 0 ? Math.round(dailyData.reduce((sum, day) => sum + day.totals.fat, 0) / daysTracked) : 0;
+    const avgCarbs = daysTracked > 0 ? Math.round(dailyData.reduce((sum, day) => sum + day.totals.carbs, 0) / daysTracked) : 0;
+
+    // --- Calculate Goal Progress (as % of green days) ---
+    const greenDays = dailyData.filter(d => d.status === 'green').length;
+    const goalProgress = daysTracked > 0 ? Math.round((greenDays / daysTracked) * 100) : 0;
+
+    // --- Calculate Current Streak ---
+    const sortedData = [...dailyData].sort((a,b) => b.date.getTime() - a.date.getTime());
+    let streak = 0;
+    let today = startOfToday();
+    const startIndex = sortedData.findIndex(d => d.date && d.date <= today);
+    if (startIndex !== -1) {
+        let currentDate = sortedData[startIndex].date;
+        if (isSameDay(currentDate, today) || isSameDay(currentDate, subDays(today, 1))) {
+            for (let i = startIndex; i < sortedData.length; i++) {
+                const day = sortedData[i];
+                if (day.date && isSameDay(day.date, currentDate)) {
+                    if (day.status === 'green') {
+                        streak++;
+                        currentDate = subDays(currentDate, 1);
+                    } else { break; }
+                } else { break; }
+            }
+        }
+    }
+    
+    return { currentStreak: streak, avgCalories, daysTracked, goalProgress, avgProtein, avgFat, avgCarbs };
+  }, [dailyData]);
+
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -118,7 +170,7 @@ export default function ProfilePage() {
   };
 
 
-  if (authLoading || !profileLoaded || !userProfile) {
+  if (authLoading || !profileLoaded || !userProfile || isLoadingData) {
     return <DashboardLoader />;
   }
   
@@ -160,10 +212,10 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                       <StatCard icon={<Award className="w-6 h-6"/>} label="Current Streak" value={`${performanceStats.currentStreak} days`} />
+                       <StatCard icon={<Flame className="w-6 h-6"/>} label="Current Streak" value={`${performanceStats.currentStreak} days`} />
                        <StatCard icon={<Zap className="w-6 h-6"/>} label="Avg. Calories" value={performanceStats.avgCalories.toLocaleString()} unit="kcal/day" />
                        <StatCard icon={<TrendingUp className="w-6 h-6"/>} label="Days Tracked" value={performanceStats.daysTracked} />
-                       <StatCard icon={<Target className="w-6 h-6"/>} label="Goal Progress" value={`${performanceStats.goalProgress}%`} />
+                       <StatCard icon={<Award className="w-6 h-6"/>} label="On-Target Rate" value={`${performanceStats.goalProgress}%`} />
                     </div>
                 </CardContent>
             </Card>
@@ -207,25 +259,28 @@ export default function ProfilePage() {
             <Card className="md:col-span-3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
               <CardHeader>
                 <CardTitle>Daily Nutrition Goals</CardTitle>
-                 <CardDescription>Your recommended daily intake targets.</CardDescription>
+                 <CardDescription>Your recommended daily intake targets vs. your actual average.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                  <div className="space-y-2">
-                    <div className="flex justify-between text-lg font-medium"><span>Calories</span><span>{userProfile.dailyCalorieGoal.toLocaleString()} kcal</span></div>
+                    <div className="flex justify-between text-lg font-medium">
+                      <span>Calories</span>
+                      <span>{performanceStats.avgCalories.toLocaleString()} / {userProfile.dailyCalorieGoal.toLocaleString()} kcal</span>
+                    </div>
                     <Progress value={(performanceStats.avgCalories / userProfile.dailyCalorieGoal) * 100} />
                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <div className="space-y-2">
-                        <div className="flex justify-between text-sm"><span>Protein</span><span>{userProfile.dailyProteinGoal}g</span></div>
-                        <Progress value={(130 / userProfile.dailyProteinGoal) * 100} className="h-2" />
+                        <div className="flex justify-between text-sm"><span>Protein</span><span>{performanceStats.avgProtein}g / {userProfile.dailyProteinGoal}g</span></div>
+                        <Progress value={(performanceStats.avgProtein / userProfile.dailyProteinGoal) * 100} className="h-2" />
                     </div>
                     <div className="space-y-2">
-                        <div className="flex justify-between text-sm"><span>Fat</span><span>{userProfile.dailyFatGoal}g</span></div>
-                        <Progress value={(90 / userProfile.dailyFatGoal) * 100} className="h-2" />
+                        <div className="flex justify-between text-sm"><span>Fat</span><span>{performanceStats.avgFat}g / {userProfile.dailyFatGoal}g</span></div>
+                        <Progress value={(performanceStats.avgFat / userProfile.dailyFatGoal) * 100} className="h-2" />
                     </div>
                     <div className="space-y-2">
-                        <div className="flex justify-between text-sm"><span>Carbs</span><span>{userProfile.dailyCarbsGoal}g</span></div>
-                        <Progress value={(160 / userProfile.dailyCarbsGoal) * 100} className="h-2" />
+                        <div className="flex justify-between text-sm"><span>Carbs</span><span>{performanceStats.avgCarbs}g / {userProfile.dailyCarbsGoal}g</span></div>
+                        <Progress value={(performanceStats.avgCarbs / userProfile.dailyCarbsGoal) * 100} className="h-2" />
                     </div>
                   </div>
               </CardContent>
