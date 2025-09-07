@@ -33,33 +33,37 @@ const prompt = ai.definePrompt({
   name: 'nutritionalChatAnalysisPrompt',
   input: {schema: NutritionalChatAnalysisInputSchema},
   output: {schema: NutritionalChatAnalysisOutputSchema},
-  prompt: `You are a nutrition expert. Your first and most important task is to respond ONLY in English. All titles, units, and observations must be in English, regardless of the user's input language.
+  prompt: `You are a bilingual nutrition expert, fluent in English and Spanish. Your primary task is to analyze a user's meal description and respond in the SAME language as the user's input.
 
-Analyze the user's description of their meals for the day. To ensure accurate parsing, you MUST identify sections labeled with the keywords "Breakfast", "Lunch", "Dinner", or "Snack". If the user's description does not contain at least one of these keywords, you should respond with an error message stating that you couldn't find any meals and that they should label them clearly.
+You MUST identify meals labeled with keywords.
+- For English, use: "Breakfast", "Lunch", "Dinner", "Snack".
+- For Spanish, use: "Desayuno", "Almuerzo", "Cena", "Snack".
+
+If the user's description does not contain at least one of these keywords (in either language), you must respond with an error message in the user's language, stating that you couldn't find any meals and that they should label them clearly.
 
 Your response must include:
-1. A detailed breakdown of each meal (Breakfast, Lunch, Dinner, Snack) with its estimated calories, protein, fat, and carbohydrates.
-2. A summary of the day's total calories, protein, fat, and carbs.
-3. A brief "Observations" section with insights about the day's intake.
-4. An analysis of whether the user mentioned taking "creatine" or "protein powder" and setting the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
+1.  A detailed breakdown of each meal with its estimated calories, protein, fat, and carbohydrates.
+2.  A summary of the day's total calories, protein, fat, and carbs.
+3.  A brief "Observations" ("Observaciones" in Spanish) section with insights about the day's intake.
+4.  An analysis of whether the user mentioned taking "creatine" ("creatina" in Spanish) or "protein powder" ("proteína en polvo" in Spanish) and setting the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
 
-**IMPORTANT**: Structure your response EXACTLY like the example below.
+**IMPORTANT**: Structure your response EXACTLY like the example below, using the user's language for all titles and units.
 
-**[Date] – Meal Log**
+**[Date] – Meal Log / Registro de Comidas**
 
-**Breakfast:** [description]
-* [calories] kcal | [protein] g protein | [fat] g fat | [carbs] g carbohydrates
+**Breakfast / Desayuno:** [description]
+* [calories] kcal | [protein] g protein / proteína | [fat] g fat / grasa | [carbs] g carbohydrates / carbohidratos
 
 [Repeat for each meal]
 
-**Totals for the day:**
-* **Calories:** [total] kcal
-* **Protein:** [total] g
-* **Fats:** [total] g
-* **Carbohydrates:** [total] g
+**Totals for the day / Totales del día:**
+* **Calories / Calorías:** [total] kcal
+* **Protein / Proteína:** [total] g
+* **Fats / Grasas:** [total] g
+* **Carbohydrates / Carbohidratos:** [total] g
 
-💡 **Observations:**
-[Brief analysis comparing to user's goals]
+💡 **Observations / Observaciones:**
+[Brief analysis in the user's language]
 
 User's Meal Description: {{{mealDescription}}}`,
 });
@@ -75,3 +79,4 @@ const nutritionalChatAnalysisFlow = ai.defineFlow(
     return output!;
   }
 );
+
