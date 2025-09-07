@@ -17,9 +17,9 @@ export function parseNutritionalAnalysis(
   const lines = analysisText.split('\n').filter(line => line.trim() !== '');
 
   // Regex for parsing each part of the AI's response
-  // This is now stricter to only match the exact meal types.
-  const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack)\*?\*?:\s*(.*)/i;
-  const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\|\s*([\d,.]*)\s*g fat\s*\|\s*([\d,.]*)\s*g carbohydrates/i;
+  // This is now stricter to only match the exact meal types in English or Spanish.
+  const mealHeaderRegex = /^\*?\*?(Breakfast|Lunch|Dinner|Snack|Desayuno|Almuerzo|Cena|Merienda)\*?\*?:\s*(.*)/i;
+  const nutritionLineRegex = /^\*\s*([\d,.]*)\s*kcal\s*\|\s*([\d,.]*)\s*g protein\s*\/ proteína\s*\|\s*([\d,.]*)\s*g fat\s*\/ grasa\s*\|\s*([\d,.]*)\s*g carbohydrates\s*\/ carbohidratos/i;
   
   // First, parse all the meals and their data
   for (let i = 0; i < lines.length - 1; i++) {
@@ -27,9 +27,16 @@ export function parseNutritionalAnalysis(
     const mealMatch = line.match(mealHeaderRegex);
     
     if (mealMatch) {
-      const mealType = mealMatch[1].toLowerCase() as keyof DayData['meals'];
+      let mealType = mealMatch[1].toLowerCase() as keyof DayData['meals'];
       const description = mealMatch[2].trim();
-      
+
+      // Normalize Spanish keywords to English for the data object keys
+      if (mealType === 'desayuno') mealType = 'breakfast';
+      if (mealType === 'almuerzo') mealType = 'lunch';
+      if (mealType === 'cena') mealType = 'dinner';
+      if (mealType === 'merienda') mealType = 'merienda';
+
+
       const nextLine = lines[i + 1];
       const nutritionMatch = nextLine.match(nutritionLineRegex);
       
@@ -46,7 +53,7 @@ export function parseNutritionalAnalysis(
   }
 
   // Second, find and parse the observations section
-  const observationsRegex = /^💡\s*\*?Observations\*?\*?:/i;
+  const observationsRegex = /^💡\s*\*?(Observations|Observaciones)\*?\*?:/i;
   const obsStartIndex = lines.findIndex(line => observationsRegex.test(line));
 
   if (obsStartIndex !== -1) {
@@ -56,7 +63,7 @@ export function parseNutritionalAnalysis(
     const subsequentLines = [];
     for (let i = obsStartIndex + 1; i < lines.length; i++) {
         // Stop if we hit another major section like "Totals"
-        if (/^\*?\*?Totals for the day/.test(lines[i])) {
+        if (/^\*?\*?(Totals for the day|Totales del día)/.test(lines[i])) {
             break;
         }
         subsequentLines.push(lines[i]);

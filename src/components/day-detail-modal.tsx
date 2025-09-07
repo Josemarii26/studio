@@ -24,10 +24,10 @@ const mealIcons: { [key: string]: ReactNode } = {
   breakfast: <Carrot className="h-5 w-5 mr-2 text-muted-foreground" />,
   lunch: <Pizza className="h-5 w-5 mr-2 text-muted-foreground" />,
   dinner: <Soup className="h-5 w-5 mr-2 text-muted-foreground" />,
-  snack: <Cookie className="h-5 w-5 mr-2 text-muted-foreground" />,
+  merienda: <Cookie className="h-5 w-5 mr-2 text-muted-foreground" />,
 };
 
-const MEAL_ORDER: (keyof DayData['meals'])[] = ['breakfast', 'lunch', 'snack', 'dinner'];
+const MEAL_ORDER: (keyof DayData['meals'])[] = ['breakfast', 'lunch', 'merienda', 'dinner'];
 
 
 export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToChat }: DayDetailModalProps) {
@@ -139,7 +139,7 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToCh
             <div className="space-y-4">
               {hasData ? (
                 MEAL_ORDER.map(mealType => {
-                    const mealData = meals[mealType];
+                    const mealData = meals[mealType as keyof typeof meals];
                     if (!mealData) return null;
                     
                     return (

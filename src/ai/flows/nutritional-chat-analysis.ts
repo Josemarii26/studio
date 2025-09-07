@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
 
 You MUST identify meals labeled with keywords.
 - For English, use: "Breakfast", "Lunch", "Dinner", "Snack".
-- For Spanish, use: "Desayuno", "Almuerzo", "Cena", "Snack".
+- For Spanish, use: "Desayuno", "Almuerzo", "Cena", "Merienda".
 
 If the user's description does not contain at least one of these keywords (in either language), you must respond with an error message in the user's language, stating that you couldn't find any meals and that they should label them clearly.
 

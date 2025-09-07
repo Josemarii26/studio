@@ -12,7 +12,7 @@ export type DayData = {
   meals: {
     breakfast?: Meal;
     lunch?: Meal;
-    snack?: Meal;
+    merienda?: Meal;
     dinner?: Meal;
   };
   totals: {
