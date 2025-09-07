@@ -82,32 +82,30 @@ export default function DashboardPage() {
   const [showWalkthrough, setShowWalkthrough] = useState(false);
 
 
-  // Authentication and onboarding checks
+  // Authentication and onboarding checks. This is the new, more robust logic.
   useEffect(() => {
-    // Wait until both auth and profile are definitively loaded
+    // Wait until both auth and profile are definitively loaded before doing anything.
     if (authLoading || !profileLoaded) {
       return;
     }
 
-    // Now that we're sure loading is complete, we can make routing decisions
+    // Now that we're sure loading is complete, we can make routing decisions.
     if (!user) {
+      // If there's no user, send to login.
       router.push('/login');
     } else if (!userProfile) {
+      // If there is a user, but no profile, send to onboarding.
       router.push('/onboarding');
+    } else {
+        // If we have a user and a profile, check if they need the walkthrough.
+        const walkthroughKey = `walkthroughCompleted-${user.uid}`;
+        const completed = localStorage.getItem(walkthroughKey);
+        if (!completed) {
+            setShowWalkthrough(true);
+        }
     }
   }, [user, userProfile, authLoading, profileLoaded, router]);
 
-
-  // Check if walkthrough should be shown
-  useEffect(() => {
-    if (user) {
-      const walkthroughKey = `walkthroughCompleted-${user.uid}`;
-      const completed = localStorage.getItem(walkthroughKey);
-      if (!completed) {
-        setShowWalkthrough(true);
-      }
-    }
-  }, [user]);
 
   const handleWalkthroughComplete = () => {
     if (user) {
@@ -121,7 +119,8 @@ export default function DashboardPage() {
   // Load data from Firestore when the component mounts or user changes
   useEffect(() => {
     async function loadData() {
-      if (user) {
+      // Only load data if we have a confirmed user with a profile
+      if (user && userProfile) {
         setIsLoadingData(true);
         const data = await loadDailyDataForUser(user.uid);
         setDailyData(data);
@@ -129,7 +128,7 @@ export default function DashboardPage() {
       }
     }
     loadData();
-  }, [user]);
+  }, [user, userProfile]);
 
   
   // Save data to Firestore whenever it changes
@@ -181,13 +180,14 @@ export default function DashboardPage() {
     setChatMessages(prev => [...prev, assistantMessage]);
   };
   
-  // This is the primary loading gate for the entire page.
+  // This is the primary loading gate for the entire page. It prevents any rendering
+  // until we know for sure the user's auth and profile state.
   if (authLoading || !profileLoaded || isLoadingData) {
     return <DashboardLoader />;
   }
 
-  // This second check handles the case where the redirect logic is running
-  // but we don't want to flash the dashboard content.
+  // This second check handles the case where the redirect logic from the useEffect is running.
+  // We don't want to flash the dashboard content before the redirect happens.
   if (!user || !userProfile) {
     return <DashboardLoader />;
   }

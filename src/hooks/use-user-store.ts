@@ -21,27 +21,31 @@ export function useUserStore() {
     let isCancelled = false;
 
     const loadProfile = async () => {
-      if (user) {
-        setIsLoaded(false); // Start loading
-        try {
-          const profile = await loadUserProfile(user.uid);
-          if (!isCancelled) {
-             setUserProfileState(profile);
-          }
-        } catch (error) {
-          console.error("Failed to load userProfile from Firestore", error);
-           if (!isCancelled) {
-            setUserProfileState(null); // Fallback to null on error
-          }
-        } finally {
-           if (!isCancelled) {
-            setIsLoaded(true); // Finish loading
-          }
+      // If there is no authenticated user, we can immediately say we are "loaded" and there is no profile.
+      if (!user) {
+        if (!isCancelled) {
+          setUserProfileState(null);
+          setIsLoaded(true);
         }
-      } else {
-        // If there is no user, there's no profile to load.
-        setUserProfileState(null);
-        setIsLoaded(true);
+        return;
+      }
+      
+      // If there is a user, start the loading process.
+      setIsLoaded(false); 
+      try {
+        const profile = await loadUserProfile(user.uid);
+        if (!isCancelled) {
+            setUserProfileState(profile);
+        }
+      } catch (error) {
+        console.error("Failed to load userProfile from Firestore", error);
+          if (!isCancelled) {
+          setUserProfileState(null); // Fallback to null on error
+        }
+      } finally {
+          if (!isCancelled) {
+          setIsLoaded(true); // Finish loading
+        }
       }
     };
     
