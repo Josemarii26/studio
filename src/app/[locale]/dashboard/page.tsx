@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,8 +16,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
-import type { DayData, ChatMessage } from '@/lib/types';
-import { parseNutritionalAnalysis } from '@/lib/utils';
+import type { DayData, ChatMessage, UserProfile } from '@/lib/types';
+import { NutritionalChatAnalysisOutput } from '@/ai/flows/nutritional-chat-analysis';
 import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
@@ -75,6 +74,17 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   );
 }
 
+
+function getDayStatus(totals: DayData['totals'], userProfile: UserProfile): 'green' | 'yellow' | 'red' {
+    let status: 'green' | 'yellow' | 'red' = 'green';
+    const calorieDiff = Math.abs(totals.calories - userProfile.dailyCalorieGoal);
+    if (calorieDiff > 400) {
+      status = 'red';
+    } else if (calorieDiff > 200) {
+      status = 'yellow';
+    }
+    return status;
+}
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -148,13 +158,11 @@ export default function DashboardPage() {
   }, [dailyData, user, isLoadingData]);
   
 
-  const handleAnalysisUpdate = (result: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => {
+  const handleAnalysisUpdate = (result: NutritionalChatAnalysisOutput) => {
     if (!userProfile) return;
-
-    const parsedData = parseNutritionalAnalysis(result.analysis, userProfile);
     
-    // Check if parsing failed (indicated by 0 calories)
-    if(parsedData.totals.calories === 0) {
+    // Check if the AI returned an empty object or no calories, which indicates a failure.
+    if(!result || !result.totals || result.totals.calories === 0) {
         toast({
             variant: "destructive",
             title: t('dashboard.toast-analysis-failed'),
@@ -174,7 +182,10 @@ export default function DashboardPage() {
     const today = startOfToday();
     const newDayData: DayData = {
       date: today,
-      ...parsedData,
+      meals: result.meals,
+      totals: result.totals,
+      observations: result.observations,
+      status: getDayStatus(result.totals, userProfile),
       creatineTaken: result.creatineTaken,
       proteinTaken: result.proteinTaken,
     };
@@ -183,9 +194,16 @@ export default function DashboardPage() {
         const otherDays = prevData.filter(d => !isSameDay(d.date, today));
         return [...otherDays, newDayData];
     });
+    
+    // Create a user-friendly text summary for the chat
+    const analysisSummary = `💡 **${t('profile.goals-title')}**\n${result.observations}\n\n**${t('profile.summary-title')}**\n- ${t('profile.goals-calories')}: ${result.totals.calories}\n- ${t('profile.goals-protein')}: ${result.totals.protein}g\n- ${t('profile.goals-fat')}: ${result.totals.fat}g\n- ${t('profile.goals-carbs')}: ${result.totals.carbs}g`;
 
-    // Add successful analysis to chat
-    const assistantMessage: ChatMessage = { id: String(Date.now() + 1), role: 'assistant', content: result.analysis, timestamp: new Date() };
+    const assistantMessage: ChatMessage = { 
+        id: String(Date.now() + 1), 
+        role: 'assistant', 
+        content: analysisSummary, 
+        timestamp: new Date() 
+    };
     setChatMessages(prev => [...prev, assistantMessage]);
   };
   

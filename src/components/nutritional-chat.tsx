@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { nutritionalChatAnalysis } from '@/ai/flows/nutritional-chat-analysis';
+import { nutritionalChatAnalysis, type NutritionalChatAnalysisOutput } from '@/ai/flows/nutritional-chat-analysis';
 import { NutriTrackLogo } from './nutri-track-logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ const formSchema = z.object({
 });
 
 interface NutritionalChatProps {
-  onAnalysisUpdate: (data: { analysis: string, creatineTaken: boolean, proteinTaken: boolean }) => void;
+  onAnalysisUpdate: (data: NutritionalChatAnalysisOutput) => void;
   dailyData: DayData[];
   messages: ChatMessage[];
   setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
@@ -92,7 +92,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const t = useI18n();
   
   const todaysData = dailyData.find(d => d.date && isSameDay(d.date, startOfToday()));
-  const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0;
+  const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0 && todaysData.totals.calories > 0;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -169,7 +169,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     if (messageContent.includes('breakfast') || messageContent.includes('desayuno')) foundKeywords.add('breakfast');
     if (messageContent.includes('lunch') || messageContent.includes('almuerzo')) foundKeywords.add('lunch');
     if (messageContent.includes('dinner') || messageContent.includes('cena')) foundKeywords.add('dinner');
-    if (messageContent.includes('merienda')) foundKeywords.add('merienda'); // 'snack' was already updated to 'merienda' previously
+    if (messageContent.includes('merienda')) foundKeywords.add('merienda');
 
     keywordsFoundCount = foundKeywords.size;
 

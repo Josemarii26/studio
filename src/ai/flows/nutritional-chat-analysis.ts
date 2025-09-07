@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A nutritional chat analysis AI agent.
+ * @fileOverview A nutritional chat analysis AI agent that uses structured output.
  *
  * - nutritionalChatAnalysis - A function that handles the nutritional analysis process.
  * - NutritionalChatAnalysisInput - The input type for the nutritionalChatAnalysis function.
@@ -16,12 +16,33 @@ const NutritionalChatAnalysisInputSchema = z.object({
 });
 export type NutritionalChatAnalysisInput = z.infer<typeof NutritionalChatAnalysisInputSchema>;
 
+const MealSchema = z.object({
+    description: z.string().describe("The user's description of this specific meal."),
+    calories: z.number().describe('The estimated calories for this meal.'),
+    protein: z.number().describe('The estimated protein in grams for this meal.'),
+    fat: z.number().describe('The estimated fat in grams for this meal.'),
+    carbs: z.number().describe('The estimated carbohydrates in grams for this meal.'),
+});
+
 const NutritionalChatAnalysisOutputSchema = z.object({
-  analysis: z.string().describe('The nutritional analysis of the meals.'),
+  meals: z.object({
+    breakfast: MealSchema.optional().describe('The analysis for the breakfast meal, if present.'),
+    lunch: MealSchema.optional().describe('The analysis for the lunch meal, if present.'),
+    dinner: MealSchema.optional().describe('The analysis for the dinner meal, if present.'),
+    merienda: MealSchema.optional().describe('The analysis for the snack/merienda, if present.'),
+  }),
+  totals: z.object({
+    calories: z.number().describe('The total summed calories for all meals.'),
+    protein: z.number().describe('The total summed protein for all meals.'),
+    fat: z.number().describe('The total summed fat for all meals.'),
+    carbs: z.number().describe('The total summed carbs for all meals.'),
+  }),
+  observations: z.string().describe("A brief analysis and observations about the user's intake for the day, written in the user's language."),
   creatineTaken: z.boolean().describe('Whether the user mentioned taking creatine.'),
   proteinTaken: z.boolean().describe('Whether the user mentioned taking protein powder.'),
 });
 export type NutritionalChatAnalysisOutput = z.infer<typeof NutritionalChatAnalysisOutputSchema>;
+
 
 export async function nutritionalChatAnalysis(
   input: NutritionalChatAnalysisInput
@@ -33,35 +54,19 @@ const prompt = ai.definePrompt({
   name: 'nutritionalChatAnalysisPrompt',
   input: {schema: NutritionalChatAnalysisInputSchema},
   output: {schema: NutritionalChatAnalysisOutputSchema},
-  prompt: `You are a bilingual nutrition expert, fluent in English and Spanish. Your primary task is to analyze a user's meal description and respond in the SAME language as the user's input.
+  prompt: `You are a bilingual nutrition expert, fluent in English and Spanish. Your primary task is to analyze a user's meal description and respond with a structured JSON object. You MUST respond in the SAME language as the user's input for any free-text fields like 'observations'.
 
-You MUST identify meals labeled with keywords.
+You MUST identify meals labeled with keywords and place them in the correct field in the output schema.
 - For English, use: "Breakfast", "Lunch", "Dinner", "Snack".
 - For Spanish, use: "Desayuno", "Almuerzo", "Cena", "Merienda".
 
-If the user's description does not contain at least one of these keywords (in either language), you must respond with an error message in the user's language, stating that you couldn't find any meals and that they should label them clearly.
-
-Your response must include:
-1.  A detailed breakdown of each meal with its estimated calories, protein, fat, and carbohydrates. The format for this breakdown is strict.
-2.  A summary of the day's total calories, protein, fat, and carbs.
-3.  A brief "Observations" ("Observaciones" in Spanish) section with insights about the day's intake.
-4.  An analysis of whether the user mentioned taking "creatine" ("creatina" in Spanish) or "protein powder" ("proteína en polvo" in Spanish) and setting the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
-
-**IMPORTANT**: Structure your response EXACTLY like the example below, using the user's language for all titles and units.
-
-**Breakfast / Desayuno:** [description]
-* [calories] kcal | [protein] g protein / proteína | [fat] g fat / grasa | [carbs] g carbohydrates / carbohidratos
-
-[Repeat for each meal, including Lunch/Almuerzo, Dinner/Cena, and Snack/Merienda if present]
-
-**Totals for the day / Totales del día:**
-* **Calories / Calorías:** [total] kcal
-* **Protein / Proteína:** [total] g
-* **Fats / Grasas:** [total] g
-* **Carbohydrates / Carbohidratos:** [total] g
-
-💡 **Observations / Observaciones:**
-[Brief analysis in the user's language]
+Your task is to:
+1.  Analyze the user's meal description.
+2.  Calculate the estimated calories, protein, fat, and carbohydrates for EACH meal.
+3.  Calculate the TOTALS for the entire day by summing the macronutrients of all individual meals.
+4.  Provide brief "Observations" ("Observaciones" in Spanish) with insights about the day's intake.
+5.  Determine if the user mentioned taking "creatine" ("creatina" in Spanish) or "protein powder" ("proteína en polvo" in Spanish) and set the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
+6.  Populate the JSON output with all this information.
 
 User's Meal Description: {{{mealDescription}}}`,
 });
@@ -74,6 +79,9 @@ const nutritionalChatAnalysisFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("The AI model failed to return a structured response.");
+    }
+    return output;
   }
 );
