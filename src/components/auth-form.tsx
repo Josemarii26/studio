@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { NutriTrackLogo } from './nutri-track-logo';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -116,86 +117,173 @@ export function AuthForm() {
   }
 
   return (
-      <Card className="w-full max-w-md border-0 shadow-none sm:border sm:shadow-sm">
-        <CardHeader className="text-center">
-            <div className="mb-4 flex flex-col items-center">
-                <Link href="/">
-                    <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
-                </Link>
-            </div>
-          <CardTitle className="text-2xl">{isLogin ? 'Welcome Back!' : 'Create Your Account'}</CardTitle>
-          <CardDescription>{isLogin ? 'Sign in to access your dashboard.' : 'Fill out the form below to get started.'}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+    <div className="perspective">
+      <Card className={cn(
+          "w-full max-w-md border-0 shadow-none sm:border sm:shadow-sm transition-transform duration-700 transform-style-preserve-3d",
+          !isLogin && "rotate-y-180"
+      )}>
+        <div className="backface-hidden">
+            <CardHeader className="text-center">
+                <div className="mb-4 flex flex-col items-center">
+                    <Link href="/">
+                        <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
+                    </Link>
+                </div>
+              <CardTitle className="text-2xl">Welcome Back!</CardTitle>
+              <CardDescription>Sign in to access your dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Sign In
+                  </Button>
+                </form>
+              </Form>
+              
+              <div className="text-center text-sm">
+                {"Don't have an account?"}
+                <Button variant="link" onClick={() => {
+                    setIsLogin(false);
+                    form.reset();
+                }} className="px-1">
+                  Sign Up
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLogin ? 'Sign In' : 'Create Account'}
+                <GoogleIcon />
+                Sign in with Google
               </Button>
-            </form>
-          </Form>
-          
-          <div className="text-center text-sm">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}
-            <Button variant="link" onClick={() => {
-                setIsLogin(!isLogin);
-                form.reset();
-            }} className="px-1">
-              {isLogin ? 'Sign Up' : 'Sign In'}
-            </Button>
-          </div>
+              <p className="px-8 text-center text-sm text-muted-foreground">
+                By clicking continue, you agree to our{" "}
+                <Link href="#" className="underline underline-offset-4 hover:text-primary">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="#" className="underline underline-offset-4 hover:text-primary">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </CardContent>
+        </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <GoogleIcon />
-            Sign in with Google
-          </Button>
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            By clicking continue, you agree to our{" "}
-            <Link href="#" className="underline underline-offset-4 hover:text-primary">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="underline underline-offset-4 hover:text-primary">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-        </CardContent>
+        <div className="absolute top-0 left-0 w-full h-full backface-hidden rotate-y-180">
+            <CardHeader className="text-center">
+                <div className="mb-4 flex flex-col items-center">
+                    <Link href="/">
+                        <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
+                    </Link>
+                </div>
+              <CardTitle className="text-2xl">Create Your Account</CardTitle>
+              <CardDescription>Fill out the form below to get started.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Account
+                  </Button>
+                </form>
+              </Form>
+              
+              <div className="text-center text-sm">
+                {'Already have an account?'}
+                <Button variant="link" onClick={() => {
+                    setIsLogin(true);
+                    form.reset();
+                }} className="px-1">
+                  Sign In
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <GoogleIcon />
+                Sign in with Google
+              </Button>
+               <p className="px-8 text-center text-sm text-muted-foreground">
+                By clicking continue, you agree to our{" "}
+                <Link href="#" className="underline underline-offset-4 hover:text-primary">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="#" className="underline underline-offset-4 hover:text-primary">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </CardContent>
+        </div>
       </Card>
-
+    </div>
   );
 }
