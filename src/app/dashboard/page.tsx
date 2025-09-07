@@ -42,7 +42,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
       )}>
         <Link href="/" className="flex items-center gap-2">
           <NutriTrackLogo className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-bold text-foreground font-headline">
+          <h1 className="text-2xl font-bold text-foreground font-headline hidden sm:block">
             NutriTrackAI
           </h1>
         </Link>
