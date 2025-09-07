@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { isSameDay, startOfYesterday, differenceInDays, isToday } from 'date-fns';
+import { isSameDay, startOfYesterday, differenceInDays, isToday, startOfToday } from 'date-fns';
 import { CaloriesChart } from './calories-chart';
 import { AchievementsGrid } from './achievements-grid';
 import { useUserStore } from '@/hooks/use-user-store';
@@ -76,11 +76,10 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   }, [dailyData]);
 
 
-  const modifiers = () => {
+  const modifiers = useMemo(() => {
     const loggedDates = dailyData.map(d => d.date.toDateString());
     const yesterday = startOfYesterday();
     
-    // Find the earliest date logged to know where to start checking for missed days.
     const firstLogDate = dailyData.length > 0 
       ? dailyData.reduce((earliest, current) => current.date < earliest.date ? current : earliest, dailyData[0]).date
       : new Date();
@@ -97,14 +96,18 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
         }
     }
 
+    const today = startOfToday();
+    const hasDataForToday = dailyData.some(d => isSameDay(d.date, today) && d.totals.calories > 0);
+
     return {
         green: dailyData.filter(d => d.status === 'green').map(d => d.date),
         yellow: dailyData.filter(d => d.status === 'yellow').map(d => d.date),
         red: dailyData.filter(d => d.status === 'red').map(d => d.date),
         missed: missedDays,
-        disabled: { after: new Date() }, // Disable future days
+        today: hasDataForToday ? [] : [today], // Only apply today style if no data
+        disabled: { after: new Date() },
     }
-  };
+  }, [dailyData]);
   
   if (!isProfileLoaded || !userProfile) {
     return <DashboardLoader />;
@@ -138,7 +141,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                         onSelect={setDate}
                         onDayClick={handleDayClick}
                         className="p-0 w-full"
-                        modifiers={modifiers()}
+                        modifiers={modifiers}
                         modifiersClassNames={{
                             green: 'rdp-day_green',
                             yellow: 'rdp-day_yellow',
