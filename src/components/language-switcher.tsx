@@ -10,14 +10,14 @@ import {
 import { Button } from '@/components/ui/button';
 
 const SpainFlag = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" className="h-4 w-6 rounded-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" className="h-6 w-8 rounded-sm">
         <path fill="#c60b1e" d="M0 0h3v2H0z"/>
         <path fill="#ffc400" d="M0 .5h3v1H0z"/>
     </svg>
 );
 
 const UKFlag = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" className="h-4 w-6 rounded-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" className="h-6 w-8 rounded-sm">
         <clipPath id="a"><path d="M0 0v30h60V0z"/></clipPath>
         <path d="M0 0v30h60V0z" fill="#012169"/>
         <path d="m0 0 60 30m0-30L0 30" stroke="#fff" strokeWidth="6" clipPath="url(#a)"/>
@@ -35,7 +35,7 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="p-1 h-auto w-auto">
           {currentLocale === 'es' ? <SpainFlag /> : <UKFlag />}
           <span className="sr-only">Change language</span>
         </Button>
