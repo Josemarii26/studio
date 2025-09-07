@@ -10,13 +10,14 @@ import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEma
 import { auth, provider } from '@/firebase/client';
 import { SplashScreen } from '@/components/splash-screen';
 import { cn } from '@/lib/utils';
+import { I18nProviderClient } from '@/locales/client';
+import { getStaticParams } from '@/locales/server';
 
-// This can't be in the layout component directly, as Metadata can't be exported from a client component.
-// We can define it separately.
-// export const metadata: Metadata = {
-//   title: 'NutriTrackAI',
-//   description: 'Track your nutrition with the power of AI.',
-// };
+
+export function generateStaticParams() {
+  return getStaticParams()
+}
+
 
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -53,8 +54,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
 export default function RootLayout({
   children,
+  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale: string };
 }>) {
   const [isAppLoading, setIsAppLoading] = useState(true);
 
@@ -68,27 +71,29 @@ export default function RootLayout({
 
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <title>NutriTrackAI</title>
-        <meta name="description" content="Track your nutrition with the power of AI." />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#f5f8ee" />
-        <link rel="apple-touch-icon" href="/leaf.png" />
-        <link rel="apple-touch-icon" sizes="120x120" href="/leaf.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang={locale} suppressHydrationWarning>
+       <head>
+          <title>NutriTrackAI</title>
+          <meta name="description" content="Track your nutrition with the power of AI." />
+          <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234CAF50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-leaf'%3E%3Cpath d='M11 20A7 7 0 0 1 4 13H2a10 10 0 0 0 10 10z'/%3E%3Cpath d='M12 21a10 10 0 0 0 10-10h-2a7 7 0 0 1-7 7z'/%3E%3Cpath d='M12 4a9.91 9.91 0 0 1 3.5 1.63A4 4 0 0 1 19.5 8C20.6 10.2 18 13 12 13s-8.6-2.8-7.5-5A4 4 0 0 1 8.5 4.37 9.91 9.91 0 0 1 12 4z'/%3E%3C/svg%3E" type="image/svg+xml" />
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="theme-color" content="#f5f8ee" />
+          <link rel="apple-touch-icon" href="/leaf.png" />
+          <link rel="apple-touch-icon" sizes="120x120" href="/leaf.png" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-            {isAppLoading && <SplashScreen />}
-            <div className={cn("transition-opacity duration-500", isAppLoading ? "opacity-0" : "opacity-100")}>
-              {children}
-            </div>
-            <Toaster />
-        </AuthProvider>
+         <I18nProviderClient locale={locale}>
+            <AuthProvider>
+                {isAppLoading && <SplashScreen />}
+                <div className={cn("transition-opacity duration-500", isAppLoading ? "opacity-0" : "opacity-100")}>
+                  {children}
+                </div>
+                <Toaster />
+            </AuthProvider>
+        </I18nProviderClient>
       </body>
     </html>
   );

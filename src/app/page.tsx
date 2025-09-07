@@ -6,6 +6,7 @@ import { NutriTrackLogo } from "@/components/nutri-track-logo";
 import { ArrowRight, Bot, Zap, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useI18n } from '@/locales/client';
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
@@ -21,6 +22,8 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
 
 
 export default function LandingPage() {
+    const t = useI18n();
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 sm:px-8 bg-background/80 backdrop-blur-sm border-b">
@@ -32,7 +35,7 @@ export default function LandingPage() {
         </Link>
         <Button asChild>
             <Link href="/login">
-                Get Started <ArrowRight className="ml-2" />
+                {t('landing.get-started')} <ArrowRight className="ml-2" />
             </Link>
         </Button>
       </header>
@@ -44,15 +47,15 @@ export default function LandingPage() {
              <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
                 <div className="md:w-2/3 text-center md:text-left">
                     <h1 className="text-4xl md:text-6xl font-extrabold mb-4 animate-fade-in-up font-headline" style={{ animationDelay: '0.1s' }}>
-                        Transform Your Nutrition with AI
+                        {t('landing.title')}
                     </h1>
                     <p className="max-w-2xl mx-auto md:mx-0 text-lg md:text-xl text-muted-foreground mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                        Stop guessing. Start tracking. NutriTrackAI analyzes your meals to give you personalized insights and help you reach your health goals faster.
+                        {t('landing.subtitle')}
                     </p>
                     <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                         <Button asChild size="lg">
                             <Link href="/login">
-                                Start Your Journey Free <ArrowRight className="ml-2" />
+                                {t('landing.cta')} <ArrowRight className="ml-2" />
                             </Link>
                         </Button>
                     </div>
@@ -67,22 +70,22 @@ export default function LandingPage() {
 
         <section className="py-20 px-4 sm:px-8">
             <div className="max-w-6xl mx-auto">
-                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Why NutriTrackAI?</h2>
+                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">{t('landing.why-title')}</h2>
                  <div className="grid md:grid-cols-3 gap-8">
                     <FeatureCard
                         icon={<Bot />}
-                        title="AI-Powered Analysis"
-                        description="Simply describe your meals and our AI will instantly calculate calories, macros, and provide actionable insights."
+                        title={t('landing.feature1-title')}
+                        description={t('landing.feature1-desc')}
                     />
                      <FeatureCard
                         icon={<Zap />}
-                        title="Effortless Tracking"
-                        description="No more manual entry. Our conversational interface makes logging your food as simple as sending a text message."
+                        title={t('landing.feature2-title')}
+                        description={t('landing.feature2-desc')}
                     />
                      <FeatureCard
                         icon={<TrendingUp />}
-                        title="Achieve Your Goals"
-                        description="Whether you want to lose weight, gain muscle, or maintain, get a clear view of your progress and stay motivated."
+                        title={t('landing.feature3-title')}
+                        description={t('landing.feature3-desc')}
                     />
                  </div>
             </div>
@@ -91,11 +94,11 @@ export default function LandingPage() {
         <section className="py-20 px-4 sm:px-8 bg-card/30">
             <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
                 <div className="animate-fade-in-up">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Visualize Your Progress</h2>
-                    <p className="text-muted-foreground text-lg mb-6">Go beyond numbers. Our beautiful, interactive charts and calendar give you a clear and intuitive understanding of your habits and trends over time.</p>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">{t('landing.visualize-title')}</h2>
+                    <p className="text-muted-foreground text-lg mb-6">{t('landing.visualize-desc')}</p>
                     <Button asChild variant="outline">
                         <Link href="/login">
-                           See It In Action
+                           {t('landing.visualize-cta')}
                         </Link>
                     </Button>
                 </div>
@@ -109,7 +112,7 @@ export default function LandingPage() {
 
        <footer className="py-8 px-4 sm:px-8 border-t">
             <div className="max-w-6xl mx-auto text-center text-muted-foreground">
-                <p>&copy; {new Date().getFullYear()} NutriTrackAI. All rights reserved.</p>
+                <p>{t('landing.footer', { year: new Date().getFullYear() })}</p>
             </div>
        </footer>
     </div>

@@ -21,16 +21,19 @@ import { parseNutritionalAnalysis } from '@/lib/utils';
 import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
-
+import { useI18n, useCurrentLocale } from '@/locales/client';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const { signOut } = useAuth();
   const router = useRouter();
+  const t = useI18n();
+  const locale = useCurrentLocale();
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    router.push(`/${locale}`);
   };
 
   return (
@@ -49,8 +52,9 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={toggleSidebar}>
               <MessageSquare className="mr-2" />
-              Chat
+              {t('dashboard.header-chat-btn')}
           </Button>
+          <LanguageSwitcher />
           {isProfileLoaded && userProfile && (
              <div className="flex items-center gap-4">
                 <Link href="/profile">
@@ -59,7 +63,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
                       <AvatarFallback>{userProfile.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
+                <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label={t('dashboard.header-signout-btn')}>
                     <LogOut className="h-5 w-5" />
                 </Button>
             </div>
@@ -80,7 +84,8 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
-
+  const t = useI18n();
+  const locale = useCurrentLocale();
 
   // Authentication and onboarding checks. This is the new, more robust logic.
   useEffect(() => {
@@ -92,10 +97,10 @@ export default function DashboardPage() {
     // Now that we're sure loading is complete, we can make routing decisions.
     if (!user) {
       // If there's no user, send to login.
-      router.push('/login');
+      router.push(`/${locale}/login`);
     } else if (!userProfile) {
       // If there is a user, but no profile, send to onboarding.
-      router.push('/onboarding');
+      router.push(`/${locale}/onboarding`);
     } else {
         // If we have a user and a profile, check if they need the walkthrough.
         const walkthroughKey = `walkthroughCompleted-${user.uid}`;
@@ -104,7 +109,7 @@ export default function DashboardPage() {
             setShowWalkthrough(true);
         }
     }
-  }, [user, userProfile, authLoading, profileLoaded, router]);
+  }, [user, userProfile, authLoading, profileLoaded, router, locale]);
 
 
   const handleWalkthroughComplete = () => {
@@ -151,14 +156,14 @@ export default function DashboardPage() {
     if(parsedData.totals.calories === 0) {
         toast({
             variant: "destructive",
-            title: "Analysis Failed",
-            description: "I couldn't understand that. Please try rephrasing your meal description.",
+            title: t('dashboard.toast-analysis-failed'),
+            description: t('dashboard.toast-analysis-failed-desc'),
         });
         // Add a system error message to the chat
         const errorMessage: ChatMessage = { 
             id: String(Date.now() + 1), 
             role: 'system', 
-            content: 'Sorry, I couldn\'t analyze that. The format might be incorrect or missing details. Please try again.', 
+            content: t('dashboard.chat-error'), 
             timestamp: new Date() 
         };
         setChatMessages(prev => [...prev, errorMessage]);
