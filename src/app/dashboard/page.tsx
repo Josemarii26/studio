@@ -84,13 +84,15 @@ export default function DashboardPage() {
 
   // Authentication and onboarding checks
   useEffect(() => {
-    // Wait until both auth and profile are loaded
-    if (authLoading || !profileLoaded) return;
+    // Wait until both auth and profile are definitively loaded
+    if (authLoading || !profileLoaded) {
+      return;
+    }
 
+    // Now that we're sure loading is complete, we can make routing decisions
     if (!user) {
       router.push('/login');
     } else if (!userProfile) {
-      // Only redirect to onboarding if we are sure there is no profile
       router.push('/onboarding');
     }
   }, [user, userProfile, authLoading, profileLoaded, router]);
