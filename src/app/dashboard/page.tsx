@@ -181,6 +181,7 @@ export default function DashboardPage() {
     setChatMessages(prev => [...prev, assistantMessage]);
   };
   
+  // This is the primary loading gate for the entire page.
   if (authLoading || !profileLoaded || isLoadingData) {
     return <DashboardLoader />;
   }

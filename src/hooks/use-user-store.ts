@@ -16,17 +16,27 @@ export function useUserStore() {
 
   // Effect to load profile from Firestore when user object changes
   useEffect(() => {
+    // This flag prevents a race condition where a logged-out user is redirected
+    // before the async profile load can complete.
+    let isCancelled = false;
+
     const loadProfile = async () => {
       if (user) {
         setIsLoaded(false); // Start loading
         try {
           const profile = await loadUserProfile(user.uid);
-          setUserProfileState(profile);
+          if (!isCancelled) {
+             setUserProfileState(profile);
+          }
         } catch (error) {
           console.error("Failed to load userProfile from Firestore", error);
-          setUserProfileState(null); // Fallback to null on error
+           if (!isCancelled) {
+            setUserProfileState(null); // Fallback to null on error
+          }
         } finally {
-          setIsLoaded(true); // Finish loading
+           if (!isCancelled) {
+            setIsLoaded(true); // Finish loading
+          }
         }
       } else {
         // If there is no user, there's no profile to load.
@@ -36,6 +46,10 @@ export function useUserStore() {
     };
     
     loadProfile();
+
+    return () => {
+      isCancelled = true;
+    }
   }, [user]);
 
   // Function to save the profile to Firestore
