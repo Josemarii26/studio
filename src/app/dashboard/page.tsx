@@ -125,10 +125,13 @@ export default function DashboardPage() {
         const data = await loadDailyDataForUser(user.uid);
         setDailyData(data);
         setIsLoadingData(false);
+      } else if (!user && !authLoading) {
+        // If there's no user and auth is done, no data to load.
+        setIsLoadingData(false);
       }
     }
     loadData();
-  }, [user, userProfile]);
+  }, [user, userProfile, authLoading]);
 
   
   // Save data to Firestore whenever it changes
@@ -230,3 +233,5 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
+
+    

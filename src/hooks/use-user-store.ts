@@ -10,7 +10,7 @@ import { loadUserProfile, saveUserProfile } from '@/firebase/firestore';
 // The profile data is now fetched from and saved to Firestore.
 
 export function useUserStore() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [userProfile, setUserProfileState] = useState<UserProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -21,6 +21,12 @@ export function useUserStore() {
     let isCancelled = false;
 
     const loadProfile = async () => {
+      // If auth is still loading, we can't do anything yet.
+      if (authLoading) {
+        setIsLoaded(false);
+        return;
+      }
+      
       // If there is no authenticated user, we can immediately say we are "loaded" and there is no profile.
       if (!user) {
         if (!isCancelled) {
@@ -54,7 +60,7 @@ export function useUserStore() {
     return () => {
       isCancelled = true;
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   // Function to save the profile to Firestore
   const setUserProfile = useCallback(async (profile: UserProfile | null) => {
@@ -74,5 +80,7 @@ export function useUserStore() {
     }
   }, [user]);
 
-  return { userProfile, setUserProfile, isLoaded };
+  return { userProfile, setUserProfile, isLoaded: isLoaded && !authLoading };
 }
+
+    
