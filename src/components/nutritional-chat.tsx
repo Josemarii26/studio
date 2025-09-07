@@ -297,3 +297,5 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     </div>
   );
 }
+
+    
