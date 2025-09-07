@@ -147,7 +147,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             yellow: 'rdp-day_yellow',
                             red: 'rdp-day_red',
                             missed: 'rdp-day_missed',
-                            selected: 'bg-transparent text-foreground hover:bg-transparent',
+                            selected: 'text-foreground hover:bg-transparent',
                             today: 'ring-2 ring-primary/80 animate-pulse-ring'
                         }}
                     />
