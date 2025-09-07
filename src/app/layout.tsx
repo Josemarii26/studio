@@ -8,6 +8,8 @@ import { AuthContext, useAuth } from '@/hooks/use-auth';
 import { useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '@/firebase/client';
+import { SplashScreen } from '@/components/splash-screen';
+import { cn } from '@/lib/utils';
 
 // This can't be in the layout component directly, as Metadata can't be exported from a client component.
 // We can define it separately.
@@ -54,6 +56,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 2000); 
+
+    return () => clearTimeout(timer);
+  }, []);
+
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -69,7 +82,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-            {children}
+            {isAppLoading && <SplashScreen />}
+            <div className={cn("transition-opacity duration-500", isAppLoading ? 'opacity-0' : 'opacity-100')}>
+              {children}
+            </div>
             <Toaster />
         </AuthProvider>
       </body>
