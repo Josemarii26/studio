@@ -16,6 +16,7 @@ import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { useI18n, useCurrentLocale } from '@/locales/client';
 
 
 const formSchema = z.object({
@@ -31,13 +32,6 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const STEPS = [
-  { id: '01', name: 'Personal Info', fields: ['name', 'age', 'gender'] },
-  { id: '02', name: 'Physical Stats', fields: ['weight', 'height', 'goalWeight'] },
-  { id: '03', name: 'Goals & Lifestyle', fields: ['activityLevel', 'goal'] },
-  { id: '04', name: 'Supplementation', fields: ['supplementation'] },
-  { id: '05', name: 'Summary', fields: [] },
-];
 
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -45,6 +39,16 @@ export function OnboardingForm() {
   const { userProfile, setUserProfile } = useUserStore();
   const router = useRouter();
   const { toast } = useToast();
+  const t = useI18n();
+  const locale = useCurrentLocale();
+
+  const STEPS = [
+    { id: '01', name: t('onboarding.step1-name'), fields: ['name', 'age', 'gender'] },
+    { id: '02', name: t('onboarding.step2-name'), fields: ['weight', 'height', 'goalWeight'] },
+    { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
+    { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
+    { id: '05', name: t('onboarding.step5-name'), fields: [] },
+  ];
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -110,8 +114,8 @@ export function OnboardingForm() {
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle>Your Profile Setup</CardTitle>
-        <CardDescription>Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep].name}</CardDescription>
+        <CardTitle>{t('onboarding.form-title')}</CardTitle>
+        <CardDescription>{t('onboarding.form-step', { currentStep: currentStep + 1, totalSteps: STEPS.length, stepName: STEPS[currentStep].name })}</CardDescription>
         <Progress value={((currentStep) / (STEPS.length - 1)) * 100} className="w-full mt-2" />
       </CardHeader>
       <Form {...form}>
@@ -121,26 +125,26 @@ export function OnboardingForm() {
               <div className="space-y-4">
                  <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{t('onboarding.name-label')}</FormLabel>
                     <FormControl><Input {...field} placeholder="Alex Doe" /></FormControl><FormMessage />
                   </FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="age" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Age</FormLabel>
+                      <FormLabel>{t('onboarding.age-label')}</FormLabel>
                       <FormControl><Input {...field} type="number" placeholder="30" /></FormControl><FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="gender" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gender</FormLabel>
+                      <FormLabel>{t('onboarding.gender-label')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl>
                         <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="male">{t('onboarding.gender-male')}</SelectItem>
+                          <SelectItem value="female">{t('onboarding.gender-female')}</SelectItem>
+                          <SelectItem value="other">{t('onboarding.gender-other')}</SelectItem>
                         </SelectContent>
                       </Select><FormMessage />
                     </FormItem>
@@ -152,13 +156,13 @@ export function OnboardingForm() {
             {currentStep === 1 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="height" render={({ field }) => (
-                        <FormItem><FormLabel>Height (cm)</FormLabel><FormControl><Input {...field} type="number" placeholder="180" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('onboarding.height-label')}</FormLabel><FormControl><Input {...field} type="number" placeholder="180" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="weight" render={({ field }) => (
-                        <FormItem><FormLabel>Current Weight (kg)</FormLabel><FormControl><Input {...field} type="number" placeholder="80" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('onboarding.current-weight-label')}</FormLabel><FormControl><Input {...field} type="number" placeholder="80" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="goalWeight" render={({ field }) => (
-                        <FormItem><FormLabel>Goal Weight (kg)</FormLabel><FormControl><Input {...field} type="number" placeholder="75" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('onboarding.goal-weight-label')}</FormLabel><FormControl><Input {...field} type="number" placeholder="75" /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
             )}
@@ -166,24 +170,24 @@ export function OnboardingForm() {
             {currentStep === 2 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="activityLevel" render={({ field }) => (
-                        <FormItem><FormLabel>Activity Level</FormLabel>
+                        <FormItem><FormLabel>{t('onboarding.activity-label')}</FormLabel>
                             <FormControl>
                                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
-                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="sedentary" /></FormControl><FormLabel className="font-normal">Sedentary (little to no exercise)</FormLabel></FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="light" /></FormControl><FormLabel className="font-normal">Light (exercise 1-3 days/week)</FormLabel></FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="moderate" /></FormControl><FormLabel className="font-normal">Moderate (exercise 3-5 days/week)</FormLabel></FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="intense" /></FormControl><FormLabel className="font-normal">Intense (exercise 6-7 days/week)</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="sedentary" /></FormControl><FormLabel className="font-normal">{t('onboarding.activity-sedentary')}</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="light" /></FormControl><FormLabel className="font-normal">{t('onboarding.activity-light')}</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="moderate" /></FormControl><FormLabel className="font-normal">{t('onboarding.activity-moderate')}</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="intense" /></FormControl><FormLabel className="font-normal">{t('onboarding.activity-intense')}</FormLabel></FormItem>
                                 </RadioGroup>
                             </FormControl><FormMessage />
                         </FormItem>
                     )} />
                     <FormField control={form.control} name="goal" render={({ field }) => (
-                        <FormItem><FormLabel>Primary Goal</FormLabel>
+                        <FormItem><FormLabel>{t('onboarding.goal-label')}</FormLabel>
                             <FormControl>
                                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
-                                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="lose" /></FormControl><FormLabel className="font-normal">Lose Weight</FormLabel></FormItem>
-                                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="maintain" /></FormControl><FormLabel className="font-normal">Maintain Weight</FormLabel></FormItem>
-                                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="gain" /></FormControl><FormLabel className="font-normal">Gain Muscle</FormLabel></FormItem>
+                                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="lose" /></FormControl><FormLabel className="font-normal">{t('onboarding.goal-lose')}</FormLabel></FormItem>
+                                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="maintain" /></FormControl><FormLabel className="font-normal">{t('onboarding.goal-maintain')}</FormLabel></FormItem>
+                                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="gain" /></FormControl><FormLabel className="font-normal">{t('onboarding.goal-gain')}</FormLabel></FormItem>
                                 </RadioGroup>
                             </FormControl><FormMessage />
                         </FormItem>
@@ -193,13 +197,13 @@ export function OnboardingForm() {
             
             {currentStep === 3 && (
                  <FormField control={form.control} name="supplementation" render={({ field }) => (
-                    <FormItem><FormLabel>Do you take any of these supplements?</FormLabel>
+                    <FormItem><FormLabel>{t('onboarding.supplements-label')}</FormLabel>
                         <FormControl>
                             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2 pt-2">
-                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="none" /></FormControl><FormLabel className="font-normal">None</FormLabel></FormItem>
-                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="creatine" /></FormControl><FormLabel className="font-normal">Creatine</FormLabel></FormItem>
-                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="protein" /></FormControl><FormLabel className="font-normal">Protein Powder</FormLabel></FormItem>
-                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="both" /></FormControl><FormLabel className="font-normal">Both Creatine and Protein Powder</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="none" /></FormControl><FormLabel className="font-normal">{t('onboarding.supplements-none')}</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="creatine" /></FormControl><FormLabel className="font-normal">{t('onboarding.supplements-creatine')}</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="protein" /></FormControl><FormLabel className="font-normal">{t('onboarding.supplements-protein')}</FormLabel></FormItem>
+                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="both" /></FormControl><FormLabel className="font-normal">{t('onboarding.supplements-both')}</FormLabel></FormItem>
                             </RadioGroup>
                         </FormControl><FormMessage />
                     </FormItem>
@@ -208,33 +212,33 @@ export function OnboardingForm() {
 
             {currentStep === 4 && userProfile && (
                 <div className="text-center space-y-4">
-                    <h2 className="text-2xl font-bold">Your Personalized Plan</h2>
-                    <p className="text-muted-foreground">Based on your info, here are your initial targets.</p>
+                    <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
+                    <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
                     <div className="grid grid-cols-2 gap-4 pt-4">
-                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">Your BMI</div><div className="text-3xl font-bold">{userProfile.bmi}</div></div>
-                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">Daily Calorie Goal</div><div className="text-3xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</div><div className="text-xs">kcal/day</div></div>
+                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">{t('onboarding.bmi-label')}</div><div className="text-3xl font-bold">{userProfile.bmi}</div></div>
+                        <div className="rounded-lg bg-muted p-4"><div className="text-sm text-muted-foreground">{t('onboarding.calorie-goal-label')}</div><div className="text-3xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</div><div className="text-xs">kcal/day</div></div>
                     </div>
                 </div>
             )}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
-            <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0}>Back</Button>
+            <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0}>{t('onboarding.back-btn')}</Button>
             {currentStep < STEPS.length - 2 && (
                 <Button type="button" onClick={next} disabled={isSubmitting}>
-                    {'Next Step'}
+                    {t('onboarding.next-btn')}
                 </Button>
             )}
              {currentStep === STEPS.length - 2 && (
                 <Button type="button" onClick={next} disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Calculate & Finish
+                    {t('onboarding.finish-btn')}
                 </Button>
             )}
             {currentStep === STEPS.length - 1 && (
                 <Button type="button" onClick={() => {
-                    toast({ title: "Onboarding Complete!", description: "Redirecting to your dashboard."});
-                    router.push('/dashboard');
-                }}>Go to Dashboard</Button>
+                    toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
+                    router.push(`/${locale}/dashboard`);
+                }}>{t('onboarding.dashboard-btn')}</Button>
             )}
           </CardFooter>
         </form>

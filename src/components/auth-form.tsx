@@ -16,6 +16,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { NutriTrackLogo } from './nutri-track-logo';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useCurrentLocale, useI18n } from '@/locales/client';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -40,6 +41,8 @@ export function AuthForm() {
   const { toast } = useToast();
   const { signUp, signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const locale = useCurrentLocale();
+  const t = useI18n();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -51,42 +54,36 @@ export function AuthForm() {
     try {
       if (isLogin) {
         await signIn(data.email, data.password);
-        toast({ title: 'Login Successful', description: "Welcome back!" });
-        router.push('/dashboard');
+        toast({ title: t('auth.toast-login-success'), description: t('auth.toast-login-welcome') });
+        router.push(`/${locale}/dashboard`);
       } else {
         await signUp(data.email, data.password);
-        toast({ title: 'Account Created', description: "Let's set up your profile." });
-        router.push('/onboarding');
+        toast({ title: t('auth.toast-signup-success'), description: t('auth.toast-signup-profile') });
+        router.push(`/${locale}/onboarding`);
       }
     } catch (error: any) {
       console.error("Auth Error Code:", error.code);
-      let title = isLogin ? 'Login Failed' : 'Sign Up Failed';
-      let description = 'An unexpected error occurred. Please try again.';
+      let title = isLogin ? t('auth.error-login-failed') : t('auth.error-signup-failed');
+      let description = t('auth.error-unexpected');
 
       switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/invalid-credential':
-          title = 'Login Failed';
-          description = 'No account found with this email or password. Please try again.';
+          description = t('auth.error-invalid-creds');
           break;
         case 'auth/wrong-password':
-          title = 'Login Failed';
-          description = 'Incorrect password. Please try again.';
+          description = t('auth.error-wrong-pass');
           break;
         case 'auth/email-already-in-use':
-          title = 'Sign Up Failed';
-          description = 'This email is already associated with an account. Please sign in instead.';
+          description = t('auth.error-email-in-use');
           break;
         case 'auth/invalid-email':
-            title = 'Invalid Email';
-            description = 'The email address you entered is not valid.';
+            title = t('auth.error-invalid-email');
+            description = '';
             break;
         case 'auth/weak-password':
-            title = 'Weak Password';
-            description = 'Your password is too weak. Please choose a stronger password.';
-            break;
-        default:
-            description = 'An unexpected error occurred. Please try again later.';
+            title = t('auth.error-weak-pass');
+            description = '';
             break;
       }
 
@@ -100,16 +97,14 @@ export function AuthForm() {
     setIsLoading(true);
     try {
         await signInWithGoogle();
-        toast({ title: "Signed In Successfully!", description: "Welcome! Let's get your profile set up." });
-        // A real app should check if the user is new or returning.
-        // For now, we always go to onboarding.
-        router.push('/onboarding');
+        toast({ title: t('auth.toast-google-success'), description: t('auth.toast-google-welcome') });
+        router.push(`/${locale}/onboarding`);
     } catch (error: any) {
         console.error("Google Sign-In Error:", error);
         toast({
             variant: "destructive",
-            title: "Google Sign-In Failed",
-            description: "Could not sign in with Google at this time. Please try again or use email/password."
+            title: t('auth.error-google-failed'),
+            description: ""
         });
     } finally {
         setIsLoading(false);
@@ -125,12 +120,12 @@ export function AuthForm() {
         <div className="backface-hidden">
             <CardHeader className="text-center">
                 <div className="mb-4 flex flex-col items-center">
-                    <Link href="/">
+                    <Link href={`/${locale}`}>
                         <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
                     </Link>
                 </div>
-              <CardTitle className="text-2xl">Welcome Back!</CardTitle>
-              <CardDescription>Sign in to access your dashboard.</CardDescription>
+              <CardTitle className="text-2xl">{t('auth.login-title')}</CardTitle>
+              <CardDescription>{t('auth.login-desc')}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
                 <Form {...form}>
@@ -140,7 +135,7 @@ export function AuthForm() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('auth.email-label')}</FormLabel>
                         <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -151,7 +146,7 @@ export function AuthForm() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel>{t('auth.password-label')}</FormLabel>
                         <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -159,18 +154,18 @@ export function AuthForm() {
                   />
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Sign In
+                    {t('auth.signin-btn')}
                   </Button>
                 </form>
               </Form>
               
               <div className="text-center text-sm">
-                {"Don't have an account?"}
+                {t('auth.no-account')}
                 <Button variant="link" onClick={() => {
                     setIsLogin(false);
                     form.reset();
                 }} className="px-1">
-                  Sign Up
+                  {t('auth.signup-btn')}
                 </Button>
               </div>
 
@@ -180,25 +175,20 @@ export function AuthForm() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-card px-2 text-muted-foreground">
-                    Or continue with
+                    {t('auth.or-continue')}
                   </span>
                 </div>
               </div>
               <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <GoogleIcon />
-                Sign in with Google
+                {t('auth.google-btn')}
               </Button>
               <p className="px-8 text-center text-sm text-muted-foreground">
-                By clicking continue, you agree to our{" "}
-                <Link href="#" className="underline underline-offset-4 hover:text-primary">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="#" className="underline underline-offset-4 hover:text-primary">
-                  Privacy Policy
-                </Link>
-                .
+                {t('auth.terms', { 
+                    terms: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
+                    privacy: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
+                })}
               </p>
             </CardContent>
         </div>
@@ -206,12 +196,12 @@ export function AuthForm() {
         <div className="absolute top-0 left-0 w-full h-full backface-hidden rotate-y-180">
             <CardHeader className="text-center">
                 <div className="mb-4 flex flex-col items-center">
-                    <Link href="/">
+                    <Link href={`/${locale}`}>
                         <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
                     </Link>
                 </div>
-              <CardTitle className="text-2xl">Create Your Account</CardTitle>
-              <CardDescription>Fill out the form below to get started.</CardDescription>
+              <CardTitle className="text-2xl">{t('auth.signup-title')}</CardTitle>
+              <CardDescription>{t('auth.signup-desc')}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
                 <Form {...form}>
@@ -221,7 +211,7 @@ export function AuthForm() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('auth.email-label')}</FormLabel>
                         <FormControl><Input {...field} placeholder="alex@email.com" type="email" /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -232,7 +222,7 @@ export function AuthForm() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel>{t('auth.password-label')}</FormLabel>
                         <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -240,18 +230,18 @@ export function AuthForm() {
                   />
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Account
+                    {t('auth.signup-btn')}
                   </Button>
                 </form>
               </Form>
               
               <div className="text-center text-sm">
-                {'Already have an account?'}
+                {t('auth.have-account')}
                 <Button variant="link" onClick={() => {
                     setIsLogin(true);
                     form.reset();
                 }} className="px-1">
-                  Sign In
+                  {t('auth.signin-btn')}
                 </Button>
               </div>
 
@@ -261,25 +251,20 @@ export function AuthForm() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-card px-2 text-muted-foreground">
-                    Or continue with
+                    {t('auth.or-continue')}
                   </span>
                 </div>
               </div>
               <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <GoogleIcon />
-                Sign in with Google
+                {t('auth.google-btn')}
               </Button>
                <p className="px-8 text-center text-sm text-muted-foreground">
-                By clicking continue, you agree to our{" "}
-                <Link href="#" className="underline underline-offset-4 hover:text-primary">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="#" className="underline underline-offset-4 hover:text-primary">
-                  Privacy Policy
-                </Link>
-                .
+                 {t('auth.terms', { 
+                    terms: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
+                    privacy: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
+                })}
               </p>
             </CardContent>
         </div>

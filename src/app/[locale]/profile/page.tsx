@@ -25,6 +25,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 
 function ProfileHeader() {
   const t = useI18n();
+  const locale = useCurrentLocale();
 
   return (
     <header className={cn(
@@ -33,7 +34,7 @@ function ProfileHeader() {
       <div className={cn(
         "flex h-full items-center justify-between gap-4 px-4 sm:px-6"
       )}>
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={`/${locale}`} className="flex items-center gap-2">
           <NutriTrackLogo className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-headline">
             NutriTrackAI
@@ -42,7 +43,7 @@ function ProfileHeader() {
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
           <Button asChild variant="outline">
-            <Link href="/dashboard">
+            <Link href={`/${locale}/dashboard`}>
               <ArrowLeft className="mr-2" />
               {t('profile.back-btn')}
             </Link>

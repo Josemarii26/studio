@@ -1,3 +1,4 @@
+
 import { createI18nMiddleware } from 'next-international/middleware'
 import type { NextRequest } from 'next/server'
  

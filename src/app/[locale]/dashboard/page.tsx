@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -43,7 +44,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
       <div className={cn(
         "flex h-full items-center justify-between gap-4 px-4 sm:px-6"
       )}>
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={`/${locale}`} className="flex items-center gap-2">
           <NutriTrackLogo className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-headline hidden sm:block">
             NutriTrackAI
@@ -57,7 +58,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           <LanguageSwitcher />
           {isProfileLoaded && userProfile && (
              <div className="flex items-center gap-4">
-                <Link href="/profile">
+                <Link href={`/${locale}/profile`}>
                   <Avatar className="cursor-pointer">
                       <AvatarImage src={userProfile.photoUrl || ''} data-ai-hint="person face" />
                       <AvatarFallback>{userProfile.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -238,5 +239,3 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
-
-    

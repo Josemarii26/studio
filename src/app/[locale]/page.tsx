@@ -6,7 +6,7 @@ import { NutriTrackLogo } from "@/components/nutri-track-logo";
 import { ArrowRight, Bot, Zap, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useI18n } from '@/locales/client';
+import { useI18n, useCurrentLocale } from '@/locales/client';
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
@@ -23,18 +23,19 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
 
 export default function LandingPage() {
     const t = useI18n();
+    const locale = useCurrentLocale();
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 sm:px-8 bg-background/80 backdrop-blur-sm border-b">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={`/${locale}`} className="flex items-center gap-2">
             <NutriTrackLogo className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold text-foreground font-headline">
                 NutriTrackAI
             </h1>
         </Link>
         <Button asChild>
-            <Link href="/login">
+            <Link href={`/${locale}/login`}>
                 {t('landing.get-started')} <ArrowRight className="ml-2" />
             </Link>
         </Button>
@@ -54,7 +55,7 @@ export default function LandingPage() {
                     </p>
                     <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                         <Button asChild size="lg">
-                            <Link href="/login">
+                            <Link href={`/${locale}/login`}>
                                 {t('landing.cta')} <ArrowRight className="ml-2" />
                             </Link>
                         </Button>
@@ -97,7 +98,7 @@ export default function LandingPage() {
                     <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">{t('landing.visualize-title')}</h2>
                     <p className="text-muted-foreground text-lg mb-6">{t('landing.visualize-desc')}</p>
                     <Button asChild variant="outline">
-                        <Link href="/login">
+                        <Link href={`/${locale}/login`}>
                            {t('landing.visualize-cta')}
                         </Link>
                     </Button>
