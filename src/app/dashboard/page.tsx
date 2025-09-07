@@ -84,15 +84,16 @@ export default function DashboardPage() {
 
   // Authentication and onboarding checks
   useEffect(() => {
-    if (authLoading) return;
+    // Wait until both auth and profile are loaded
+    if (authLoading || !profileLoaded) return;
+
     if (!user) {
       router.push('/login');
-      return;
-    }
-    if (profileLoaded && !userProfile) {
+    } else if (!userProfile) {
+      // Only redirect to onboarding if we are sure there is no profile
       router.push('/onboarding');
     }
-  }, [user, authLoading, profileLoaded, userProfile, router]);
+  }, [user, userProfile, authLoading, profileLoaded, router]);
 
 
   // Check if walkthrough should be shown
@@ -178,7 +179,13 @@ export default function DashboardPage() {
     setChatMessages(prev => [...prev, assistantMessage]);
   };
   
-  if (authLoading || !profileLoaded || !userProfile || isLoadingData) {
+  if (authLoading || !profileLoaded || isLoadingData) {
+    return <DashboardLoader />;
+  }
+
+  // This second check handles the case where the redirect logic is running
+  // but we don't want to flash the dashboard content.
+  if (!user || !userProfile) {
     return <DashboardLoader />;
   }
 
