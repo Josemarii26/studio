@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { useAuth } from '@/hooks/use-auth';
 import { loadDailyDataForUser } from '@/firebase/firestore';
-import type { DayData } from '@/lib/types';
+import type { DayData, UserProfile } from '@/lib/types';
 import { isSameDay, subDays, startOfToday } from 'date-fns';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -204,6 +204,15 @@ export default function ProfilePage() {
     }
   }
 
+  const genderText = () => {
+      if (!userProfile?.gender) return '';
+      switch(userProfile.gender) {
+          case 'male': return t('onboarding.gender-male');
+          case 'female': return t('onboarding.gender-female');
+          case 'other': return t('onboarding.gender-other');
+      }
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <ProfileHeader />
@@ -250,7 +259,7 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between"><span>{t('profile.info-age')}</span> <span className="font-medium">{userProfile.age}</span></div>
                 <Separator />
-                <div className="flex justify-between"><span>{t('profile.info-gender')}</span> <span className="font-medium capitalize">{userProfile.gender}</span></div>
+                <div className="flex justify-between"><span>{t('profile.info-gender')}</span> <span className="font-medium">{genderText()}</span></div>
                 <Separator />
                 <div className="flex justify-between"><span>{t('profile.info-height')}</span> <span className="font-medium">{userProfile.height} {t('profile.info-height-unit')}</span></div>
                 <Separator />

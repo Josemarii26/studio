@@ -33,6 +33,7 @@
     "gender-male": "Male",
     "gender-female": "Female",
     "gender-other": "Other",
+    "gender-placeholder": "Select a gender",
     "height-label": "Height (cm)",
     "current-weight-label": "Current Weight (kg)",
     "goal-weight-label": "Goal Weight (kg)",

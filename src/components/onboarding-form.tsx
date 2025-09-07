@@ -140,7 +140,7 @@ export function OnboardingForm() {
                     <FormItem>
                       <FormLabel>{t('onboarding.gender-label')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl>
+                        <FormControl><SelectTrigger><SelectValue placeholder={t('onboarding.gender-placeholder')} /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="male">{t('onboarding.gender-male')}</SelectItem>
                           <SelectItem value="female">{t('onboarding.gender-female')}</SelectItem>

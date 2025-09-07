@@ -7,12 +7,13 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
 import { isSameDay, startOfYesterday, differenceInDays, isToday, startOfToday } from 'date-fns';
+import { es as esLocale, enUS as enUSLocale } from 'date-fns/locale';
 import { CaloriesChart } from './calories-chart';
 import { AchievementsGrid } from './achievements-grid';
 import { useUserStore } from '@/hooks/use-user-store';
 import { DashboardLoader } from './dashboard-loader';
 import { useSidebar } from './ui/sidebar';
-import { useI18n } from '@/locales/client';
+import { useI18n, useCurrentLocale } from '@/locales/client';
 
 
 interface DashboardClientProps {
@@ -49,6 +50,8 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
   const t = useI18n();
+  const locale = useCurrentLocale();
+  const dateFnsLocale = locale === 'es' ? esLocale : enUSLocale;
 
 
   const handleDayClick = (day: Date) => {
@@ -157,6 +160,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             selected: 'text-foreground',
                             today: 'ring-2 ring-primary/80 animate-pulse-ring'
                         }}
+                        locale={dateFnsLocale}
                     />
                 </CardContent>
                 <CardFooter className="py-4 justify-center">
