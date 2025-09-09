@@ -58,8 +58,9 @@ export function AuthForm() {
         router.push(`/${locale}/dashboard`);
       } else {
         await signUp(data.email, data.password);
-        toast({ title: t('auth.toast-signup-success'), description: t('auth.toast-signup-profile') });
-        router.push(`/${locale}/onboarding`);
+        toast({ title: t('auth.toast-signup-success-title'), description: t('auth.toast-signup-success-desc') });
+        // Don't redirect here, user needs to verify email first. The login page will show the verification message.
+        setIsLogin(true); // Flip to login view after successful signup
       }
     } catch (error: any) {
       console.error("Auth Error Code:", error.code);
@@ -96,9 +97,11 @@ export function AuthForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-        await signInWithGoogle();
+        const userCredential = await signInWithGoogle();
+        // Google sign-in often provides verified emails, but we check just in case.
+        // If the user is new, they will be redirected to onboarding from the dashboard.
         toast({ title: t('auth.toast-google-success'), description: t('auth.toast-google-welcome') });
-        router.push(`/${locale}/onboarding`);
+        router.push(`/${locale}/dashboard`);
     } catch (error: any) {
         console.error("Google Sign-In Error:", error);
         toast({

@@ -4,7 +4,7 @@
 import { I18nProviderClient } from '@/locales/client';
 import { AuthContext, useAuth } from '@/hooks/use-auth';
 import { useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup, sendEmailVerification, UserCredential } from 'firebase/auth';
 import { auth, provider } from '@/firebase/client';
 import { SplashScreen } from '@/components/splash-screen';
 import { cn } from '@/lib/utils';
@@ -21,19 +21,23 @@ function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+  const signIn = async (email: string, password: string): Promise<UserCredential> => {
+    return await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+  const signUp = async (email: string, password: string): Promise<UserCredential> => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+        await sendEmailVerification(userCredential.user);
+    }
+    return userCredential;
   };
   
-  const signInWithGoogle = async () => {
-    await signInWithPopup(auth, provider);
+  const signInWithGoogle = async (): Promise<UserCredential> => {
+    return await signInWithPopup(auth, provider);
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     await firebaseSignOut(auth);
   };
   

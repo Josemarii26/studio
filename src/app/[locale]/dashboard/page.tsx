@@ -6,7 +6,7 @@ import { NutritionalChat } from '@/components/nutritional-chat';
 import { NutriTrackLogo } from '@/components/nutri-track-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, LogOut } from 'lucide-react';
+import { MessageSquare, LogOut, MailWarning, ShieldCheck } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
@@ -74,6 +74,31 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   );
 }
 
+function EmailVerificationGate() {
+    const { signOut } = useAuth();
+    const router = useRouter();
+    const locale = useCurrentLocale();
+    const t = useI18n();
+
+    const handleSignOut = async () => {
+        await signOut();
+        router.push(`/${locale}/login`);
+    };
+
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4 text-center">
+            <div className="space-y-4">
+                <MailWarning className="mx-auto h-16 w-16 text-primary" />
+                <h1 className="text-3xl font-bold font-headline">{t('auth.verify-title')}</h1>
+                <p className="max-w-md text-muted-foreground">
+                    {t('auth.verify-desc')}
+                </p>
+                <p className="text-sm text-muted-foreground">{t('auth.verify-spam')}</p>
+                <Button onClick={handleSignOut}>{t('auth.verify-logout-btn')}</Button>
+            </div>
+        </div>
+    )
+}
 
 function getDayStatus(totals: DayData['totals'], userProfile: UserProfile): 'green' | 'yellow' | 'red' {
     let status: 'green' | 'yellow' | 'red' = 'green';
@@ -109,7 +134,12 @@ export default function DashboardPage() {
     if (!user) {
       // If there's no user, send to login.
       router.push(`/${locale}/login`);
-    } else if (!userProfile) {
+    } else if (user && !user.emailVerified) {
+      // If user exists but email is not verified, they are stuck here.
+      // The EmailVerificationGate will be shown.
+      return;
+    }
+     else if (!userProfile) {
       // If there is a user, but no profile, send to onboarding.
       router.push(`/${locale}/onboarding`);
     } else {
@@ -135,8 +165,8 @@ export default function DashboardPage() {
   // Load data from Firestore when the component mounts or user changes
   useEffect(() => {
     async function loadData() {
-      // Only load data if we have a confirmed user with a profile
-      if (user && userProfile) {
+      // Only load data if we have a confirmed, verified user with a profile
+      if (user && user.emailVerified && userProfile) {
         setIsLoadingData(true);
         const data = await loadDailyDataForUser(user.uid);
         setDailyData(data);
@@ -152,7 +182,7 @@ export default function DashboardPage() {
   
   // Save data to Firestore whenever it changes
   useEffect(() => {
-    if (user && !isLoadingData) {
+    if (user && user.emailVerified && !isLoadingData) {
       saveDailyDataForUser(user.uid, dailyData);
     }
   }, [dailyData, user, isLoadingData]);
@@ -211,6 +241,11 @@ export default function DashboardPage() {
   // until we know for sure the user's auth and profile state.
   if (authLoading || !profileLoaded || isLoadingData) {
     return <DashboardLoader />;
+  }
+
+  // Gate for email verification.
+  if (user && !user.emailVerified) {
+    return <EmailVerificationGate />;
   }
 
   // This second check handles the case where the redirect logic from the useEffect is running.

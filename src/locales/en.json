@@ -78,10 +78,10 @@
     "terms": "By clicking continue, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
     "toast-login-success": "Login Successful",
     "toast-login-welcome": "Welcome back!",
-    "toast-signup-success": "Account Created",
-    "toast-signup-profile": "Let's set up your profile.",
+    "toast-signup-success-title": "Account Created!",
+    "toast-signup-success-desc": "We've sent a verification link to your email.",
     "toast-google-success": "Signed In Successfully!",
-    "toast-google-welcome": "Welcome! Let's get your profile set up.",
+    "toast-google-welcome": "Welcome!",
     "error-login-failed": "Login Failed",
     "error-signup-failed": "Sign Up Failed",
     "error-invalid-creds": "No account found with this email or password. Please try again.",
@@ -90,7 +90,11 @@
     "error-invalid-email": "The email address you entered is not valid.",
     "error-weak-pass": "Your password is too weak. Please choose a stronger password.",
     "error-unexpected": "An unexpected error occurred. Please try again later.",
-    "error-google-failed": "Could not sign in with Google at this time. Please try again or use email/password."
+    "error-google-failed": "Could not sign in with Google at this time. Please try again or use email/password.",
+    "verify-title": "Please Verify Your Email",
+    "verify-desc": "We've sent a verification link to your email address. Please click the link to continue.",
+    "verify-spam": "Don't see it? Check your spam folder!",
+    "verify-logout-btn": "Back to Login"
   },
   "dashboard": {
     "header-chat-btn": "Chat",
