@@ -276,6 +276,13 @@
     "permission-granted-title": "¡Notificaciones Activadas!",
     "permission-granted-desc": "Te enviaremos recordatorios para ayudarte a mantenerte en el buen camino.",
     "welcome-title": "¡Bienvenido a DietLogAI!",
-    "welcome-body": "¡Hola {name}! Estamos encantados de tenerte. ¡Empecemos tu viaje!"
+    "welcome-body": "¡Hola {name}! Estamos encantados de tenerte. ¡Empecemos tu viaje!",
+    "test-button": "Probar Notificación",
+    "no-token-title": "Sin Token de Notificación",
+    "no-token-desc": "Aún no se ha concedido permiso para las notificaciones.",
+    "sending-test-title": "Enviando Notificación de Prueba",
+    "sending-test-desc": "Cierra la aplicación o cambia de pestaña para verla.",
+    "test-title": "Notificación de Prueba de DietLogAI",
+    "test-body": "👋 ¡Hola {name}, esto es una prueba!"
   }
 }

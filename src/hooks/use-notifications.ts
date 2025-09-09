@@ -9,12 +9,12 @@ import { useToast } from './use-toast';
 import { useI18n } from '@/locales/client';
 import { sendNotification } from '@/ai/flows/send-notification';
 
-// This hook now returns the current FCM token state
+// This hook now only handles the logic for getting permissions and the token.
+// It no longer returns anything, it just works in the background.
 export function useNotifications() {
   const { userProfile, setUserProfile, isLoaded } = useUserStore();
   const { toast } = useToast();
   const t = useI18n();
-  const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [permissionRequested, setPermissionRequested] = useState(false);
 
   // Effect for handling incoming foreground messages
@@ -32,27 +32,16 @@ export function useNotifications() {
     return () => unsubscribe();
   }, [toast]);
 
-  // Effect to sync local token state with user profile
-  useEffect(() => {
-    if (userProfile?.fcmToken) {
-      setFcmToken(userProfile.fcmToken);
-    }
-  }, [userProfile?.fcmToken]);
 
   // Main effect to request permission and get token
   useEffect(() => {
-    if (!isLoaded || !userProfile || permissionRequested) {
+    // Conditions to exit early: not loaded, no profile, or already asked for permission.
+    if (!isLoaded || !userProfile || permissionRequested || userProfile.fcmToken) {
       return;
     }
 
     const requestPermission = async () => {
-      setPermissionRequested(true);
-
-      if (userProfile.fcmToken) {
-        console.log('FCM token already exists for this user.');
-        setFcmToken(userProfile.fcmToken);
-        return;
-      }
+      setPermissionRequested(true); // Mark that we've tried to ask.
 
       try {
         const currentPermission = await Notification.requestPermission();
@@ -69,8 +58,7 @@ export function useNotifications() {
           
           if (token) {
             console.log('FCM Token:', token);
-            setFcmToken(token); // Update local state immediately
-            // Save token to user profile
+            // Save token to user profile. This will trigger a re-render in components using the store.
             await setUserProfile({ ...userProfile, fcmToken: token });
             
             // Send welcome notification
@@ -87,6 +75,11 @@ export function useNotifications() {
 
           } else {
             console.log('No registration token available. Request permission to generate one.');
+             toast({
+                variant: "destructive",
+                title: t('notifications.no-token-title'),
+                description: t('notifications.no-token-desc'),
+            });
           }
         } else {
           console.log('Unable to get permission to notify.');
@@ -101,6 +94,4 @@ export function useNotifications() {
     return () => clearTimeout(timer);
 
   }, [isLoaded, userProfile, setUserProfile, toast, t, permissionRequested]);
-
-  return fcmToken;
 }
