@@ -91,7 +91,6 @@
     "error-weak-pass": "Tu contraseña es demasiado débil. Elige una más segura.",
     "error-unexpected": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.",
     "error-google-failed": "No se pudo iniciar sesión con Google en este momento. Inténtalo de nuevo o usa email/contraseña.",
-    "error-verify-email-failed": "Cuenta creada, pero no se pudo enviar el correo de verificación. Revisa la configuración de tu dominio en Firebase.",
     "verify-title": "Por favor, Verifica tu Correo",
     "verify-desc": "Hemos enviado un enlace de verificación a tu dirección de correo. Por favor, haz clic en el enlace para continuar.",
     "verify-spam": "¿No lo ves? ¡Revisa tu carpeta de spam!",
@@ -272,5 +271,9 @@
     "step4-desc": "Haz clic en tu avatar en la esquina superior derecha para visitar tu perfil. Puedes ver todas tus estadísticas, metas e incluso cambiar tu foto de perfil. ¡Eso es todo! Estás listo para comenzar a registrar.",
     "prev-btn": "Anterior",
     "next-btn": "Siguiente"
+  },
+  "notifications": {
+    "permission-granted-title": "¡Notificaciones Activadas!",
+    "permission-granted-desc": "Te enviaremos recordatorios para ayudarte a mantenerte en el buen camino."
   }
 }
