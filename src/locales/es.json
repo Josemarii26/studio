@@ -274,6 +274,8 @@
   },
   "notifications": {
     "permission-granted-title": "¡Notificaciones Activadas!",
-    "permission-granted-desc": "Te enviaremos recordatorios para ayudarte a mantenerte en el buen camino."
+    "permission-granted-desc": "Te enviaremos recordatorios para ayudarte a mantenerte en el buen camino.",
+    "welcome-title": "¡Bienvenido a DietLogAI!",
+    "welcome-body": "¡Hola {name}! Estamos encantados de tenerte. ¡Empecemos tu viaje!"
   }
 }
