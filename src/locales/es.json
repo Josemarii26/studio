@@ -94,7 +94,10 @@
     "verify-title": "Por favor, Verifica tu Correo",
     "verify-desc": "Hemos enviado un enlace de verificación a tu dirección de correo. Por favor, haz clic en el enlace para continuar.",
     "verify-spam": "¿No lo ves? ¡Revisa tu carpeta de spam!",
-    "verify-logout-btn": "Volver a Iniciar Sesión"
+    "verify-logout-btn": "Volver a Iniciar Sesión",
+    "verify-success-title": "¡Correo Verificado!",
+    "verify-success-desc": "Gracias por verificar tu correo. Ahora puedes iniciar sesión en tu cuenta.",
+    "verify-success-btn": "Ir a Iniciar Sesión"
   },
   "dashboard": {
     "header-chat-btn": "Chat",

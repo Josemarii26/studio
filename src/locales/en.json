@@ -94,7 +94,10 @@
     "verify-title": "Please Verify Your Email",
     "verify-desc": "We've sent a verification link to your email address. Please click the link to continue.",
     "verify-spam": "Don't see it? Check your spam folder!",
-    "verify-logout-btn": "Back to Login"
+    "verify-logout-btn": "Back to Login",
+    "verify-success-title": "Email Verified!",
+    "verify-success-desc": "Thank you for verifying your email. You can now log in to your account.",
+    "verify-success-btn": "Go to Login"
   },
   "dashboard": {
     "header-chat-btn": "Chat",

@@ -4,7 +4,7 @@
 import { I18nProviderClient } from '@/locales/client';
 import { AuthContext, useAuth } from '@/hooks/use-auth';
 import { useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup, sendEmailVerification, UserCredential } from 'firebase/auth';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup, sendEmailVerification, UserCredential, ActionCodeSettings } from 'firebase/auth';
 import { auth, provider } from '@/firebase/client';
 import { SplashScreen } from '@/components/splash-screen';
 import { cn } from '@/lib/utils';
@@ -28,7 +28,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string): Promise<UserCredential> => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (userCredential.user) {
-        await sendEmailVerification(userCredential.user);
+        const actionCodeSettings: ActionCodeSettings = {
+            url: `${window.location.origin}/verify-email`,
+            handleCodeInApp: true,
+        };
+        await sendEmailVerification(userCredential.user, actionCodeSettings);
     }
     return userCredential;
   };
