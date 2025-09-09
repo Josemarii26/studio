@@ -26,7 +26,7 @@ import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useNotifications } from '@/hooks/use-notifications';
 
-function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
+function Header({ toggleSidebar, fcmToken }: { toggleSidebar: () => void, fcmToken: string | null | undefined }) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const { signOut } = useAuth();
   const router = useRouter();
@@ -40,7 +40,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   };
 
   const handleTestNotification = async () => {
-    if (!userProfile?.fcmToken) {
+    if (!fcmToken) {
         toast({
             variant: "destructive",
             title: "No Notification Token",
@@ -53,9 +53,9 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
         description: "Close the app or switch to another tab to see it.",
     });
     await sendNotification({
-        token: userProfile.fcmToken,
+        token: fcmToken,
         title: "Test Notification from DietLogAI",
-        body: `👋 Hello ${userProfile.name}, this is a test!`,
+        body: `👋 Hello ${userProfile?.name}, this is a test!`,
     });
   };
 
@@ -73,7 +73,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           </h1>
         </Link>
         <div className="flex items-center gap-2">
-           <Button variant="outline" size="sm" onClick={handleTestNotification} disabled={!userProfile?.fcmToken}>
+           <Button variant="outline" size="sm" onClick={handleTestNotification} disabled={!fcmToken}>
                 <BellDot className="mr-2 h-4 w-4" />
                 Test Notification
             </Button>
@@ -150,8 +150,8 @@ export default function DashboardPage() {
   const t = useI18n();
   const locale = useCurrentLocale();
 
-  // Initialize notification hook
-  useNotifications();
+  // Initialize notification hook and get the live token state
+  const fcmToken = useNotifications();
 
   // Authentication and onboarding checks. This is the new, more robust logic.
   useEffect(() => {
@@ -283,7 +283,7 @@ export default function DashboardPage() {
     <SidebarProvider>
       <WalkthroughModal isOpen={showWalkthrough} onComplete={handleWalkthroughComplete} />
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
-        <HeaderWithSidebar />
+        <HeaderWithSidebar fcmToken={fcmToken || userProfile?.fcmToken} />
         <div className="flex flex-1">
             <DashboardContent>
               <DashboardClient dailyData={dailyData} />
@@ -302,9 +302,9 @@ export default function DashboardPage() {
   );
 }
 
-function HeaderWithSidebar() {
+function HeaderWithSidebar({ fcmToken }: { fcmToken: string | null | undefined }) {
   const { toggleSidebar } = useSidebar();
-  return <Header toggleSidebar={toggleSidebar} />
+  return <Header toggleSidebar={toggleSidebar} fcmToken={fcmToken} />
 }
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
@@ -317,5 +317,3 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
-
-    
