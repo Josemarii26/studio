@@ -37,7 +37,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
             // to redirect to a custom verification page.
             const actionCodeSettings: ActionCodeSettings = {
                 // The URL must be whitelisted in the Firebase Console.
-                url: `${window.location.origin}/verify-email`,
+                // We use the custom domain now.
+                url: `https://www.dietlog-ai.site/verify-email`,
                 handleCodeInApp: true,
             };
             await sendEmailVerification(userCredential.user, actionCodeSettings);
@@ -45,10 +46,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
         return userCredential;
     } catch (error: any) {
         console.error("Error during sign up process:", error);
-        if (error.code === 'auth/email-already-in-use') {
-             throw error;
-        }
-        throw new Error(t('auth.error-unexpected'));
+        throw error;
     }
   };
   
