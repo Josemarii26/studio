@@ -6,7 +6,7 @@ import { NutritionalChat } from '@/components/nutritional-chat';
 import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, LogOut, MailWarning, BellDot } from 'lucide-react';
+import { MessageSquare, LogOut, MailWarning, BellDot, BellPlus } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
@@ -23,42 +23,62 @@ import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { useNotifications } from '@/hooks/use-notifications';
+import { getToken } from 'firebase/messaging';
+import { messaging } from '@/firebase/client';
+
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
-  const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
+  const { userProfile, isLoaded: isProfileLoaded, setUserProfile } = useUserStore();
   const { signOut } = useAuth();
   const router = useRouter();
   const t = useI18n();
   const locale = useCurrentLocale();
   const { toast } = useToast();
+  const [isActivating, setIsActivating] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     router.push(`/${locale}`);
   };
 
-  const handleTestNotification = async () => {
-    if (!userProfile?.fcmToken) {
-        toast({
-            variant: "destructive",
-            title: t('notifications.no-token-title'),
-            description: t('notifications.no-token-desc'),
-        });
-        return;
+  const handleEnableNotifications = async () => {
+    if (!userProfile) return;
+    setIsActivating(true);
+
+    try {
+      const currentPermission = await Notification.requestPermission();
+      if (currentPermission === 'granted') {
+        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+        if (!vapidKey) throw new Error("VAPID key is missing.");
+
+        const token = await getToken(messaging, { vapidKey });
+        if (token) {
+          await setUserProfile({ ...userProfile, fcmToken: token });
+          toast({
+            title: t('notifications.permission-granted-title'),
+            description: t('notifications.permission-granted-desc'),
+          });
+          // Send a confirmation notification
+          await sendNotification({
+            token: token,
+            title: t('notifications.reminders-on-title'),
+            body: t('notifications.reminders-on-body'),
+          });
+        } else {
+          toast({ variant: "destructive", title: t('notifications.no-token-title') });
+        }
+      } else {
+        toast({ variant: "destructive", title: t('notifications.permission-denied-title') });
+      }
+    } catch (err: any) {
+      console.error('Error enabling notifications:', err);
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setIsActivating(false);
     }
-    toast({
-        title: t('notifications.sending-test-title'),
-        description: t('notifications.sending-test-desc'),
-    });
-    // This now calls the server action directly
-    await sendNotification({
-        token: userProfile.fcmToken,
-        title: t('notifications.test-title'),
-        body: t('notifications.test-body', { name: userProfile?.name || 'User' }),
-    });
   };
+
 
   return (
     <header className={cn(
@@ -74,10 +94,12 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           </h1>
         </Link>
         <div className="flex items-center gap-2">
-           <Button variant="outline" size="sm" onClick={handleTestNotification} disabled={!userProfile?.fcmToken}>
-                <BellDot className="mr-2 h-4 w-4" />
-                {t('notifications.test-button')}
+           {!userProfile?.fcmToken && (
+             <Button variant="outline" size="sm" onClick={handleEnableNotifications} disabled={isActivating || !isProfileLoaded}>
+                <BellPlus className="mr-2 h-4 w-4" />
+                {t('notifications.enable-button')}
             </Button>
+           )}
           <Button variant="outline" onClick={toggleSidebar}>
               <MessageSquare className="mr-2" />
               {t('dashboard.header-chat-btn')}

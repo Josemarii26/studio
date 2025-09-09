@@ -275,14 +275,13 @@
   "notifications": {
     "permission-granted-title": "¡Notificaciones Activadas!",
     "permission-granted-desc": "Te enviaremos recordatorios para ayudarte a mantenerte en el buen camino.",
+    "permission-denied-title": "Permiso Denegado",
     "welcome-title": "¡Bienvenido a DietLogAI!",
     "welcome-body": "¡Hola {name}! Estamos encantados de tenerte. ¡Empecemos tu viaje!",
-    "test-button": "Probar Notificación",
-    "no-token-title": "Sin Token de Notificación",
-    "no-token-desc": "Aún no se ha concedido permiso para las notificaciones.",
-    "sending-test-title": "Enviando Notificación de Prueba",
-    "sending-test-desc": "Cierra la aplicación o cambia de pestaña para verla.",
-    "test-title": "Notificación de Prueba de DietLogAI",
-    "test-body": "👋 ¡Hola {name}, esto es una prueba!"
+    "enable-button": "Activar Recordatorios",
+    "no-token-title": "No se pudo obtener el token de notificación",
+    "no-token-desc": "Por favor, inténtalo de nuevo o revisa la configuración de tu navegador.",
+    "reminders-on-title": "¡Recordatorios Activados!",
+    "reminders-on-body": "Ahora recibirás recordatorios diarios para registrar tus comidas."
   }
 }
