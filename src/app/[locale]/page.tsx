@@ -67,7 +67,7 @@ export default function LandingPage() {
                 </div>
                 <div className="md:w-1/3 w-full max-w-sm md:max-w-none animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                     <div className="relative w-full">
-                        <img src="https://dl.dropboxusercontent.com/scl/fi/wdguxx6bng7hh81to8smk/landing1.png?rlkey=qzl31ocnin23rk0snzsmome36&st=tj63e8jb&dl=0" alt="Healthy food" data-ai-hint="healthy food" className="" layout="fill" objectFit="cover" />
+                        <img src="https://dl.dropboxusercontent.com/scl/fi/bvysslzedz4np3pogkrk2/landing1.png?rlkey=dw7ewe3g78wd3byspd6loe6yf&st=mzag3sux&dl=0" alt="Healthy food" data-ai-hint="healthy food" className="" layout="fill" objectFit="cover" />
                     </div>
                 </div>
             </div>
@@ -108,7 +108,7 @@ export default function LandingPage() {
                     </Button>
                 </div>
                 <div className="relative w-full max-w-md mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                   <img src="https://dl.dropboxusercontent.com/scl/fi/ltwe98jqokr838ttfvgdv/landing2.png?rlkey=xtiq5bj8dfb0jgfrehaiwbodr&st=glw3agay&dl=0" alt="Dashboard preview" data-ai-hint="nutrition dashboard" className="" layout="fill" objectFit="cover" />
+                   <img src="https://dl.dropboxusercontent.com/scl/fi/qoijb0dh4pfutgxpadwxk/landing2.png?rlkey=ak0jocqdipoimo8vkiug5d8gy&st=jam5ax7t&dl=0" alt="Dashboard preview" data-ai-hint="nutrition dashboard" className="" layout="fill" objectFit="cover" />
                 </div>
             </div>
         </section>
