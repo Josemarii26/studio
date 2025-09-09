@@ -6,7 +6,7 @@ import { NutritionalChat } from '@/components/nutritional-chat';
 import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, LogOut, MailWarning, ShieldCheck } from 'lucide-react';
+import { MessageSquare, LogOut, MailWarning, BellDot } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,8 @@ import { useRouter } from 'next/navigation';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
 import type { DayData, ChatMessage, UserProfile } from '@/lib/types';
-import { NutritionalChatAnalysisOutput } from '@/ai/flows/nutritional-chat-analysis';
+import { NutritionalChatAnalysisOutput, nutritionalChatAnalysis } from '@/ai/flows/nutritional-chat-analysis';
+import { sendNotification } from '@/ai/flows/send-notification';
 import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
@@ -31,10 +32,31 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const router = useRouter();
   const t = useI18n();
   const locale = useCurrentLocale();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
     await signOut();
     router.push(`/${locale}`);
+  };
+
+  const handleTestNotification = async () => {
+    if (!userProfile?.fcmToken) {
+        toast({
+            variant: "destructive",
+            title: "No Notification Token",
+            description: "Permission for notifications has not been granted yet.",
+        });
+        return;
+    }
+    toast({
+        title: "Sending Test Notification",
+        description: "Close the app or switch to another tab to see it.",
+    });
+    await sendNotification({
+        token: userProfile.fcmToken,
+        title: "Test Notification from DietLogAI",
+        body: `👋 Hello ${userProfile.name}, this is a test!`,
+    });
   };
 
   return (
@@ -50,7 +72,11 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
             DietLogAI
           </h1>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+           <Button variant="outline" size="sm" onClick={handleTestNotification} disabled={!userProfile?.fcmToken}>
+                <BellDot className="mr-2 h-4 w-4" />
+                Test Notification
+            </Button>
           <Button variant="outline" onClick={toggleSidebar}>
               <MessageSquare className="mr-2" />
               {t('dashboard.header-chat-btn')}
@@ -291,3 +317,5 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
+
+    
