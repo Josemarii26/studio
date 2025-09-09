@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { NutriTrackLogo } from "@/components/nutri-track-logo";
+import { DietLogAILogo } from "@/components/diet-log-ai-logo";
 import { ArrowRight, Bot, Zap, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,9 +30,9 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 sm:px-8 bg-background/80 backdrop-blur-sm border-b">
         <Link href={`/${locale}`} className="flex items-center gap-2">
-            <NutriTrackLogo className="h-8 w-8 text-primary" />
+            <DietLogAILogo className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold text-foreground font-headline">
-                NutriTrackAI
+                DietLogAI
             </h1>
         </Link>
         <div className="flex items-center gap-4">

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { NutriTrackLogo } from '@/components/nutri-track-logo';
+import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -35,9 +35,9 @@ function ProfileHeader() {
         "flex h-full items-center justify-between gap-4 px-4 sm:px-6"
       )}>
         <Link href={`/${locale}`} className="flex items-center gap-2">
-          <NutriTrackLogo className="h-8 w-8 text-primary" />
+          <DietLogAILogo className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-headline">
-            NutriTrackAI
+            DietLogAI
           </h1>
         </Link>
         <div className="flex items-center gap-4">

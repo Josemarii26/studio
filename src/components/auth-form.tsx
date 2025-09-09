@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { NutriTrackLogo } from './nutri-track-logo';
+import { DietLogAILogo } from './diet-log-ai-logo';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useCurrentLocale, useI18n } from '@/locales/client';
@@ -126,7 +126,7 @@ export function AuthForm() {
             <CardHeader className="text-center">
                 <div className="mb-4 flex flex-col items-center">
                     <Link href={`/${locale}`}>
-                        <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
+                        <DietLogAILogo className="h-12 w-12 text-primary mb-4" />
                     </Link>
                 </div>
               <CardTitle className="text-2xl">{t('auth.login-title')}</CardTitle>
@@ -202,7 +202,7 @@ export function AuthForm() {
             <CardHeader className="text-center">
                 <div className="mb-4 flex flex-col items-center">
                     <Link href={`/${locale}`}>
-                        <NutriTrackLogo className="h-12 w-12 text-primary mb-4" />
+                        <DietLogAILogo className="h-12 w-12 text-primary mb-4" />
                     </Link>
                 </div>
               <CardTitle className="text-2xl">{t('auth.signup-title')}</CardTitle>

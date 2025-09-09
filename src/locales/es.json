@@ -3,9 +3,9 @@
   "landing": {
     "get-started": "Empezar",
     "title": "Transforma tu nutrición con IA",
-    "subtitle": "Deja de adivinar. Empieza a registrar. NutriTrackAI analiza tus comidas para darte información personalizada y ayudarte a alcanzar tus metas de salud más rápido.",
+    "subtitle": "Deja de adivinar. Empieza a registrar. DietLogAI analiza tus comidas para darte información personalizada y ayudarte a alcanzar tus metas de salud más rápido.",
     "cta": "Comienza gratis ahora",
-    "why-title": "¿Por qué NutriTrackAI?",
+    "why-title": "¿Por qué DietLogAI?",
     "feature1-title": "Análisis con IA",
     "feature1-desc": "Simplemente describe tus comidas y nuestra IA calculará instantáneamente calorías, macros y te dará consejos prácticos.",
     "feature2-title": "Registro sin esfuerzo",
@@ -15,10 +15,10 @@
     "visualize-title": "Visualiza tu progreso",
     "visualize-desc": "Ve más allá de los números. Nuestros hermosos e interactivos gráficos y calendario te dan una comprensión clara e intuitiva de tus hábitos y tendencias.",
     "visualize-cta": "Verlo en acción",
-    "footer": "© {year} NutriTrackAI. Todos los derechos reservados."
+    "footer": "© {year} DietLogAI. Todos los derechos reservados."
   },
   "onboarding": {
-    "welcome": "Bienvenido a NutriTrackAI",
+    "welcome": "Bienvenido a DietLogAI",
     "subtitle": "Vamos a configurar tu perfil para personalizar tu experiencia.",
     "form-title": "Configuración de tu perfil",
     "form-step": "Paso {currentStep} de {totalSteps}: {stepName}",
@@ -261,7 +261,7 @@
     "night-owl-desc": "Registra tus comidas después de las 10 PM."
   },
   "walkthrough": {
-    "step1-title": "¡Bienvenido a NutriTrackAI!",
+    "step1-title": "¡Bienvenido a DietLogAI!",
     "step1-desc": "Demos un rápido recorrido para que comiences tu viaje nutricional.",
     "step2-title": "El Panel del Calendario",
     "step2-desc": "Este es tu centro de control. Cada día que registres tus comidas, el calendario se iluminará con un color que muestra qué tan cerca estuviste de tus metas. Verde es en meta, amarillo es cerca y rojo está un poco lejos.",

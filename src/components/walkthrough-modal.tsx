@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { NutriTrackLogo } from './nutri-track-logo';
+import { DietLogAILogo } from './diet-log-ai-logo';
 import { Calendar, MessageSquare, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { useI18n } from '@/locales/client';
@@ -20,7 +20,7 @@ export function WalkthroughModal({ isOpen, onComplete }: WalkthroughModalProps) 
 
   const steps = [
     {
-      icon: <NutriTrackLogo className="h-12 w-12 text-primary" />,
+      icon: <DietLogAILogo className="h-12 w-12 text-primary" />,
       title: t('walkthrough.step1-title'),
       description: t('walkthrough.step1-desc'),
       image: "https://picsum.photos/600/401",

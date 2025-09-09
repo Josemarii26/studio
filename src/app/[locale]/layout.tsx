@@ -11,7 +11,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-    title: 'NutriTrackAI',
+    title: 'DietLogAI',
     description: 'Track your nutrition with the power of AI.',
     manifest: '/manifest.json',
     icons: {

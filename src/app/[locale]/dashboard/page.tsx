@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { NutritionalChat } from '@/components/nutritional-chat';
-import { NutriTrackLogo } from '@/components/nutri-track-logo';
+import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, LogOut, MailWarning, ShieldCheck } from 'lucide-react';
@@ -44,9 +44,9 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
         "flex h-full items-center justify-between gap-4 px-4 sm:px-6"
       )}>
         <Link href={`/${locale}`} className="flex items-center gap-2">
-          <NutriTrackLogo className="h-8 w-8 text-primary" />
+          <DietLogAILogo className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-headline hidden sm:block">
-            NutriTrackAI
+            DietLogAI
           </h1>
         </Link>
         <div className="flex items-center gap-4">

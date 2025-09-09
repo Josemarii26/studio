@@ -3,9 +3,9 @@
   "landing": {
     "get-started": "Get Started",
     "title": "Transform Your Nutrition with AI",
-    "subtitle": "Stop guessing. Start tracking. NutriTrackAI analyzes your meals to give you personalized insights and help you reach your health goals faster.",
+    "subtitle": "Stop guessing. Start tracking. DietLogAI analyzes your meals to give you personalized insights and help you reach your health goals faster.",
     "cta": "Start Your Journey Free",
-    "why-title": "Why NutriTrackAI?",
+    "why-title": "Why DietLogAI?",
     "feature1-title": "AI-Powered Analysis",
     "feature1-desc": "Simply describe your meals and our AI will instantly calculate calories, macros, and provide actionable insights.",
     "feature2-title": "Effortless Tracking",
@@ -15,10 +15,10 @@
     "visualize-title": "Visualize Your Progress",
     "visualize-desc": "Go beyond numbers. Our beautiful, interactive charts and calendar give you a clear and intuitive understanding of your habits and trends over time.",
     "visualize-cta": "See It In Action",
-    "footer": "© {year} NutriTrackAI. All rights reserved."
+    "footer": "© {year} DietLogAI. All rights reserved."
   },
   "onboarding": {
-    "welcome": "Welcome to NutriTrackAI",
+    "welcome": "Welcome to DietLogAI",
     "subtitle": "Let's set up your profile to personalize your experience.",
     "form-title": "Your Profile Setup",
     "form-step": "Step {currentStep} of {totalSteps}: {stepName}",
@@ -261,7 +261,7 @@
     "night-owl-desc": "Log your meals after 10 PM."
   },
   "walkthrough": {
-    "step1-title": "Welcome to NutriTrackAI!",
+    "step1-title": "Welcome to DietLogAI!",
     "step1-desc": "Let's take a quick tour to get you started on your nutritional journey.",
     "step2-title": "The Calendar Dashboard",
     "step2-desc": "This is your mission control. Every day you log your meals, the calendar will light up with a color showing how close you were to your goals. Green is on-target, yellow is close, and red is a bit off.",

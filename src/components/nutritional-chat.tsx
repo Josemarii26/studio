@@ -13,7 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { nutritionalChatAnalysis, type NutritionalChatAnalysisOutput } from '@/ai/flows/nutritional-chat-analysis';
-import { NutriTrackLogo } from './nutri-track-logo';
+import { DietLogAILogo } from './diet-log-ai-logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -208,7 +208,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   return (
     <div className="flex h-full flex-col bg-card">
       <CardHeader className="flex flex-row items-center gap-3 border-b">
-        <NutriTrackLogo className="h-8 w-8 text-primary" />
+        <DietLogAILogo className="h-8 w-8 text-primary" />
         <div>
           <CardTitle>{t('chat.title')}</CardTitle>
           <CardDescription>{t('chat.description')}</CardDescription>
