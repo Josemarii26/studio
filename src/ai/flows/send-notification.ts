@@ -8,15 +8,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import * as admin from 'firebase-admin';
-
-// Initialize Firebase Admin SDK if it hasn't been already
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-  });
-}
 
 const SendNotificationInputSchema = z.object({
   token: z.string().describe('The FCM token of the device to notify.'),
@@ -37,6 +30,14 @@ const sendNotificationFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async (input) => {
+    // Initialize Firebase Admin SDK if it hasn't been already
+    // This is moved inside the flow to ensure it only runs in a secure server environment.
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+      });
+    }
+
     const { token, title, body } = input;
 
     if (!token) {
