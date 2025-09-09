@@ -5,3 +5,12 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+# Defines scheduled jobs for the backend.
+# https://firebase.google.com/docs/app-hosting/configure#scheduled-jobs
+scheduledJobs:
+  - schedule: "every day 21:30"
+    timeZone: "Europe/Madrid" # Use a specific timezone
+    http:
+      path: /api/cron/send-reminders
+      method: GET

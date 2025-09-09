@@ -52,6 +52,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
         title: t('notifications.sending-test-title'),
         description: t('notifications.sending-test-desc'),
     });
+    // This now calls the server action directly
     await sendNotification({
         token: userProfile.fcmToken,
         title: t('notifications.test-title'),
@@ -142,13 +143,13 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { isLoaded: profileLoaded, userProfile } = useUserStore();
   const router = useRouter();
+  const locale = useCurrentLocale();
   const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const t = useI18n();
-  const locale = useCurrentLocale();
 
   // Initialize notification hook. It will run in the background.
   useNotifications();
