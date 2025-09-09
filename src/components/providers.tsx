@@ -33,15 +33,9 @@ function AuthProvider({ children }: { children: ReactNode }) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (userCredential.user) {
-            // Construct the URL safely
-            const verifyUrl = new URL('/verify-email', window.location.origin).toString();
-            
-            const actionCodeSettings: ActionCodeSettings = {
-                url: verifyUrl,
-                handleCodeInApp: true,
-            };
-            
-            await sendEmailVerification(userCredential.user, actionCodeSettings);
+            // By removing actionCodeSettings, we revert to Firebase's default (and more reliable) verification flow.
+            // This avoids issues with unauthorized domains on free hosting providers like Netlify.
+            await sendEmailVerification(userCredential.user);
         }
         return userCredential;
     } catch (error: any) {
@@ -54,7 +48,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
         console.error("Error during sign up process:", error);
         
         // Throw a custom, more descriptive error for the UI to catch
-        throw new Error(t('auth.error-verify-email-failed'));
+        throw new Error(t('auth.error-unexpected'));
     }
   };
   
