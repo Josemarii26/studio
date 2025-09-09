@@ -33,23 +33,17 @@ function AuthProvider({ children }: { children: ReactNode }) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (userCredential.user) {
-            const actionCodeSettings: ActionCodeSettings = {
-                // This URL MUST be authorized in the Firebase Console
-                // under Authentication -> Settings -> Authorized domains
-                url: `https://www.dietlog-ai.site/verify-email`,
-                handleCodeInApp: true,
-            };
-            await sendEmailVerification(userCredential.user, actionCodeSettings);
+            // Using Firebase's default verification flow for maximum reliability.
+            await sendEmailVerification(userCredential.user);
         }
         return userCredential;
     } catch (error: any) {
         console.error("Error during sign up process:", error);
-        // Provide a more specific error if possible
-        if (error.code === 'auth/network-request-failed') {
-             toast({ variant: 'destructive', title: t('auth.error-signup-failed'), description: 'Network error. Please check your connection.' });
-        } else {
-             toast({ variant: 'destructive', title: t('auth.error-signup-failed'), description: error.message });
-        }
+        toast({ 
+            variant: 'destructive', 
+            title: t('auth.error-signup-failed'), 
+            description: error.message || t('auth.error-unexpected')
+        });
         throw error;
     }
   };
