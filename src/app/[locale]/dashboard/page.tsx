@@ -130,21 +130,30 @@ export default function DashboardPage() {
   // Authentication and onboarding checks. This is the new, more robust logic.
   useEffect(() => {
     if (authLoading || !profileLoaded) {
-      return;
+      return; // Wait until auth and profile are loaded
     }
 
     if (!user) {
       router.push(`/${locale}/login`);
-    } else if (user && !user.emailVerified) {
       return;
-    } else if (!userProfile) {
+    }
+
+    if (!user.emailVerified) {
+      return; // Do nothing, the EmailVerificationGate will be shown
+    }
+    
+    // At this point, user is logged in and email is verified.
+    // Now we check if they have a profile.
+    if (!userProfile) {
       router.push(`/${locale}/onboarding`);
-    } else {
-      const walkthroughKey = `walkthroughCompleted-${user.uid}`;
-      const completed = localStorage.getItem(walkthroughKey);
-      if (!completed) {
-        setShowWalkthrough(true);
-      }
+      return;
+    }
+
+    // If we get here, user is verified and has a profile. Show the walkthrough if needed.
+    const walkthroughKey = `walkthroughCompleted-${user.uid}`;
+    const completed = localStorage.getItem(walkthroughKey);
+    if (!completed) {
+      setShowWalkthrough(true);
     }
   }, [user, userProfile, authLoading, profileLoaded, router, locale]);
 
@@ -228,18 +237,22 @@ export default function DashboardPage() {
     setChatMessages(prev => [...prev, assistantMessage]);
   };
   
-  if (authLoading || !profileLoaded || isLoadingData) {
+  if (authLoading || !profileLoaded) {
     return <DashboardLoader />;
   }
 
+  // If user exists but email is not verified, show the verification gate.
   if (user && !user.emailVerified) {
     return <EmailVerificationGate />;
   }
-
-  if (!user || !userProfile) {
+  
+  // If user is logged in, verified, but has no profile, it means they need to onboard.
+  // The useEffect above will handle redirection, but we show a loader in the meantime.
+  if (user && user.emailVerified && !userProfile) {
     return <DashboardLoader />;
   }
 
+  // If we reach here, user is fully authenticated and has a profile.
   return (
     <SidebarProvider>
       <WalkthroughModal isOpen={showWalkthrough} onComplete={handleWalkthroughComplete} />

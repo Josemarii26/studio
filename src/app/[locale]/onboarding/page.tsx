@@ -19,6 +19,9 @@ export default function OnboardingPage() {
     useEffect(() => {
         if (!loading && !user) {
             router.push(`/${locale}/login`);
+        } else if (!loading && user && !user.emailVerified) {
+            // Redirect unverified users away from onboarding
+            router.push(`/${locale}/dashboard`);
         }
     }, [user, loading, router, locale]);
     
