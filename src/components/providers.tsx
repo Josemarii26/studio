@@ -33,21 +33,21 @@ function AuthProvider({ children }: { children: ReactNode }) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (userCredential.user) {
-            // By removing actionCodeSettings, we revert to Firebase's default (and more reliable) verification flow.
-            // This avoids issues with unauthorized domains on free hosting providers like Netlify.
-            await sendEmailVerification(userCredential.user);
+            // Once the custom domain is configured, we can use actionCodeSettings
+            // to redirect to a custom verification page.
+            const actionCodeSettings: ActionCodeSettings = {
+                // The URL must be whitelisted in the Firebase Console.
+                url: `${window.location.origin}/verify-email`,
+                handleCodeInApp: true,
+            };
+            await sendEmailVerification(userCredential.user, actionCodeSettings);
         }
         return userCredential;
     } catch (error: any) {
-        // This catch block is crucial. If user creation succeeds but email sending fails,
-        // we provide a more specific error message.
-        if (error.code === 'auth/email-already-in-use') {
-             throw error; // Re-throw for the form to handle it.
-        }
-        
         console.error("Error during sign up process:", error);
-        
-        // Throw a custom, more descriptive error for the UI to catch
+        if (error.code === 'auth/email-already-in-use') {
+             throw error;
+        }
         throw new Error(t('auth.error-unexpected'));
     }
   };
