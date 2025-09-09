@@ -91,6 +91,7 @@
     "error-weak-pass": "Your password is too weak. Please choose a stronger password.",
     "error-unexpected": "An unexpected error occurred. Please try again later.",
     "error-google-failed": "Could not sign in with Google at this time. Please try again or use email/password.",
+    "error-verify-email-failed": "Account created, but failed to send verification email. Please check your domain settings in Firebase.",
     "verify-title": "Please Verify Your Email",
     "verify-desc": "We've sent a verification link to your email address. Please click the link to continue.",
     "verify-spam": "Don't see it? Check your spam folder!",

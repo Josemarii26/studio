@@ -63,10 +63,11 @@ export function AuthForm() {
         setIsLogin(true); // Flip to login view after successful signup
       }
     } catch (error: any) {
-      console.error("Auth Error Code:", error.code);
+      console.error("Auth Error:", error);
       let title = isLogin ? t('auth.error-login-failed') : t('auth.error-signup-failed');
-      let description = t('auth.error-unexpected');
+      let description;
 
+      // Handle specific error codes from Firebase
       switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/invalid-credential':
@@ -79,13 +80,14 @@ export function AuthForm() {
           description = t('auth.error-email-in-use');
           break;
         case 'auth/invalid-email':
-            title = t('auth.error-invalid-email');
-            description = '';
+            description = t('auth.error-invalid-email');
             break;
         case 'auth/weak-password':
-            title = t('auth.error-weak-pass');
-            description = '';
+            description = t('auth.error-weak-pass');
             break;
+        default:
+            // Use the custom error message from our provider for verification failures
+            description = error.message || t('auth.error-unexpected');
       }
 
       toast({ variant: 'destructive', title, description });
