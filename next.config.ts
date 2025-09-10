@@ -39,13 +39,13 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
-  // By setting these to false, we prevent next-pwa from auto-generating
-  // manifest entries that can cause console errors if the files don't exist.
-  // We are managing the manifest through the layout metadata instead.
   fallbacks: false,
   cacheStartUrl: false,
   dynamicStartUrl: false,
-  buildExcludes: [/middleware-manifest\.json$/],
+  // Exclude Firebase messaging service worker from precaching
+  buildExcludes: [/middleware-manifest\.json$/, /firebase-messaging-sw\.js$/],
+  // Make sure the Firebase service worker is imported into the generated PWA service worker
+  importScripts: ['/firebase-messaging-sw.js'],
 });
 
 export default pwaConfig(nextConfig);
