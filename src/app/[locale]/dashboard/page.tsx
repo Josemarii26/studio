@@ -24,6 +24,7 @@ import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useNotifications } from '@/hooks/use-notifications';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { vapidKeys } from '@/firebase/vapid-keys';
 
 // Helper function to convert Base64 string to Uint8Array
 function urlBase64ToUint8Array(base64String: string) {
@@ -61,10 +62,9 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
       }
       setIsActivating(true);
       try {
-          const res = await fetch('/api/vapid-key');
-          const { publicKey } = await res.json();
+          const publicKey = vapidKeys.publicKey;
           if (!publicKey) {
-              throw new Error('VAPID public key not found.');
+              throw new Error('VAPID public key not found in configuration.');
           }
           
           const applicationServerKey = urlBase64ToUint8Array(publicKey);
@@ -88,7 +88,8 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           });
           
           if (userProfile) {
-            setUserProfile({...userProfile, pushSubscription: subscription});
+            const updatedProfile = { ...userProfile, pushSubscription: subscription };
+            await setUserProfile(updatedProfile); // This now saves to Firestore and updates state
           }
 
           toast({
@@ -369,3 +370,5 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
+
+    
