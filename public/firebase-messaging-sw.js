@@ -1,35 +1,39 @@
-// This file MUST be in the /public folder
+// This file is intentionally blank in the source, but will be populated by the build process.
+// It is needed for Firebase Messaging to work.
+// DO NOT DELETE
+'use client';
+// Scripts for firebase and firebase messaging
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-// We can't use imports in a service worker that references things outside its scope,
-// so we can't import firebase/config. We must hardcode the config here.
-// These are public keys and are safe to be exposed in the client.
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  projectId: "dietlog-ai",
+  appId: "1:770451556948:web:7f6d44a95ab4724b07a522",
+  storageBucket: "dietlog-ai.appspot.com",
+  apiKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  authDomain: "dietlog-ai.firebaseapp.com",
+  messagingSenderId: "770451556948",
+  measurementId: "G-R56XQ6QY2G",
 };
 
-// Only run this code in the browser
-if (typeof window !== 'undefined') {
-  self.addEventListener('install', (event) => {
-    console.log('Firebase messaging service worker installed.');
-  });
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
-  self.addEventListener('push', (event) => {
-    console.log('Push event received.', event);
-    const notificationData = event.data.json();
-    const { title, body, icon, badge } = notificationData.notification;
-    
-    event.waitUntil(
-      self.registration.showNotification(title, {
-        body,
-        icon,
-        badge,
-      })
-    );
-  });
-}
+// Retrieve an instance of Firebase Messaging so that it can handle background
+// messages.
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  // Customize notification here
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: payload.notification.icon || '/icon-192x192.png'
+  };
+
+  self.registration.showNotification(notificationTitle,
+    notificationOptions);
+});
