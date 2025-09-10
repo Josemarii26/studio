@@ -26,6 +26,7 @@ import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useNotifications } from '@/hooks/use-notifications';
 import { getToken } from 'firebase/messaging';
 import { messaging } from '@/firebase/client';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
