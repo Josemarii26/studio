@@ -18,18 +18,16 @@ import { DashboardLoader } from '@/components/dashboard-loader';
 import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
 import type { DayData, ChatMessage, UserProfile } from '@/lib/types';
 import { NutritionalChatAnalysisOutput, nutritionalChatAnalysis } from '@/ai/flows/nutritional-chat-analysis';
-import { sendNotification } from '@/ai/flows/send-notification';
 import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useNotifications } from '@/hooks/use-notifications';
-import { getToken } from 'firebase/messaging';
-import { messaging } from '@/firebase/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
+  const { user, loading: authLoading } = useAuth();
   const { userProfile, isLoaded: isProfileLoaded, setUserProfile } = useUserStore();
   const { signOut } = useAuth();
   const router = useRouter();
@@ -44,43 +42,56 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   };
 
   const handleEnableNotifications = async () => {
-    if (!userProfile || !messaging) return;
-    setIsActivating(true);
-
-    try {
-      const currentPermission = await Notification.requestPermission();
-      if (currentPermission === 'granted') {
-        const vapidKey = 'BGE1H8dY_Qc_h_j1A_E7p_q8R_y9Z_t_G7i_W2k_S_p8O_v_Y5k_C_v_H3o_R_y_W9j_L_n_B7f_C_x_E3r_Y_l_N_s';
-        if (!vapidKey) {
-            toast({ variant: "destructive", title: "VAPID key is missing", description: "The VAPID key is not configured." });
-            throw new Error("VAPID key is missing.");
-        }
-
-        const token = await getToken(messaging, { vapidKey });
-        if (token) {
-          await setUserProfile({ ...userProfile, fcmToken: token });
-          toast({
-            title: t('notifications.permission-granted-title'),
-            description: t('notifications.permission-granted-desc'),
-          });
-          // Send a confirmation notification
-          await sendNotification({
-            token: token,
-            title: t('notifications.reminders-on-title'),
-            body: t('notifications.reminders-on-body'),
-          });
-        } else {
-          toast({ variant: "destructive", title: t('notifications.no-token-title') });
-        }
-      } else {
-        toast({ variant: "destructive", title: t('notifications.permission-denied-title') });
+      if (!user || 'serviceWorker' in navigator === false) {
+          toast({ variant: "destructive", title: "Browser not supported", description: "Push notifications are not supported by your browser." });
+          return;
       }
-    } catch (err: any) {
-      console.error('Error enabling notifications:', err);
-      toast({ variant: "destructive", title: "Error", description: err.message });
-    } finally {
-      setIsActivating(false);
-    }
+      setIsActivating(true);
+      try {
+          const res = await fetch('/api/vapid-key');
+          const { publicKey } = await res.json();
+          if (!publicKey) {
+              throw new Error('VAPID public key not found.');
+          }
+
+          const registration = await navigator.serviceWorker.ready;
+          const existingSubscription = await registration.pushManager.getSubscription();
+          if (existingSubscription) {
+              toast({ title: "Already Subscribed", description: "You are already subscribed to notifications." });
+              return;
+          }
+          
+          const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: publicKey,
+          });
+
+          await fetch('/api/save-subscription', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.uid, subscription }),
+          });
+          
+          // This updates the local user profile state to hide the button
+          if (userProfile) {
+            setUserProfile({...userProfile, pushSubscription: subscription});
+          }
+
+          toast({
+              title: t('notifications.permission-granted-title'),
+              description: t('notifications.permission-granted-desc'),
+          });
+
+      } catch (err: any) {
+          console.error('Error enabling notifications:', err);
+          let description = err.message;
+          if (err.name === 'NotAllowedError') {
+              description = "Permission was denied. Please enable notifications in your browser settings.";
+          }
+          toast({ variant: "destructive", title: "Error", description });
+      } finally {
+          setIsActivating(false);
+      }
   };
 
 
@@ -98,8 +109,8 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           </h1>
         </Link>
         <div className="flex items-center gap-2">
-           {!userProfile?.fcmToken && (
-             <Button variant="outline" size="sm" onClick={handleEnableNotifications} disabled={isActivating || !isProfileLoaded}>
+           {isProfileLoaded && !userProfile?.pushSubscription && (
+             <Button variant="outline" size="sm" onClick={handleEnableNotifications} disabled={isActivating || authLoading}>
                 <BellPlus className="mr-2 h-4 w-4" />
                 {t('notifications.enable-button')}
             </Button>

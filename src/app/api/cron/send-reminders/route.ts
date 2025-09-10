@@ -1,7 +1,8 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import * as admin from 'firebase-admin';
-import { sendNotification } from '@/ai/flows/send-notification';
+import webpush, { type PushSubscription } from 'web-push';
+import { vapidKeys } from '@/firebase/vapid-keys';
 
 // Prevent caching of this route
 export const dynamic = 'force-dynamic';
@@ -16,11 +17,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Configure web-push with VAPID details
+    webpush.setVapidDetails(
+      'mailto:your-email@example.com', // This should be a valid email
+      vapidKeys.publicKey,
+      vapidKeys.privateKey
+    );
+
     // Initialize Firebase Admin SDK if not already initialized
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.applicationDefault(),
-        databaseURL: `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebaseio.com`,
       });
     }
 
@@ -32,28 +39,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'No users to notify.' });
     }
 
-    const notificationPromises: Promise<void>[] = [];
-    const notificationTitle = "🍽️ Hora de registrar tu día";
-    const notificationBody = "No te olvides de anotar tus comidas de hoy para seguir tu progreso. ¡Un pequeño paso para un gran resultado!";
+    const notificationPayload = JSON.stringify({
+      title: "🍽️ Hora de registrar tu día",
+      body: "No te olvides de anotar tus comidas de hoy para seguir tu progreso. ¡Un pequeño paso para un gran resultado!",
+      icon: 'https://www.dietlog-ai.site/icons/icon-192x192.png',
+      badge: 'https://www.dietlog-ai.site/icons/icon-72x72.png'
+    });
+
+    const notificationPromises: Promise<any>[] = [];
 
     usersSnapshot.forEach(doc => {
       const userProfile = doc.data();
-      if (userProfile.fcmToken) {
+      if (userProfile.pushSubscription) {
+        const subscription = userProfile.pushSubscription as PushSubscription;
         console.log(`Queueing notification for user ${doc.id}`);
         notificationPromises.push(
-          sendNotification({
-            token: userProfile.fcmToken,
-            title: notificationTitle,
-            body: notificationBody,
-          })
+          webpush.sendNotification(subscription, notificationPayload)
+            .catch(error => {
+              console.error(`Error sending notification to user ${doc.id}:`, error);
+              // Handle expired or invalid subscriptions
+              if (error.statusCode === 404 || error.statusCode === 410) {
+                console.log(`Subscription for user ${doc.id} has expired or is invalid. Removing.`);
+                // Remove the subscription from the user's profile
+                return doc.ref.update({ pushSubscription: null });
+              }
+            })
         );
       }
     });
 
     await Promise.all(notificationPromises);
     
-    console.log(`Successfully sent notifications to ${notificationPromises.length} users.`);
-    return NextResponse.json({ success: true, message: `Sent notifications to ${notificationPromises.length} users.` });
+    console.log(`Successfully sent or attempted to send notifications to ${notificationPromises.length} users.`);
+    return NextResponse.json({ success: true, message: `Attempted to send notifications to ${notificationPromises.length} users.` });
 
   } catch (error) {
     console.error('Error in cron job:', error);

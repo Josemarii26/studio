@@ -43,7 +43,7 @@ export type UserProfile = {
   dailyCarbsGoal: number;
   bmi: number;
   photoUrl: string | null;
-  fcmToken?: string | null; // For Push Notifications
+  pushSubscription?: PushSubscription | null;
 };
 
 export type ChatMessage = {
