@@ -39,9 +39,6 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
-  fallbacks: false,
-  cacheStartUrl: false,
-  dynamicStartUrl: false,
   // Exclude Firebase messaging service worker from precaching
   buildExcludes: [/middleware-manifest\.json$/, /firebase-messaging-sw\.js$/],
   // Make sure the Firebase service worker is imported into the generated PWA service worker

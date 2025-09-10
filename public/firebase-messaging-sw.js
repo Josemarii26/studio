@@ -1,12 +1,8 @@
+// This file MUST be in the /public folder
 
-// This file needs to be in the public folder.
-
-// Import the Firebase app and messaging libraries
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
-
-// IMPORTANT: Replace this with your project's Firebase config
-// You can get this from the Firebase console.
+// We can't use imports in a service worker that references things outside its scope,
+// so we can't import firebase/config. We must hardcode the config here.
+// These are public keys and are safe to be exposed in the client.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -17,28 +13,23 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+// Only run this code in the browser
+if (typeof window !== 'undefined') {
+  self.addEventListener('install', (event) => {
+    console.log('Firebase messaging service worker installed.');
+  });
 
-// Initialize the Firebase app in the service worker
-firebase.initializeApp(firebaseConfig);
-
-// Retrieve an instance of Firebase Messaging so that it can handle background messages.
-const messaging = firebase.messaging();
-
-// If you want to handle background messages, you can do so here.
-// For now, we'll just log them.
-messaging.onBackgroundMessage((payload) => {
-  console.log(
-    '[firebase-messaging-sw.js] Received background message ',
-    payload
-  );
-  
-  // Customize notification here
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: payload.notification.icon || '/icons/icon-192x192.png'
-  };
-
-  self.registration.showNotification(notificationTitle,
-    notificationOptions);
-});
+  self.addEventListener('push', (event) => {
+    console.log('Push event received.', event);
+    const notificationData = event.data.json();
+    const { title, body, icon, badge } = notificationData.notification;
+    
+    event.waitUntil(
+      self.registration.showNotification(title, {
+        body,
+        icon,
+        badge,
+      })
+    );
+  });
+}
