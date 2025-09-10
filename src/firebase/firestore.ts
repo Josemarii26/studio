@@ -1,5 +1,5 @@
 
-import { doc, getDoc, setDoc, Timestamp, collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp, collection, query, orderBy, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from './client';
 import type { DayData, UserProfile, ChatMessage } from '@/lib/types';
 

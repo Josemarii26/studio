@@ -6,7 +6,7 @@ import { NutritionalChat } from '@/components/nutritional-chat';
 import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, LogOut, MailWarning, BellDot, BellPlus } from 'lucide-react';
+import { MessageSquare, LogOut, MailWarning, BellPlus } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
@@ -369,5 +369,3 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
-
-    
