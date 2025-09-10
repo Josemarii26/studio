@@ -27,7 +27,6 @@ import { useNotifications } from '@/hooks/use-notifications';
 import { getToken } from 'firebase/messaging';
 import { messaging } from '@/firebase/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { firebaseConfig } from '@/firebase/config';
 
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
@@ -51,9 +50,9 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
     try {
       const currentPermission = await Notification.requestPermission();
       if (currentPermission === 'granted') {
-        const vapidKey = firebaseConfig.vapidKey;
+        const vapidKey = 'BGE1H8dY_Qc_h_j1A_E7p_q8R_y9Z_t_G7i_W2k_S_p8O_v_Y5k_C_v_H3o_R_y_W9j_L_n_B7f_C_x_E3r_Y_l_N_s';
         if (!vapidKey) {
-            toast({ variant: "destructive", title: "VAPID key is missing", description: "The VAPID key is not configured in firebaseConfig." });
+            toast({ variant: "destructive", title: "VAPID key is missing", description: "The VAPID key is not configured." });
             throw new Error("VAPID key is missing.");
         }
 
