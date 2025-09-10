@@ -27,6 +27,7 @@ import { useNotifications } from '@/hooks/use-notifications';
 import { getToken } from 'firebase/messaging';
 import { messaging } from '@/firebase/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { firebaseConfig } from '@/firebase/config';
 
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
@@ -44,13 +45,13 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   };
 
   const handleEnableNotifications = async () => {
-    if (!userProfile) return;
+    if (!userProfile || !messaging) return;
     setIsActivating(true);
 
     try {
       const currentPermission = await Notification.requestPermission();
       if (currentPermission === 'granted') {
-        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+        const vapidKey = firebaseConfig.vapidKey;
         if (!vapidKey) throw new Error("VAPID key is missing.");
 
         const token = await getToken(messaging, { vapidKey });
