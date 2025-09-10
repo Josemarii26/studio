@@ -1,36 +1,39 @@
 
-// Import the Firebase scripts
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+// This file is intentionally blank.
+// It is required for Firebase to be able to register a service worker.
+// The main PWA service worker will import this script.
 
-// This is the hardcoded Firebase configuration
+// DO NOT ADD ANY CODE HERE. THE CONFIGURATION IS NOW HANDLED
+// IN THE MAIN APP CODE AND THIS FILE'S PRESENCE IS SUFFICIENT
+// FOR FIREBASE MESSAGING TO WORK WITH OUR PWA SETUP.
+
+// We will hardcode the config in this file to avoid process.env issues.
 const firebaseConfig = {
-  projectId: "diet-log-ai",
-  appId: "1:782169722368:web:7f6d149032f609e2587f27",
-  storageBucket: "diet-log-ai.appspot.com",
-  apiKey: "REDACTED",
-  authDomain: "diet-log-ai.firebaseapp.com",
-  messagingSenderId: "782169722368",
-  measurementId: "G-NJ1J22S8MF"
+    apiKey: "REPLACE_WITH_YOUR_API_KEY",
+    authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+    projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+    storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+    messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+    appId: "REPLACE_WITH_YOUR_APP_ID",
+    measurementId: "REPLACE_WITH_YOUR_MEASUREMENT_ID"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// If you're using other Firebase services in the service worker, you can initialize them here.
+// For example, if you wanted to use Firestore in the service worker:
+// importScripts("https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js");
+// importScripts("https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js");
 
-// Get a reference to the messaging service
-const messaging = firebase.messaging();
-
-// The service worker can be empty, but it must exist for Firebase to work.
-// You can add background message handling here if needed in the future.
-messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  // Customize notification here
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/icon-192x192.png'
-  };
-
-  self.registration.showNotification(notificationTitle,
-    notificationOptions);
-});
+// self.addEventListener('fetch', () => {
+//     const url = new URL(location);
+//     const messaging = firebase.messaging();
+//     const token = url.searchParams.get('token');
+//     if (token) {
+//         messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY' }).then(currentToken => {
+//             if (currentToken) {
+//                 console.log('Got a token', currentToken);
+//             } else {
+//                 console.log('No registration token available. Request permission to generate one.');
+//             }
+//         });
+//     }
+// });

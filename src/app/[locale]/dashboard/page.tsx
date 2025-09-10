@@ -52,7 +52,10 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
       const currentPermission = await Notification.requestPermission();
       if (currentPermission === 'granted') {
         const vapidKey = firebaseConfig.vapidKey;
-        if (!vapidKey) throw new Error("VAPID key is missing.");
+        if (!vapidKey) {
+            toast({ variant: "destructive", title: "VAPID key is missing", description: "The VAPID key is not configured in firebaseConfig." });
+            throw new Error("VAPID key is missing.");
+        }
 
         const token = await getToken(messaging, { vapidKey });
         if (token) {
