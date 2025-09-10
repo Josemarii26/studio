@@ -25,6 +25,19 @@ import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useNotifications } from '@/hooks/use-notifications';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
+// Helper function to convert Base64 string to Uint8Array
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { user, loading: authLoading } = useAuth();
@@ -53,6 +66,8 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           if (!publicKey) {
               throw new Error('VAPID public key not found.');
           }
+          
+          const applicationServerKey = urlBase64ToUint8Array(publicKey);
 
           const registration = await navigator.serviceWorker.ready;
           const existingSubscription = await registration.pushManager.getSubscription();
@@ -63,7 +78,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           
           const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
-              applicationServerKey: publicKey,
+              applicationServerKey: applicationServerKey,
           });
 
           await fetch('/api/save-subscription', {
@@ -72,7 +87,6 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
               body: JSON.stringify({ userId: user.uid, subscription }),
           });
           
-          // This updates the local user profile state to hide the button
           if (userProfile) {
             setUserProfile({...userProfile, pushSubscription: subscription});
           }
@@ -355,3 +369,5 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
+
+    
