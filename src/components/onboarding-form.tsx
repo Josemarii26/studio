@@ -85,7 +85,7 @@ export function OnboardingForm() {
     }
     
     try {
-        const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        const swRegistration = await navigator.serviceWorker.register('/sw.js');
         const subscription = await swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
