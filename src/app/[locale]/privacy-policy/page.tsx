@@ -1,4 +1,6 @@
 
+'use client';
+
 import { DietLogAILogo } from "@/components/diet-log-ai-logo";
 import Link from "next/link";
 import { useCurrentLocale } from '@/locales/client';
