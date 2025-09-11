@@ -184,7 +184,7 @@ export function AuthForm() {
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><GoogleIcon /> {t('auth.google-btn')}</>}
               </Button>
               <p className="px-8 text-center text-sm text-muted-foreground">
-                {t('auth.terms', { 
+                 {t.rich('auth.terms', {
                     terms: (chunks) => <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
                     privacy: (chunks) => <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
                 })}
@@ -258,7 +258,7 @@ export function AuthForm() {
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><GoogleIcon /> {t('auth.google-btn')}</>}
               </Button>
                <p className="px-8 text-center text-sm text-muted-foreground">
-                 {t('auth.terms', { 
+                 {t.rich('auth.terms', {
                     terms: (chunks) => <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
                     privacy: (chunks) => <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
                 })}
