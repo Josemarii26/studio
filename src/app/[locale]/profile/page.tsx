@@ -100,7 +100,7 @@ export default function ProfilePage() {
 
     if (!hasBeenShown && userProfile.pushSubscription) {
         sendNotification({
-            subscriptionToken: userProfile.pushSubscription,
+            subscription: userProfile.pushSubscription,
             title: t('notifications.welcome-title'),
             body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
             icon: '/icon-192x192.png'

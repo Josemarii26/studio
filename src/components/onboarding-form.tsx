@@ -17,7 +17,6 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Bell, BellRing } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
-import { getFCMToken } from '@/firebase/client';
 import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 const formSchema = z.object({
@@ -32,6 +31,20 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+// Function from the tutorial to convert VAPID key
+function urlB64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/")
+
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
 
 interface OnboardingFormProps {
   vapidPublicKey: string;
@@ -66,29 +79,46 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
         toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
         return;
     }
-    try {
-      const fcmToken = await getFCMToken(vapidPublicKey);
+    
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc') });
+        return;
+    }
 
-      if (fcmToken) {
-           const result = await saveNotificationSubscription({
-              userId: user.uid,
-              subscriptionToken: fcmToken,
-          });
-          if (result.success) {
-              toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
-          } else {
-               toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
-          }
-      } else {
-          toast({ variant: 'destructive', title: t('notifications.permission-denied-title'), description: "You need to grant permission in your browser." });
-      }
+    try {
+        const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        
+        const applicationServerKey = urlB64ToUint8Array(vapidPublicKey);
+        
+        const pushSubscription = await swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey
+        });
+
+        const subscriptionObject = pushSubscription.toJSON();
+
+        const result = await saveNotificationSubscription({
+          userId: user.uid,
+          subscription: subscriptionObject,
+        });
+
+        if (result.success) {
+            toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+        } else {
+             toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
+        }
+
     } catch (error: any) {
       console.error('Failed to subscribe or save subscription:', error);
-      toast({ variant: 'destructive', title: "Subscription Failed", description: error.message || "Could not set up push notifications." });
+      toast({ 
+          variant: 'destructive', 
+          title: "Subscription Failed", 
+          description: error.message || "Could not set up push notifications." 
+      });
     } finally {
       next();
     }
-};
+  };
 
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);

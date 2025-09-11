@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview A server-side flow for saving a user's push notification subscription token.
+ * @fileOverview A server-side flow for saving a user's push notification subscription object.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
@@ -8,7 +8,7 @@ import { saveUserProfile } from '@/firebase/firestore';
 
 export const SaveNotificationSubscriptionInputSchema = z.object({
   userId: z.string().describe('The UID of the user.'),
-  subscriptionToken: z.string().describe("The user's FCM push subscription token."),
+  subscription: z.any().describe("The user's PushSubscriptionJSON object from the browser."),
 });
 export type SaveNotificationSubscriptionInput = z.infer<typeof SaveNotificationSubscriptionInputSchema>;
 
@@ -25,13 +25,13 @@ export const saveNotificationSubscriptionFlow = ai.defineFlow(
     inputSchema: SaveNotificationSubscriptionInputSchema,
     outputSchema: SaveNotificationSubscriptionOutputSchema,
   },
-  async ({ userId, subscriptionToken }) => {
+  async ({ userId, subscription }) => {
     try {
-      if (!userId || !subscriptionToken) {
-        throw new Error("User ID and subscription token are required.");
+      if (!userId || !subscription) {
+        throw new Error("User ID and subscription object are required.");
       }
-      // The `as any` is a small concession to add a non-standard property.
-      await saveUserProfile(userId, { pushSubscription: subscriptionToken } as any);
+      
+      await saveUserProfile(userId, { pushSubscription: subscription } as any);
 
       return { success: true };
     } catch (error: any) {
@@ -41,7 +41,6 @@ export const saveNotificationSubscriptionFlow = ai.defineFlow(
   }
 );
 
-// This is the server action that the client will call.
 export async function saveNotificationSubscription(input: SaveNotificationSubscriptionInput): Promise<SaveNotificationSubscriptionOutput> {
     return await saveNotificationSubscriptionFlow(input);
 }

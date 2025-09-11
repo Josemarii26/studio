@@ -24,8 +24,9 @@ export async function GET(request: Request) {
 
   // Check if the app is initialized before proceeding
   if (!getApps().length) {
-    console.error('Firebase Admin SDK is not initialized. Missing credentials.');
-    return new NextResponse('Internal Server Error: Firebase not configured', { status: 500 });
+    const msg = 'Firebase Admin SDK is not initialized. Missing credentials.';
+    console.error(msg);
+    return new NextResponse(msg, { status: 500 });
   }
   
   const db = getFirestore();
@@ -41,11 +42,14 @@ export async function GET(request: Request) {
 
     const notificationsPromises = querySnapshot.docs.map(doc => {
       const userProfile = doc.data();
-      return sendNotification({
-        subscription: userProfile.pushSubscription,
-        title: 'Your Daily Reminder',
-        body: 'Don\'t forget to log your meals for today!',
-      });
+      if (userProfile.pushSubscription) {
+          return sendNotification({
+            subscription: userProfile.pushSubscription,
+            title: 'Your Daily Reminder',
+            body: 'Don\'t forget to log your meals for today!',
+          });
+      }
+      return Promise.resolve();
     });
 
     await Promise.all(notificationsPromises);
