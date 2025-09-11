@@ -15,6 +15,7 @@ export default function OnboardingPage() {
     const router = useRouter();
     const t = useI18n();
     const locale = useCurrentLocale();
+    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
     useEffect(() => {
         if (!loading && !user) {
@@ -39,7 +40,7 @@ export default function OnboardingPage() {
             <h1 className="text-3xl font-bold font-headline">{t('onboarding.welcome')}</h1>
             <p className="text-muted-foreground">{t('onboarding.subtitle')}</p>
         </div>
-        <OnboardingForm />
+        <OnboardingForm vapidPublicKey={vapidPublicKey || ''} />
       </div>
     </div>
   );

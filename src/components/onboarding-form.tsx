@@ -33,6 +33,10 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+interface OnboardingFormProps {
+  vapidPublicKey: string;
+}
+
 // Helper function to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
     const padding = "=".repeat((4 - base64String.length % 4) % 4);
@@ -46,7 +50,7 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 
-export function OnboardingForm() {
+export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, setUserProfile } = useUserStore();
@@ -71,24 +75,31 @@ export function OnboardingForm() {
   });
 
   const handleRequestNotificationPermission = async () => {
+    if (!vapidPublicKey) {
+      console.error("VAPID public key is not available.");
+      toast({ variant: 'destructive', title: "Configuration Error", description: "VAPID key is missing." });
+      next();
+      return;
+    }
+
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc') });
         next(); // Skip to next step
         return;
     }
     
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-        toast({ variant: 'destructive', title: t('notifications.permission-denied-title') });
-        next();
-        return;
-    }
-    
     try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+          toast({ variant: 'destructive', title: t('notifications.permission-denied-title') });
+          next();
+          return;
+      }
+    
         const swRegistration = await navigator.serviceWorker.register('/sw.js');
         const subscription = await swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
         });
 
         const idToken = await user?.getIdToken();
@@ -325,5 +336,3 @@ export function OnboardingForm() {
     </Card>
   );
 }
-
-    
