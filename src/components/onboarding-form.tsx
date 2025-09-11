@@ -20,7 +20,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { getFCMToken } from '@/firebase/client';
 import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
-
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   age: z.coerce.number().min(13, "You must be at least 13.").max(120),
@@ -61,35 +60,35 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
-
+  
   const handleRequestPermission = async () => {
-      if (!user) {
-          toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
-          return;
-      }
-      try {
-        const fcmToken = await getFCMToken(vapidPublicKey);
+    if (!user) {
+        toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
+        return;
+    }
+    try {
+      const fcmToken = await getFCMToken(vapidPublicKey);
 
-        if (fcmToken) {
-             const result = await saveNotificationSubscription({
-                userId: user.uid,
-                subscriptionToken: fcmToken,
-            });
-            if (result.success) {
-                toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
-            } else {
-                 toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
-            }
-        } else {
-            toast({ variant: 'destructive', title: t('notifications.permission-denied-title'), description: "You need to grant permission in your browser." });
-        }
-      } catch (error: any) {
-        console.error('Failed to subscribe or save subscription:', error);
-        toast({ variant: 'destructive', title: "Subscription Failed", description: error.message || "Could not set up push notifications." });
-      } finally {
-        next();
+      if (fcmToken) {
+           const result = await saveNotificationSubscription({
+              userId: user.uid,
+              subscriptionToken: fcmToken,
+          });
+          if (result.success) {
+              toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+          } else {
+               toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
+          }
+      } else {
+          toast({ variant: 'destructive', title: t('notifications.permission-denied-title'), description: "You need to grant permission in your browser." });
       }
-  };
+    } catch (error: any) {
+      console.error('Failed to subscribe or save subscription:', error);
+      toast({ variant: 'destructive', title: "Subscription Failed", description: error.message || "Could not set up push notifications." });
+    } finally {
+      next();
+    }
+};
 
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);
