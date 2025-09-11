@@ -5,9 +5,15 @@ import { initializeApp, getApps } from 'firebase-admin/app';
 import { firebaseAdminConfig } from '@/firebase/admin-config';
 import { sendNotification } from '@/ai/flows/send-notification';
 
-// Initialize Firebase Admin SDK
-if (!getApps().length) {
-  initializeApp(firebaseAdminConfig);
+// Initialize Firebase Admin SDK only if all credentials are provided
+if (
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY
+) {
+    if (!getApps().length) {
+        initializeApp(firebaseAdminConfig);
+    }
 }
 const db = getFirestore();
 
@@ -15,6 +21,12 @@ export async function GET(request: Request) {
   // Simple cron job security
   if (request.headers.get('X-Appengine-Cron') !== 'true') {
      return new NextResponse('Forbidden', { status: 403 });
+  }
+
+  // Check if the app is initialized before proceeding
+  if (!getApps().length) {
+    console.error('Firebase Admin SDK is not initialized. Missing credentials.');
+    return new NextResponse('Internal Server Error: Firebase not configured', { status: 500 });
   }
   
   try {

@@ -1,17 +1,30 @@
 
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, getApps } from 'firebase-admin/app';
+import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { doc, getFirestore, updateDoc } from 'firebase-admin/firestore';
 import { firebaseAdminConfig } from '@/firebase/admin-config';
 
-// Initialize Firebase Admin SDK
-if (!getApps().length) {
-  initializeApp(firebaseAdminConfig);
+// Initialize Firebase Admin SDK only if all credentials are provided
+if (
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY
+) {
+    if (!getApps().length) {
+        initializeApp(firebaseAdminConfig);
+    }
 }
+
 const db = getFirestore();
 
 export async function POST(request: Request) {
+  // Check if the app is initialized before proceeding
+  if (!getApps().length) {
+    console.error('Firebase Admin SDK is not initialized. Missing credentials.');
+    return new NextResponse('Internal Server Error: Firebase not configured', { status: 500 });
+  }
+
   const authToken = request.headers.get('Authorization')?.split('Bearer ')[1];
   if (!authToken) {
     return new NextResponse('Unauthorized', { status: 401 });
