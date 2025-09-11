@@ -20,14 +20,18 @@ const SendNotificationInputSchema = z.object({
 });
 export type SendNotificationInput = z.infer<typeof SendNotificationInputSchema>;
 
-if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT) {
-    webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT,
-      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-      process.env.VAPID_PRIVATE_KEY
-    );
-} else {
-    console.warn("VAPID keys not configured. Push notifications will not work.");
+// Only configure web-push if all VAPID keys are present.
+// This prevents build errors in environments where they are not set.
+if (
+  process.env.VAPID_SUBJECT &&
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&
+  process.env.VAPID_PRIVATE_KEY
+) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
 }
 
 export const sendNotificationFlow = ai.defineFlow(
@@ -37,10 +41,16 @@ export const sendNotificationFlow = ai.defineFlow(
     outputSchema: z.boolean(),
   },
   async (input) => {
-    if (!process.env.VAPID_PRIVATE_KEY) {
-        console.error("VAPID_PRIVATE_KEY is not set. Cannot send notification.");
-        return false;
+    // Re-check for keys at runtime before trying to send a notification.
+    if (
+      !process.env.VAPID_SUBJECT ||
+      !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+      !process.env.VAPID_PRIVATE_KEY
+    ) {
+      console.error("VAPID keys are not fully configured. Cannot send notification.");
+      return false;
     }
+    
     try {
       const payload = JSON.stringify({
         title: input.title,
