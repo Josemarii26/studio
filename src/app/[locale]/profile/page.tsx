@@ -90,17 +90,22 @@ export default function ProfilePage() {
   
   // Effect for the one-time welcome notification, after permissions are granted in onboarding
   useEffect(() => {
-    const notificationShownKey = `profileWelcomeNotificationShown-${user?.uid}`;
+    // We only want to run this logic once the user profile is confirmed to be loaded.
+    if (!profileLoaded || !userProfile || !user) {
+        return;
+    }
+
+    const notificationShownKey = `profileWelcomeNotificationShown-${user.uid}`;
     const hasBeenShown = localStorage.getItem(notificationShownKey);
 
-    if (userProfile && !hasBeenShown && "Notification" in window && Notification.permission === "granted") {
+    if (!hasBeenShown && "Notification" in window && Notification.permission === "granted") {
         new Notification(t('notifications.welcome-title'), {
             body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
             icon: '/icon-192x192.png'
         });
         localStorage.setItem(notificationShownKey, 'true');
     }
-  }, [user, userProfile, t]);
+  }, [user, userProfile, profileLoaded, t]);
 
   // Load daily data from Firestore when the component mounts or user changes
   useEffect(() => {
