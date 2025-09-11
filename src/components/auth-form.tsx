@@ -219,8 +219,8 @@ export function AuthForm() {
               </div>
               <p className="px-8 text-center text-sm text-muted-foreground">
                 {t('auth.terms', { 
-                    terms: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
-                    privacy: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
+                    terms: (chunks) => <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
+                    privacy: (chunks) => <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
                 })}
               </p>
             </CardContent>
@@ -304,8 +304,8 @@ export function AuthForm() {
               </div>
                <p className="px-8 text-center text-sm text-muted-foreground">
                  {t('auth.terms', { 
-                    terms: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
-                    privacy: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
+                    terms: (chunks) => <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
+                    privacy: (chunks) => <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
                 })}
               </p>
             </CardContent>
