@@ -282,11 +282,6 @@
     "permission-granted-desc": "Te enviaremos recordatorios para ayudarte a mantenerte en el buen camino.",
     "permission-denied-title": "Permiso Denegado",
     "welcome-title": "¡Bienvenido a DietLogAI!",
-    "welcome-body": "¡Hola {name}! Estamos encantados de tenerte. ¡Empecemos tu viaje!",
-    "enable-button": "Activar Recordatorios",
-    "no-token-title": "No se pudo obtener el token de notificación",
-    "no-token-desc": "Por favor, inténtalo de nuevo o revisa la configuración de tu navegador.",
-    "reminders-on-title": "¡Recordatorios Activados!",
-    "reminders-on-body": "Ahora recibirás recordatorios diarios para registrar tus comidas."
+    "welcome-body": "¡Hola {name}! Estamos encantados de tenerte. ¡Empecemos tu viaje!"
   }
 }

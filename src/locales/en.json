@@ -282,11 +282,6 @@
     "permission-granted-desc": "We'll send you reminders to help you stay on track.",
     "permission-denied-title": "Permission Denied",
     "welcome-title": "Welcome to DietLogAI!",
-    "welcome-body": "Hi {name}! We're excited to have you on board. Let's start your journey!",
-    "enable-button": "Enable Reminders",
-    "no-token-title": "Could not get notification token",
-    "no-token-desc": "Please try again or check your browser settings.",
-    "reminders-on-title": "Reminders Activated!",
-    "reminders-on-body": "You'll now receive daily reminders to log your meals."
+    "welcome-body": "Hi {name}! We're excited to have you on board. Let's start your journey!"
   }
 }
