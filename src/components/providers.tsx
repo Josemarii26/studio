@@ -2,10 +2,10 @@
 'use client';
 
 import { I18nProviderClient } from '@/locales/client';
-import { AuthContext, useAuth } from '@/hooks/use-auth';
+import { AuthContext } from '@/hooks/use-auth';
 import { useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup, sendEmailVerification, UserCredential, ActionCodeSettings } from 'firebase/auth';
-import { auth, googleProvider, facebookProvider, appleProvider } from '@/firebase/client';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup, sendEmailVerification, UserCredential } from 'firebase/auth';
+import { auth, googleProvider } from '@/firebase/client';
 import { SplashScreen } from '@/components/splash-screen';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -52,19 +52,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
     return await signInWithPopup(auth, googleProvider);
   };
 
-  const signInWithFacebook = async (): Promise<UserCredential> => {
-    return await signInWithPopup(auth, facebookProvider);
-  };
-
-  const signInWithApple = async (): Promise<UserCredential> => {
-    return await signInWithPopup(auth, appleProvider);
-  };
-
   const signOut = async (): Promise<void> => {
     await firebaseSignOut(auth);
   };
   
-  const value = { user, loading, signIn, signUp, signOut, signInWithGoogle, signInWithFacebook, signInWithApple };
+  const value = { user, loading, signIn, signUp, signOut, signInWithGoogle };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
