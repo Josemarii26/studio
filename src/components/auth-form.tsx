@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { Loader2, Github } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DietLogAILogo } from './diet-log-ai-logo';
 import Link from 'next/link';
@@ -34,12 +34,24 @@ const GoogleIcon = () => (
     </svg>
 );
 
+const AppleIcon = () => (
+    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M19.3,4.88c-1.38-1.46-3.4-2-5.3-2s-3.92.54-5.3,2a6.3,6.3,0,0,0-2,5.13c0,2.63,1.5,5.17,3.6,6.86,1.18.94,2.5,1.93,4,1.93,1.4,0,2.62-1,3.8-1.93,2.1-1.69,3.6-4.23,3.6-6.86A6.3,6.3,0,0,0,19.3,4.88ZM15.53,3.47a2.29,2.29,0,0,1,1.17-1.35,2.44,2.44,0,0,0-1.17,1.35,2.37,2.37,0,0,0-1.17,1.35,2.44,2.44,0,0,1,1.17-1.35Z"/>
+    </svg>
+);
+
+const FacebookIcon = () => (
+    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+        <path fill="#1877F2" d="M22,12c0-5.52-4.48-10-10-10S2,6.48,2,12c0,4.84,3.44,8.87,8,9.8V15H8v-3h2V9.5C10,7.57,11.57,6,13.5,6H16v3h-1.5c-1.1,0-1.5,0.45-1.5,1.5V12h3l-0.5,3H13v6.95C18.05,21.45,22,17.19,22,12Z"/>
+    </svg>
+);
+
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signUp, signIn, signInWithGoogle, signInWithGitHub } = useAuth();
+  const { signUp, signIn, signInWithGoogle, signInWithFacebook, signInWithApple } = useAuth();
   const router = useRouter();
   const locale = useCurrentLocale();
   const t = useI18n();
@@ -59,15 +71,13 @@ export function AuthForm() {
       } else {
         await signUp(data.email, data.password);
         toast({ title: t('auth.toast-signup-success-title'), description: t('auth.toast-signup-success-desc') });
-        // Don't redirect here, user needs to verify email first. The login page will show the verification message.
-        setIsLogin(true); // Flip to login view after successful signup
+        setIsLogin(true); 
       }
     } catch (error: any) {
       console.error("Auth Error:", error);
       let title = isLogin ? t('auth.error-login-failed') : t('auth.error-signup-failed');
       let description;
 
-      // Handle specific error codes from Firebase
       switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/invalid-credential':
@@ -86,7 +96,6 @@ export function AuthForm() {
             description = t('auth.error-weak-pass');
             break;
         default:
-            // Use the custom error message from our provider for verification failures
             description = error.message || t('auth.error-unexpected');
       }
 
@@ -96,37 +105,28 @@ export function AuthForm() {
     }
   };
   
-  const handleGoogleSignIn = async () => {
+  const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple') => {
     setIsLoading(true);
     try {
-        const userCredential = await signInWithGoogle();
-        // Google sign-in often provides verified emails, but we check just in case.
-        // If the user is new, they will be redirected to onboarding from the dashboard.
-        toast({ title: t('auth.toast-google-success'), description: t('auth.toast-google-welcome') });
+        let userCredential;
+        let providerName;
+        if(provider === 'google') {
+            userCredential = await signInWithGoogle();
+            providerName = "Google";
+        } else if(provider === 'facebook') {
+            userCredential = await signInWithFacebook();
+            providerName = "Facebook";
+        } else {
+            userCredential = await signInWithApple();
+            providerName = "Apple";
+        }
+        toast({ title: `Signed in with ${providerName}!`, description: t('auth.toast-google-welcome') });
         router.push(`/${locale}/dashboard`);
     } catch (error: any) {
-        console.error("Google Sign-In Error:", error);
+        console.error(`${provider} Sign-In Error:`, error);
         toast({
             variant: "destructive",
-            title: t('auth.error-google-failed'),
-            description: ""
-        });
-    } finally {
-        setIsLoading(false);
-    }
-  }
-
-  const handleGitHubSignIn = async () => {
-    setIsLoading(true);
-    try {
-        await signInWithGitHub();
-        toast({ title: t('auth.toast-github-success'), description: t('auth.toast-github-welcome') });
-        router.push(`/${locale}/dashboard`);
-    } catch (error: any) {
-        console.error("GitHub Sign-In Error:", error);
-        toast({
-            variant: "destructive",
-            title: t('auth.error-github-failed'),
+            title: `Could not sign in with ${provider}`,
             description: error.message || t('auth.error-unexpected'),
         });
     } finally {
@@ -203,16 +203,18 @@ export function AuthForm() {
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <GoogleIcon />
-                  {t('auth.google-btn')}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <Button variant="outline" className="w-full" onClick={() => handleSocialSignIn('google')}  disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                  <span className="sm:hidden">Google</span>
                 </Button>
-                <Button variant="outline" className="w-full" onClick={handleGitHubSignIn} disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    <Github className="mr-2 h-4 w-4" />
-                    {t('auth.github-btn')}
+                <Button variant="outline" className="w-full" onClick={() => handleSocialSignIn('facebook')} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FacebookIcon />}
+                    <span className="sm:hidden">Facebook</span>
+                </Button>
+                 <Button variant="outline" className="w-full" onClick={() => handleSocialSignIn('apple')} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
+                    <span className="sm:hidden">Apple</span>
                 </Button>
               </div>
               <p className="px-8 text-center text-sm text-muted-foreground">
@@ -286,16 +288,18 @@ export function AuthForm() {
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <GoogleIcon />
-                  {t('auth.google-btn')}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <Button variant="outline" className="w-full" onClick={() => handleSocialSignIn('google')}  disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                   <span className="sm:hidden">Google</span>
                 </Button>
-                 <Button variant="outline" className="w-full" onClick={handleGitHubSignIn} disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    <Github className="mr-2 h-4 w-4" />
-                    {t('auth.github-btn')}
+                 <Button variant="outline" className="w-full" onClick={() => handleSocialSignIn('facebook')} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FacebookIcon />}
+                     <span className="sm:hidden">Facebook</span>
+                </Button>
+                 <Button variant="outline" className="w-full" onClick={() => handleSocialSignIn('apple')} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
+                     <span className="sm:hidden">Apple</span>
                 </Button>
               </div>
                <p className="px-8 text-center text-sm text-muted-foreground">
