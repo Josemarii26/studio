@@ -15,7 +15,6 @@ if (
         initializeApp(firebaseAdminConfig);
     }
 }
-const db = getFirestore();
 
 export async function GET(request: Request) {
   // Simple cron job security
@@ -29,6 +28,8 @@ export async function GET(request: Request) {
     return new NextResponse('Internal Server Error: Firebase not configured', { status: 500 });
   }
   
+  const db = getFirestore();
+
   try {
     const profilesRef = collection(db, 'userProfiles');
     const q = query(profilesRef, where('pushSubscription', '!=', null));

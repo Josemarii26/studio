@@ -16,8 +16,6 @@ if (
     }
 }
 
-const db = getFirestore();
-
 export async function POST(request: Request) {
   // Check if the app is initialized before proceeding
   if (!getApps().length) {
@@ -25,6 +23,7 @@ export async function POST(request: Request) {
     return new NextResponse('Internal Server Error: Firebase not configured', { status: 500 });
   }
 
+  const db = getFirestore();
   const authToken = request.headers.get('Authorization')?.split('Bearer ')[1];
   if (!authToken) {
     return new NextResponse('Unauthorized', { status: 401 });
