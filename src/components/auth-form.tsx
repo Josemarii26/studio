@@ -34,7 +34,6 @@ const GoogleIcon = () => (
     </svg>
 );
 
-
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -183,11 +182,17 @@ export function AuthForm() {
               <Button variant="outline" className="w-full" onClick={handleSocialSignIn}  disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><GoogleIcon /> {t('auth.google-btn')}</>}
               </Button>
+              
               <p className="px-8 text-center text-sm text-muted-foreground">
-                 {t.rich('auth.terms', {
-                    terms: (chunks) => <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
-                    privacy: (chunks) => <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
-                })}
+                {t('auth.terms-prefix')}{' '}
+                <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">
+                  {t('auth.terms-link')}
+                </Link>{' '}
+                {t('auth.terms-join')}{' '}
+                <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">
+                  {t('auth.privacy-link')}
+                </Link>
+                .
               </p>
             </CardContent>
         </div>
@@ -257,11 +262,16 @@ export function AuthForm() {
               <Button variant="outline" className="w-full" onClick={handleSocialSignIn}  disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><GoogleIcon /> {t('auth.google-btn')}</>}
               </Button>
-               <p className="px-8 text-center text-sm text-muted-foreground">
-                 {t.rich('auth.terms', {
-                    terms: (chunks) => <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
-                    privacy: (chunks) => <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">{chunks}</Link>
-                })}
+              <p className="px-8 text-center text-sm text-muted-foreground">
+                {t('auth.terms-prefix')}{' '}
+                <Link href={`/${locale}/terms-of-service`} className="underline underline-offset-4 hover:text-primary">
+                  {t('auth.terms-link')}
+                </Link>{' '}
+                {t('auth.terms-join')}{' '}
+                <Link href={`/${locale}/privacy-policy`} className="underline underline-offset-4 hover:text-primary">
+                  {t('auth.privacy-link')}
+                </Link>
+                .
               </p>
             </CardContent>
         </div>
