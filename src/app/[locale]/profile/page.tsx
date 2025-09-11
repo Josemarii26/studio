@@ -88,28 +88,17 @@ export default function ProfilePage() {
     }
   },[user, authLoading, router, locale])
   
-  // Effect for the one-time welcome notification
+  // Effect for the one-time welcome notification, after permissions are granted in onboarding
   useEffect(() => {
     const notificationShownKey = `profileWelcomeNotificationShown-${user?.uid}`;
     const hasBeenShown = localStorage.getItem(notificationShownKey);
 
-    if (!hasBeenShown && userProfile) {
-        // Check if the browser supports notifications
-        if (!("Notification" in window)) {
-            console.log("This browser does not support desktop notification");
-            localStorage.setItem(notificationShownKey, 'true'); // Mark as shown to not try again
-            return;
-        }
-
-        Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-                new Notification(t('notifications.welcome-title'), {
-                    body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
-                    icon: '/icon-192x192.png' // You might need to add an icon to your /public folder
-                });
-                localStorage.setItem(notificationShownKey, 'true');
-            }
+    if (userProfile && !hasBeenShown && "Notification" in window && Notification.permission === "granted") {
+        new Notification(t('notifications.welcome-title'), {
+            body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
+            icon: '/icon-192x192.png'
         });
+        localStorage.setItem(notificationShownKey, 'true');
     }
   }, [user, userProfile, t]);
 

@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bell, BellRing } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 
 
@@ -41,6 +41,8 @@ export function OnboardingForm() {
   const { toast } = useToast();
   const t = useI18n();
   const locale = useCurrentLocale();
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+
 
   const STEPS = [
     { id: '01', name: t('onboarding.step1-name'), fields: ['name', 'age', 'gender'] },
@@ -48,12 +50,31 @@ export function OnboardingForm() {
     { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
     { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
     { id: '05', name: t('onboarding.step5-name'), fields: [] },
+    { id: '06', name: t('onboarding.step6-name'), fields: [] },
   ];
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
+
+  const handleRequestNotificationPermission = async () => {
+    if (!("Notification" in window)) {
+        toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc') });
+        return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+
+    if (permission === 'granted') {
+        toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+        new Notification(t('notifications.permission-granted-title'), { body: t('notifications.permission-granted-desc'), icon: '/icon-192x192.png' });
+    } else {
+        toast({ variant: 'destructive', title: t('notifications.permission-denied-title') });
+    }
+    next();
+  };
 
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);
@@ -95,10 +116,13 @@ export function OnboardingForm() {
 
   const next = async () => {
     const fields = STEPS[currentStep].fields;
-    const output = await form.trigger(fields as (keyof FormData)[], { shouldFocus: true });
-    if (!output) return;
+    if (fields.length > 0) {
+      const output = await form.trigger(fields as (keyof FormData)[], { shouldFocus: true });
+      if (!output) return;
+    }
 
-    if (currentStep === STEPS.length - 2) {
+
+    if (currentStep === STEPS.length - 3) { // Before notification step
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -210,7 +234,15 @@ export function OnboardingForm() {
                 )} />
             )}
 
-            {currentStep === 4 && userProfile && (
+            {currentStep === 4 && (
+                <div className="text-center space-y-4 flex flex-col items-center">
+                    <BellRing className="w-16 h-16 text-primary animate-pulse"/>
+                    <h2 className="text-2xl font-bold">{t('onboarding.notifications-title')}</h2>
+                    <p className="text-muted-foreground max-w-sm">{t('onboarding.notifications-desc')}</p>
+                </div>
+            )}
+
+            {currentStep === 5 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
                     <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
@@ -223,18 +255,30 @@ export function OnboardingForm() {
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0}>{t('onboarding.back-btn')}</Button>
-            {currentStep < STEPS.length - 2 && (
-                <Button type="button" onClick={next} disabled={isSubmitting}>
+            
+            {currentStep < 3 && (
+                <Button type="button" onClick={next}>
                     {t('onboarding.next-btn')}
                 </Button>
             )}
-             {currentStep === STEPS.length - 2 && (
+             {currentStep === 3 && (
                 <Button type="button" onClick={next} disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t('onboarding.finish-btn')}
                 </Button>
             )}
-            {currentStep === STEPS.length - 1 && (
+             {currentStep === 4 && (
+                 <div className="flex gap-2">
+                    <Button type="button" variant="ghost" onClick={() => next()}>
+                        {t('onboarding.notifications-skip-btn')}
+                    </Button>
+                    <Button type="button" onClick={handleRequestNotificationPermission}>
+                        <Bell className="mr-2" />
+                        {t('onboarding.notifications-enable-btn')}
+                    </Button>
+                 </div>
+            )}
+            {currentStep === 5 && (
                 <Button type="button" onClick={() => {
                     toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
                     router.push(`/${locale}/dashboard`);
