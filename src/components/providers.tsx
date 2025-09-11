@@ -5,7 +5,7 @@ import { I18nProviderClient } from '@/locales/client';
 import { AuthContext, useAuth } from '@/hooks/use-auth';
 import { useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, signInWithPopup, sendEmailVerification, UserCredential, ActionCodeSettings } from 'firebase/auth';
-import { auth, provider } from '@/firebase/client';
+import { auth, googleProvider, githubProvider } from '@/firebase/client';
 import { SplashScreen } from '@/components/splash-screen';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -49,14 +49,18 @@ function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   const signInWithGoogle = async (): Promise<UserCredential> => {
-    return await signInWithPopup(auth, provider);
+    return await signInWithPopup(auth, googleProvider);
+  };
+
+  const signInWithGitHub = async (): Promise<UserCredential> => {
+    return await signInWithPopup(auth, githubProvider);
   };
 
   const signOut = async (): Promise<void> => {
     await firebaseSignOut(auth);
   };
   
-  const value = { user, loading, signIn, signUp, signOut, signInWithGoogle };
+  const value = { user, loading, signIn, signUp, signOut, signInWithGoogle, signInWithGitHub };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

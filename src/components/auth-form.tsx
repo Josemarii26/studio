@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Github } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DietLogAILogo } from './diet-log-ai-logo';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signUp, signIn, signInWithGoogle } = useAuth();
+  const { signUp, signIn, signInWithGoogle, signInWithGitHub } = useAuth();
   const router = useRouter();
   const locale = useCurrentLocale();
   const t = useI18n();
@@ -116,6 +116,25 @@ export function AuthForm() {
     }
   }
 
+  const handleGitHubSignIn = async () => {
+    setIsLoading(true);
+    try {
+        await signInWithGitHub();
+        toast({ title: t('auth.toast-github-success'), description: t('auth.toast-github-welcome') });
+        router.push(`/${locale}/dashboard`);
+    } catch (error: any) {
+        console.error("GitHub Sign-In Error:", error);
+        toast({
+            variant: "destructive",
+            title: t('auth.error-github-failed'),
+            description: error.message || t('auth.error-unexpected'),
+        });
+    } finally {
+        setIsLoading(false);
+    }
+  }
+
+
   return (
     <div className="perspective">
       <Card className={cn(
@@ -184,11 +203,18 @@ export function AuthForm() {
                   </span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <GoogleIcon />
-                {t('auth.google-btn')}
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <GoogleIcon />
+                  {t('auth.google-btn')}
+                </Button>
+                <Button variant="outline" className="w-full" onClick={handleGitHubSignIn} disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Github className="mr-2 h-4 w-4" />
+                    {t('auth.github-btn')}
+                </Button>
+              </div>
               <p className="px-8 text-center text-sm text-muted-foreground">
                 {t('auth.terms', { 
                     terms: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,
@@ -260,11 +286,18 @@ export function AuthForm() {
                   </span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <GoogleIcon />
-                {t('auth.google-btn')}
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}  disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <GoogleIcon />
+                  {t('auth.google-btn')}
+                </Button>
+                 <Button variant="outline" className="w-full" onClick={handleGitHubSignIn} disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Github className="mr-2 h-4 w-4" />
+                    {t('auth.github-btn')}
+                </Button>
+              </div>
                <p className="px-8 text-center text-sm text-muted-foreground">
                  {t('auth.terms', { 
                     terms: (chunks) => <Link href="#" className="underline underline-offset-4 hover:text-primary">{chunks}</Link>,

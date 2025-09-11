@@ -11,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<UserCredential>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<UserCredential>;
+  signInWithGitHub: () => Promise<UserCredential>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
