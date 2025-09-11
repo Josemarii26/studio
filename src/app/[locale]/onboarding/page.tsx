@@ -40,7 +40,7 @@ export default function OnboardingPage() {
             <h1 className="text-3xl font-bold font-headline">{t('onboarding.welcome')}</h1>
             <p className="text-muted-foreground">{t('onboarding.subtitle')}</p>
         </div>
-        <OnboardingForm vapidPublicKey={vapidPublicKey || ''} />
+        <OnboardingForm vapidPublicKey={vapidPublicKey!} />
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Bell, BellRing } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
+import { requestNotificationPermission } from '@/ai/flows/request-notification-permission';
 
 
 const formSchema = z.object({
@@ -36,19 +36,6 @@ type FormData = z.infer<typeof formSchema>;
 interface OnboardingFormProps {
   vapidPublicKey: string;
 }
-
-// Helper function to convert VAPID key
-function urlBase64ToUint8Array(base64String: string) {
-    const padding = "=".repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    for (let i = 0; i < rawData.length; ++i) {
-        outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-}
-
 
 export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -74,51 +61,28 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
 
-  const handleRequestNotificationPermission = async () => {
-    if (!vapidPublicKey) {
-      console.error("VAPID public key is not available.");
-      toast({ variant: 'destructive', title: "Configuration Error", description: "VAPID key is missing." });
-      next();
-      return;
-    }
-
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc') });
-        next(); // Skip to next step
-        return;
-    }
-    
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-          toast({ variant: 'destructive', title: t('notifications.permission-denied-title') });
-          next();
-          return;
-      }
-    
-        const swRegistration = await navigator.serviceWorker.register('/sw.js');
-        const subscription = await swRegistration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-        });
-
+  const handleRequestPermission = async () => {
+      try {
         const idToken = await user?.getIdToken();
-        await fetch('/api/save-subscription', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
-            },
-            body: JSON.stringify(subscription),
-        });
+        if (!idToken) throw new Error("User not authenticated");
 
-        toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
-    } catch (error) {
+        const result = await requestNotificationPermission({
+            userId: user!.uid,
+            idToken: idToken,
+            vapidKey: vapidPublicKey
+        });
+        
+        if (result.success) {
+            toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+        } else {
+            toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
+        }
+      } catch (error: any) {
         console.error('Failed to subscribe or save subscription:', error);
-        toast({ variant: 'destructive', title: "Subscription Failed", description: "Could not set up push notifications." });
-    } finally {
+        toast({ variant: 'destructive', title: "Subscription Failed", description: error.message || "Could not set up push notifications." });
+      } finally {
         next();
-    }
+      }
   };
 
   const processForm = async (data: FormData) => {
@@ -318,7 +282,7 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
                     <Button type="button" variant="ghost" onClick={() => next()}>
                         {t('onboarding.notifications-skip-btn')}
                     </Button>
-                    <Button type="button" onClick={handleRequestNotificationPermission}>
+                    <Button type="button" onClick={handleRequestPermission}>
                         <Bell className="mr-2" />
                         {t('onboarding.notifications-enable-btn')}
                     </Button>
