@@ -6,7 +6,7 @@ import { NutritionalChat } from '@/components/nutritional-chat';
 import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, LogOut, MailWarning, BellPlus } from 'lucide-react';
+import { MessageSquare, LogOut, MailWarning } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
@@ -22,96 +22,20 @@ import { startOfToday, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
-import { useNotifications } from '@/hooks/use-notifications';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { vapidKeys } from '@/firebase/vapid-keys';
-
-// Helper function to convert Base64 string to Uint8Array, as per user's correct example
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { user, loading: authLoading } = useAuth();
-  const { userProfile, isLoaded: isProfileLoaded, setUserProfile } = useUserStore();
+  const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const { signOut } = useAuth();
   const router = useRouter();
   const t = useI18n();
   const locale = useCurrentLocale();
-  const { toast } = useToast();
-  const [isActivating, setIsActivating] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     router.push(`/${locale}`);
   };
-
-  const handleEnableNotifications = async () => {
-      if (!user || 'serviceWorker' in navigator === false) {
-          toast({ variant: "destructive", title: "Browser not supported", description: "Push notifications are not supported by your browser." });
-          return;
-      }
-      setIsActivating(true);
-      try {
-          const publicKey = vapidKeys.publicKey;
-          if (!publicKey) {
-              throw new Error('VAPID public key not found in configuration.');
-          }
-          
-          const applicationServerKey = urlBase64ToUint8Array(publicKey);
-
-          const registration = await navigator.serviceWorker.ready;
-          const existingSubscription = await registration.pushManager.getSubscription();
-          if (existingSubscription) {
-              toast({ title: "Already Subscribed", description: "You are already subscribed to notifications." });
-              return;
-          }
-          
-          const subscription = await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: applicationServerKey,
-          });
-
-          await fetch('/api/save-subscription', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.uid, subscription }),
-          });
-          
-          if (userProfile) {
-            const updatedProfile = { ...userProfile, pushSubscription: subscription };
-            await setUserProfile(updatedProfile); // This now saves to Firestore and updates state
-          }
-
-          toast({
-              title: t('notifications.permission-granted-title'),
-              description: t('notifications.permission-granted-desc'),
-          });
-
-      } catch (err: any) {
-          console.error('Error enabling notifications:', err);
-          let description = err.message;
-          if (err.name === 'NotAllowedError') {
-              description = "Permission was denied. Please enable notifications in your browser settings.";
-          }
-          toast({ variant: "destructive", title: "Error", description });
-      } finally {
-          setIsActivating(false);
-      }
-  };
-
 
   return (
     <header className={cn(
@@ -127,12 +51,6 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           </h1>
         </Link>
         <div className="flex items-center gap-2">
-           {isProfileLoaded && !userProfile?.pushSubscription && (
-             <Button variant="outline" size="sm" onClick={handleEnableNotifications} disabled={isActivating || authLoading}>
-                <BellPlus className="mr-2 h-4 w-4" />
-                {t('notifications.enable-button')}
-            </Button>
-           )}
           <Button variant="outline" onClick={toggleSidebar}>
               <MessageSquare className="mr-2" />
               {t('dashboard.header-chat-btn')}
@@ -205,9 +123,6 @@ export default function DashboardPage() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const t = useI18n();
-
-  // Initialize notification hook. It will run in the background.
-  useNotifications();
 
   // Authentication and onboarding checks. This is the new, more robust logic.
   useEffect(() => {
