@@ -17,7 +17,8 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Bell, BellRing } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
-import { requestNotificationPermission } from '@/ai/flows/request-notification-permission';
+import { getFCMToken } from '@/firebase/client';
+import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 
 const formSchema = z.object({
@@ -62,20 +63,25 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
   });
 
   const handleRequestPermission = async () => {
+      if (!user) {
+          toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
+          return;
+      }
       try {
-        const idToken = await user?.getIdToken();
-        if (!idToken) throw new Error("User not authenticated");
+        const fcmToken = await getFCMToken(vapidPublicKey);
 
-        const result = await requestNotificationPermission({
-            userId: user!.uid,
-            idToken: idToken,
-            vapidKey: vapidPublicKey
-        });
-        
-        if (result.success) {
-            toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+        if (fcmToken) {
+             const result = await saveNotificationSubscription({
+                userId: user.uid,
+                subscriptionToken: fcmToken,
+            });
+            if (result.success) {
+                toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+            } else {
+                 toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
+            }
         } else {
-            toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
+            toast({ variant: 'destructive', title: t('notifications.permission-denied-title'), description: "You need to grant permission in your browser." });
         }
       } catch (error: any) {
         console.error('Failed to subscribe or save subscription:', error);

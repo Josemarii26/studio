@@ -1,51 +1,47 @@
-'use client';
+'use server';
 /**
- * @fileOverview A client-side flow for requesting notification permissions and saving the token.
+ * @fileOverview A server-side flow for saving a user's push notification subscription token.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { getFCMToken } from '@/firebase/client';
 import { saveUserProfile } from '@/firebase/firestore';
 
-
-export const RequestNotificationPermissionInputSchema = z.object({
+export const SaveNotificationSubscriptionInputSchema = z.object({
   userId: z.string().describe('The UID of the user.'),
-  idToken: z.string().describe('The Firebase auth ID token for the user.'),
-  vapidKey: z.string().describe("The VAPID public key for web push notifications.")
+  subscriptionToken: z.string().describe("The user's FCM push subscription token."),
 });
-export type RequestNotificationPermissionInput = z.infer<typeof RequestNotificationPermissionInputSchema>;
+export type SaveNotificationSubscriptionInput = z.infer<typeof SaveNotificationSubscriptionInputSchema>;
 
-export const RequestNotificationPermissionOutputSchema = z.object({
+export const SaveNotificationSubscriptionOutputSchema = z.object({
   success: z.boolean(),
   error: z.string().optional(),
 });
-export type RequestNotificationPermissionOutput = z.infer<typeof RequestNotificationPermissionOutputSchema>;
+export type SaveNotificationSubscriptionOutput = z.infer<typeof SaveNotificationSubscriptionOutputSchema>;
 
 
-export const requestNotificationPermissionFlow = ai.defineFlow(
+export const saveNotificationSubscriptionFlow = ai.defineFlow(
   {
-    name: 'requestNotificationPermissionFlow',
-    inputSchema: RequestNotificationPermissionInputSchema,
-    outputSchema: RequestNotificationPermissionOutputSchema,
+    name: 'saveNotificationSubscriptionFlow',
+    inputSchema: SaveNotificationSubscriptionInputSchema,
+    outputSchema: SaveNotificationSubscriptionOutputSchema,
   },
-  async ({ userId, vapidKey }) => {
+  async ({ userId, subscriptionToken }) => {
     try {
-      const fcmToken = await getFCMToken(vapidKey);
-      
-      if (!fcmToken) {
-        throw new Error("Permission not granted or token could not be retrieved.");
+      if (!userId || !subscriptionToken) {
+        throw new Error("User ID and subscription token are required.");
       }
-
-      await saveUserProfile(userId, { pushSubscription: fcmToken } as any);
+      // The `as any` is a small concession to add a non-standard property.
+      await saveUserProfile(userId, { pushSubscription: subscriptionToken } as any);
 
       return { success: true };
     } catch (error: any) {
-      console.error('Error during notification permission flow:', error);
+      console.error('Error saving notification subscription:', error);
       return { success: false, error: error.message };
     }
   }
 );
 
-export async function requestNotificationPermission(input: RequestNotificationPermissionInput): Promise<RequestNotificationPermissionOutput> {
-    return await requestNotificationPermissionFlow(input);
+// This is the server action that the client will call.
+export async function saveNotificationSubscription(input: SaveNotificationSubscriptionInput): Promise<SaveNotificationSubscriptionOutput> {
+    return await saveNotificationSubscriptionFlow(input);
 }
