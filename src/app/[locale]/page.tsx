@@ -116,8 +116,12 @@ export default function LandingPage() {
       </main>
 
        <footer className="py-8 px-4 sm:px-8 border-t">
-            <div className="max-w-6xl mx-auto text-center text-muted-foreground">
-                <p>{t('landing.footer', { year: new Date().getFullYear() })}</p>
+            <div className="max-w-6xl mx-auto text-center text-muted-foreground text-sm">
+                <p>&copy; {new Date().getFullYear()} DietLogAI. {t('landing.footer-rights')}</p>
+                <div className="mt-2 flex justify-center gap-4">
+                    <Link href={`/${locale}/terms-of-service`} className="hover:text-primary transition-colors">{t('landing.footer-terms')}</Link>
+                    <Link href={`/${locale}/privacy-policy`} className="hover:text-primary transition-colors">{t('landing.footer-privacy')}</Link>
+                </div>
             </div>
        </footer>
     </div>

@@ -15,7 +15,9 @@
     "visualize-title": "Visualize Your Progress",
     "visualize-desc": "Go beyond numbers. Our beautiful, interactive charts and calendar give you a clear and intuitive understanding of your habits and trends over time.",
     "visualize-cta": "See It In Action",
-    "footer": "© {year} DietLogAI. All rights reserved."
+    "footer-rights": "All rights reserved.",
+    "footer-terms": "Terms of Service",
+    "footer-privacy": "Privacy Policy"
   },
   "onboarding": {
     "welcome": "Welcome to DietLogAI",
