@@ -5,3 +5,9 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+# Schedule for sending push notification reminders. This is disabled for now.
+# cron:
+#   - schedule: "every 24 hours"
+#     http:
+#       path: "/api/send-reminders"

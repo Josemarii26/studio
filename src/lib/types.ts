@@ -1,4 +1,5 @@
 
+
 export type Meal = {
   description: string;
   calories: number;
@@ -43,6 +44,7 @@ export type UserProfile = {
   dailyCarbsGoal: number;
   bmi: number;
   photoUrl: string | null;
+  pushSubscription: any | null;
 };
 
 export type ChatMessage = {

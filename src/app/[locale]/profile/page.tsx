@@ -21,6 +21,7 @@ import type { DayData, UserProfile } from '@/lib/types';
 import { isSameDay, subDays, startOfToday } from 'date-fns';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { sendNotification } from '@/ai/flows/send-notification';
 
 
 function ProfileHeader() {
@@ -88,9 +89,8 @@ export default function ProfilePage() {
     }
   },[user, authLoading, router, locale])
   
-  // Effect for the one-time welcome notification, after permissions are granted in onboarding
+  // Effect for the one-time welcome notification
   useEffect(() => {
-    // We only want to run this logic once the user profile is confirmed to be loaded.
     if (!profileLoaded || !userProfile || !user) {
         return;
     }
@@ -98,8 +98,10 @@ export default function ProfilePage() {
     const notificationShownKey = `profileWelcomeNotificationShown-${user.uid}`;
     const hasBeenShown = localStorage.getItem(notificationShownKey);
 
-    if (!hasBeenShown && "Notification" in window && Notification.permission === "granted") {
-        new Notification(t('notifications.welcome-title'), {
+    if (!hasBeenShown && userProfile.pushSubscription) {
+        sendNotification({
+            subscription: userProfile.pushSubscription,
+            title: t('notifications.welcome-title'),
             body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
             icon: '/icon-192x192.png'
         });

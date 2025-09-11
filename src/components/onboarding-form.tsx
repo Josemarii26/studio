@@ -17,6 +17,7 @@ import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
 import { Loader2, Bell, BellRing } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
+import { useAuth } from '@/hooks/use-auth';
 
 
 const formSchema = z.object({
@@ -32,17 +33,28 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String: string) {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
 
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, setUserProfile } = useUserStore();
+  const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const t = useI18n();
   const locale = useCurrentLocale();
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
-
 
   const STEPS = [
     { id: '01', name: t('onboarding.step1-name'), fields: ['name', 'age', 'gender'] },
@@ -59,21 +71,43 @@ export function OnboardingForm() {
   });
 
   const handleRequestNotificationPermission = async () => {
-    if (!("Notification" in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc') });
+        next(); // Skip to next step
         return;
     }
-
+    
     const permission = await Notification.requestPermission();
-    setNotificationPermission(permission);
-
-    if (permission === 'granted') {
-        toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
-        new Notification(t('notifications.permission-granted-title'), { body: t('notifications.permission-granted-desc'), icon: '/icon-192x192.png' });
-    } else {
+    if (permission !== 'granted') {
         toast({ variant: 'destructive', title: t('notifications.permission-denied-title') });
+        next();
+        return;
     }
-    next();
+    
+    try {
+        const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        const subscription = await swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+        });
+
+        const idToken = await user?.getIdToken();
+        await fetch('/api/save-subscription', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify(subscription),
+        });
+
+        toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
+    } catch (error) {
+        console.error('Failed to subscribe or save subscription:', error);
+        toast({ variant: 'destructive', title: "Subscription Failed", description: "Could not set up push notifications." });
+    } finally {
+        next();
+    }
   };
 
   const processForm = async (data: FormData) => {
@@ -106,7 +140,8 @@ export function OnboardingForm() {
       dailyFatGoal,
       dailyCarbsGoal,
       bmi,
-      photoUrl: null, // Initialize photoUrl as null
+      photoUrl: null,
+      pushSubscription: null
     }
     
     await setUserProfile(fullProfile);

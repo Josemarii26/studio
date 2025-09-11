@@ -2,7 +2,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, FacebookAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
@@ -15,10 +15,7 @@ setPersistence(auth, browserLocalPersistence);
 
 const db = getFirestore(app);
 
-// Conditionally initialize messaging
-const messaging = null;
-
 const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
-
-export { app, auth, db, googleProvider, messaging };
+export { app, auth, db, googleProvider, facebookProvider };
