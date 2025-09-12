@@ -5,7 +5,7 @@ import { getI18n, getCurrentLocale } from '@/locales/server';
 import { OnboardingClient } from "@/components/onboarding-client";
 
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ params: { locale: currentLocale } }: { params: { locale: string } }) {
     const t = await getI18n();
     const locale = getCurrentLocale();
     // This now runs on the server, so we can safely access process.env
@@ -27,4 +27,3 @@ export default async function OnboardingPage() {
     </div>
   );
 }
-
