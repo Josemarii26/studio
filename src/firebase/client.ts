@@ -6,6 +6,7 @@ import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, F
 import { getFirestore } from 'firebase/firestore';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { firebaseConfig } from './config';
+import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -31,12 +32,14 @@ const VAPID_PUBLIC_KEY = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iX
  * @param t The translation function from i18n.
  */
 export const requestNotificationPermissionAndSaveToken = async (user: User, t: (key: string) => string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+        console.log("Service Worker or window not available.");
+        return;
+    }
 
     try {
         const messagingSupport = await isSupported();
         if (!messagingSupport) {
-            console.log("Firebase Messaging is not supported in this browser.");
             alert(t('notifications.permission-unsupported-desc'));
             return;
         }
@@ -47,27 +50,21 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
             console.log('Notification permission granted.');
             const messaging = getMessaging(app);
 
+            // Wait for the service worker to be ready
+            console.log('Waiting for service worker to be ready...');
+            const swRegistration = await navigator.serviceWorker.ready;
+            console.log('Service worker is active:', swRegistration.active);
+
             // Get the token
-            const fcmToken = await getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY });
+            const fcmToken = await getToken(messaging, { 
+                vapidKey: VAPID_PUBLIC_KEY,
+                serviceWorkerRegistration: swRegistration 
+            });
 
             if (fcmToken) {
                 console.log('FCM Token retrieved:', fcmToken);
-                
-                // Get the Firebase Auth ID token
-                const idToken = await user.getIdToken();
-
-                // Save the token to your backend
-                await fetch('/api/save-subscription', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${idToken}`,
-                    },
-                    body: JSON.stringify({ token: fcmToken }),
-                });
-
+                await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
                 alert(t('notifications.permission-granted-title'));
-
             } else {
                 console.log('No registration token available. Request permission to generate one.');
                 alert(t('notifications.permission-denied-title'));
@@ -78,7 +75,6 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
         }
     } catch (err) {
         console.error('An error occurred while retrieving token.', err);
-        // This is where the AbortError will be caught.
         alert('An error occurred while setting up notifications. Please try again later.');
     }
 };
