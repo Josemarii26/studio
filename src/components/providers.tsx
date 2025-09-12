@@ -1,4 +1,3 @@
-
 'use client';
 
 import { I18nProviderClient } from '@/locales/client';
@@ -71,6 +70,20 @@ export function Providers({ children, locale }: { children: ReactNode, locale: s
         }, 1500); 
 
         return () => clearTimeout(timer);
+    }, []);
+    
+    // Explicitly register the service worker when the app loads
+    useEffect(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .register('/firebase-messaging-sw.js')
+          .then(registration => {
+            console.log('Service worker registered successfully:', registration);
+          })
+          .catch(error => {
+            console.error('Service worker registration failed:', error);
+          });
+      }
     }, []);
 
     return (
