@@ -76,44 +76,72 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
   
   const handleRequestPermission = async () => {
     if (!user) {
-        toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
-        return;
+      toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
+      return;
     }
     
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc') });
-        return;
+      toast({ 
+        variant: 'destructive', 
+        title: t('notifications.permission-unsupported-title'), 
+        description: t('notifications.permission-unsupported-desc') 
+      });
+      return;
     }
-
+  
     try {
-        const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        
-        const applicationServerKey = urlB64ToUint8Array(vapidPublicKey);
-        
-        const pushSubscription = await swRegistration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey
+      // Solicitar permiso explícitamente
+      const permission = await Notification.requestPermission();
+      
+      if (permission !== 'granted') {
+        toast({ 
+          variant: 'destructive', 
+          title: "Permission Denied", 
+          description: "Push notifications were denied. You can enable them in your browser settings." 
         });
-
-        const subscriptionObject = pushSubscription.toJSON();
-
-        const result = await saveNotificationSubscription({
-          userId: user.uid,
-          subscription: subscriptionObject,
+        next(); // Continúa al siguiente paso aunque no se conceda el permiso
+        return;
+      }
+  
+      // Registrar service worker
+      const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      
+      // Esperar a que el service worker esté listo
+      await navigator.serviceWorker.ready;
+      
+      const applicationServerKey = urlB64ToUint8Array(vapidPublicKey);
+      
+      const pushSubscription = await swRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey
+      });
+  
+      const subscriptionObject = pushSubscription.toJSON();
+  
+      const result = await saveNotificationSubscription({
+        userId: user.uid,
+        subscription: subscriptionObject,
+      });
+  
+      if (result.success) {
+        toast({ 
+          title: t('notifications.permission-granted-title'), 
+          description: t('notifications.permission-granted-desc') 
         });
-
-        if (result.success) {
-            toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc') });
-        } else {
-             toast({ variant: 'destructive', title: "Subscription Failed", description: result.error });
-        }
-
+      } else {
+        toast({ 
+          variant: 'destructive', 
+          title: "Subscription Failed", 
+          description: result.error || "Failed to save subscription"
+        });
+      }
+  
     } catch (error: any) {
       console.error('Failed to subscribe or save subscription:', error);
       toast({ 
-          variant: 'destructive', 
-          title: "Subscription Failed", 
-          description: error.message || "Could not set up push notifications." 
+        variant: 'destructive', 
+        title: "Subscription Failed", 
+        description: error.message || "Could not set up push notifications." 
       });
     } finally {
       next();
