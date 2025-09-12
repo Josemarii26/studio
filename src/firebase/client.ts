@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -37,13 +36,8 @@ export const getFCMToken = async () => {
     if (permission === 'granted') {
       console.log('Notification permission granted.');
       
-      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      await navigator.serviceWorker.ready;
-      
-      // Get the token
       const fcmToken = await getToken(messaging, {
         vapidKey: vapidKey,
-        serviceWorkerRegistration: registration
       });
 
       console.log('FCM Token:', fcmToken);

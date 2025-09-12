@@ -206,7 +206,7 @@ export function OnboardingForm() {
             
             {currentStep === 1 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField control={form.control} name="height" render={({ field }) => (
+                    <FormField control={form.control} name="height" render={({ field })-=> (
                         <FormItem><FormLabel>{t('onboarding.height-label')}</FormLabel><FormControl><Input {...field} type="number" placeholder="180" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="weight" render={({ field }) => (
