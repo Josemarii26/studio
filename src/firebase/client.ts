@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -33,16 +34,10 @@ export const getFCMToken = async (): Promise<string | null> => {
     }
     const messaging = getMessaging(app);
 
-    // Retrieve the VAPID key from environment variables.
-    // This key is necessary for the push service to authenticate the application server.
-    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!vapidKey) {
-      console.error("VAPID key is not configured in environment variables.");
-      throw new Error("VAPID key is not configured in environment variables.");
-    }
-    
     // Get the registration token.
-    const token = await getToken(messaging, { vapidKey: vapidKey });
+    const token = await getToken(messaging, { 
+      vapidKey: "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8"
+    });
     
     if (token) {
       console.log('FCM Token retrieved:', token);
@@ -54,7 +49,7 @@ export const getFCMToken = async (): Promise<string | null> => {
       return null;
     }
   } catch (err) {
-    console.error('An error occurred while retrieving token. ', err);
+    console.error('An error occurred while retrieving token.', err);
     return null;
   }
 };

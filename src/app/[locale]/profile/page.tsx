@@ -24,7 +24,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 
 
 function ProfileHeader() {
-  const t = useI1n();
+  const t = useI18n();
   const locale = useCurrentLocale();
 
   return (
