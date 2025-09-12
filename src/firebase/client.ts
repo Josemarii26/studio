@@ -28,6 +28,9 @@ export const getFCMToken = async () => {
   }
   
   const messaging = getMessaging(app);
+  
+  // Hard-coded VAPID key as a last resort to ensure it's available.
+  const vapidKey = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
 
   try {
     const permission = await Notification.requestPermission();
@@ -35,7 +38,8 @@ export const getFCMToken = async () => {
       console.log('Notification permission granted.');
       // Get the token
       const fcmToken = await getToken(messaging, {
-        vapidKey: 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8',
+        vapidKey: vapidKey,
+        serviceWorkerRegistration: await navigator.serviceWorker.ready
       });
       console.log('FCM Token:', fcmToken);
       return fcmToken;
