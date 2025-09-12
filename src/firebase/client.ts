@@ -29,18 +29,23 @@ export const getFCMToken = async () => {
   
   const messaging = getMessaging(app);
   
-  // Hard-coded VAPID key as a last resort to ensure it's available.
+  // This is the VAPID public key from the Firebase console.
   const vapidKey = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
 
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       console.log('Notification permission granted.');
+      
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      await navigator.serviceWorker.ready;
+      
       // Get the token
       const fcmToken = await getToken(messaging, {
         vapidKey: vapidKey,
-        serviceWorkerRegistration: await navigator.serviceWorker.ready
+        serviceWorkerRegistration: registration
       });
+
       console.log('FCM Token:', fcmToken);
       return fcmToken;
     } else {
@@ -48,7 +53,7 @@ export const getFCMToken = async () => {
       return null;
     }
   } catch (error) {
-    console.error('An error occurred while retrieving token.', error);
+    console.error('An error occurred while retrieving token. ', error);
     throw error;
   }
 };
