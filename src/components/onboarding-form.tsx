@@ -14,18 +14,17 @@ import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
-import { Loader2, Bell, BellRing } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
-import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
-import { getFCMToken } from '@/firebase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   age: z.coerce.number().min(13, "You must be at least 13.").max(120),
   gender: z.enum(['male', 'female', 'other']),
   weight: z.coerce.number().min(30, "Weight must be at least 30."),
-  height: z.coerce.number().min(100, "Height must be at least 130 cm."),goalWeight: z.coerce.number().min(30, "Goal weight must be a positive number."),
+  height: z.coerce.number().min(100, "Height must be at least 100 cm."),
+  goalWeight: z.coerce.number().min(30, "Goal weight must be a positive number."),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'intense']),
   goal: z.enum(['lose', 'maintain', 'gain']),
   supplementation: z.enum(['none', 'creatine', 'protein', 'both']),
@@ -49,8 +48,7 @@ export function OnboardingForm() {
     { id: '02', name: t('onboarding.step2-name'), fields: ['weight', 'height', 'goalWeight'] },
     { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
     { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
-    { id: '05', name: t('onboarding.step5-name'), fields: [] },
-    { id: '06', name: t('onboarding.step6-name'), fields: [] },
+    { id: '05', name: t('onboarding.step6-name'), fields: [] },
   ];
   
   const form = useForm<FormData>({
@@ -58,50 +56,6 @@ export function OnboardingForm() {
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
   
-  const handleRequestPermission = async () => {
-    if (!user) {
-      toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
-      next(); // Go to next step even on error
-      return;
-    }
-
-    try {
-      const fcmToken = await getFCMToken();
-
-      if (fcmToken) {
-        const result = await saveNotificationSubscription({
-          userId: user.uid,
-          subscription: fcmToken,
-        });
-        
-        if (result.success) {
-          toast({ 
-            title: t('notifications.permission-granted-title'), 
-            description: t('notifications.permission-granted-desc') 
-          });
-        } else {
-          throw new Error(result.error || "Failed to save subscription on server.");
-        }
-      } else {
-        toast({ 
-          variant: 'destructive', 
-          title: t('notifications.permission-denied-title'), 
-          description: "You can enable notifications later in your browser settings."
-        });
-      }
-    } catch (error: any) {
-      console.error('Failed to get FCM token or save subscription:', error);
-      toast({ 
-        variant: 'destructive', 
-        title: "Subscription Failed", 
-        description: error.message || "Could not set up push notifications." 
-      });
-    } finally {
-      next(); // Always move to the next step
-    }
-  };
-
-
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);
     let bmr;
@@ -148,8 +102,7 @@ export function OnboardingForm() {
       if (!output) return;
     }
 
-
-    if (currentStep === STEPS.length - 3) { // Before notification step
+    if (currentStep === STEPS.length - 2) { 
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -261,15 +214,7 @@ export function OnboardingForm() {
                 )} />
             )}
 
-            {currentStep === 4 && (
-                <div className="text-center space-y-4 flex flex-col items-center">
-                    <BellRing className="w-16 h-16 text-primary animate-pulse"/>
-                    <h2 className="text-2xl font-bold">{t('onboarding.notifications-title')}</h2>
-                    <p className="text-muted-foreground max-w-sm">{t('onboarding.notifications-desc')}</p>
-                </div>
-            )}
-
-            {currentStep === 5 && userProfile && (
+            {currentStep === 4 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
                     <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
@@ -294,18 +239,7 @@ export function OnboardingForm() {
                     {t('onboarding.finish-btn')}
                 </Button>
             )}
-             {currentStep === 4 && (
-                 <div className="flex gap-2">
-                    <Button type="button" variant="ghost" onClick={() => next()}>
-                        {t('onboarding.notifications-skip-btn')}
-                    </Button>
-                    <Button type="button" onClick={handleRequestPermission}>
-                        <Bell className="mr-2" />
-                        {t('onboarding.notifications-enable-btn')}
-                    </Button>
-                 </div>
-            )}
-            {currentStep === 5 && (
+            {currentStep === 4 && (
                 <Button type="button" onClick={() => {
                     toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
                     router.push(`/${locale}/dashboard`);

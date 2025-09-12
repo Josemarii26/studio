@@ -21,11 +21,10 @@ import type { DayData, UserProfile } from '@/lib/types';
 import { isSameDay, subDays, startOfToday } from 'date-fns';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { sendNotification } from '@/ai/flows/send-notification';
 
 
 function ProfileHeader() {
-  const t = useI18n();
+  const t = useI1n();
   const locale = useCurrentLocale();
 
   return (
@@ -89,25 +88,6 @@ export default function ProfilePage() {
     }
   },[user, authLoading, router, locale])
   
-  // Effect for the one-time welcome notification
-  useEffect(() => {
-    if (!profileLoaded || !userProfile || !user) {
-        return;
-    }
-
-    const notificationShownKey = `profileWelcomeNotificationShown-${user.uid}`;
-    const hasBeenShown = localStorage.getItem(notificationShownKey);
-
-    if (!hasBeenShown && userProfile.pushSubscription) {
-        sendNotification({
-            subscription: userProfile.pushSubscription,
-            title: t('notifications.welcome-title'),
-            body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
-            icon: '/icon-192x192.png'
-        });
-        localStorage.setItem(notificationShownKey, 'true');
-    }
-  }, [user, userProfile, profileLoaded, t]);
 
   // Load daily data from Firestore when the component mounts or user changes
   useEffect(() => {

@@ -18,38 +18,7 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
-// Initialize Firebase Cloud Messaging and get a reference to the service
-export const getFCMToken = async () => {
-  const isBrowserSupported = await isSupported();
-  if (!isBrowserSupported) {
-    console.error("Firebase Messaging is not supported in this browser.");
-    throw new Error("Firebase Messaging is not supported in this browser.");
-  }
-  
-  const messaging = getMessaging(app);
-  
-  // This is the VAPID public key from the Firebase console.
-  const vapidKey = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
-
-  try {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      console.log('Notification permission granted.');
-      
-      const fcmToken = await getToken(messaging, {
-        vapidKey: vapidKey,
-      });
-
-      console.log('FCM Token:', fcmToken);
-      return fcmToken;
-    } else {
-      console.warn('Notification permission denied.');
-      return null;
-    }
-  } catch (error) {
-    console.error('An error occurred while retrieving token. ', error);
-    throw error;
-  }
-};
+// Firebase Cloud Messaging can be initialized here if needed in the future
+// For now, it's removed to prevent service worker conflicts.
 
 export { app, auth, db, googleProvider, facebookProvider };
