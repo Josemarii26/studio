@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A server-side flow for saving a user's push notification subscription object.
@@ -6,20 +7,20 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { saveUserProfile } from '@/firebase/firestore';
 
-export const SaveNotificationSubscriptionInputSchema = z.object({
+const SaveNotificationSubscriptionInputSchema = z.object({
   userId: z.string().describe('The UID of the user.'),
   subscription: z.any().describe("The user's PushSubscriptionJSON object from the browser."),
 });
 export type SaveNotificationSubscriptionInput = z.infer<typeof SaveNotificationSubscriptionInputSchema>;
 
-export const SaveNotificationSubscriptionOutputSchema = z.object({
+const SaveNotificationSubscriptionOutputSchema = z.object({
   success: z.boolean(),
   error: z.string().optional(),
 });
 export type SaveNotificationSubscriptionOutput = z.infer<typeof SaveNotificationSubscriptionOutputSchema>;
 
 
-export const saveNotificationSubscriptionFlow = ai.defineFlow(
+const saveNotificationSubscriptionFlow = ai.defineFlow(
   {
     name: 'saveNotificationSubscriptionFlow',
     inputSchema: SaveNotificationSubscriptionInputSchema,
