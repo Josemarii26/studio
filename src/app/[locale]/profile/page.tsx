@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill, Flame } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill, Flame, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -16,11 +16,22 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { useAuth } from '@/hooks/use-auth';
-import { loadDailyDataForUser } from '@/firebase/firestore';
+import { loadDailyDataForUser, deleteUserData } from '@/firebase/firestore';
 import type { DayData, UserProfile } from '@/lib/types';
 import { isSameDay, subDays, startOfToday } from 'date-fns';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 function ProfileHeader() {
@@ -71,8 +82,60 @@ function StatCard({ icon, label, value, unit }: { icon: React.ReactNode, label: 
     )
 }
 
+function DeleteAccountDialog({ userId, onAccountDeleted }: { userId: string, onAccountDeleted: () => void }) {
+    const t = useI18n();
+    const { toast } = useToast();
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        try {
+            await deleteUserData(userId);
+            toast({
+                title: t('profile.delete-success-title'),
+                description: t('profile.delete-success-desc'),
+            });
+            onAccountDeleted();
+        } catch (error: any) {
+            console.error("Error deleting account:", error);
+            toast({
+                variant: 'destructive',
+                title: t('profile.delete-fail-title'),
+                description: error.message || t('profile.delete-fail-desc'),
+            });
+        } finally {
+            setIsDeleting(false);
+        }
+    }
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                 <Button variant="destructive" className="w-full mt-8">
+                    <Trash2 className="mr-2" />
+                    {t('profile.delete-btn')}
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{t('profile.delete-confirm-title')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {t('profile.delete-confirm-desc')}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>{t('profile.delete-cancel-btn')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                        {isDeleting ? t('profile.delete-ing-btn') : t('profile.delete-confirm-btn')}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+
 export default function ProfilePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { userProfile, setUserProfile, isLoaded: profileLoaded } = useUserStore();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -178,6 +241,11 @@ export default function ProfilePage() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleAccountDeleted = async () => {
+    await signOut();
+    router.push(`/${locale}/login?account_deleted=true`);
   };
 
 
@@ -315,6 +383,16 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           </div>
+          
+          <Card className="animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+            <CardHeader>
+                <CardTitle>{t('profile.account-management-title')}</CardTitle>
+                <CardDescription>{t('profile.account-management-desc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {user && <DeleteAccountDialog userId={user.uid} onAccountDeleted={handleAccountDeleted} />}
+            </CardContent>
+          </Card>
 
         </div>
       </main>

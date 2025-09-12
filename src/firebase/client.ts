@@ -2,7 +2,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, FacebookAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, FacebookAuthProvider, type User } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { firebaseConfig } from './config';
@@ -22,36 +22,65 @@ const facebookProvider = new FacebookAuthProvider();
 
 // --- Firebase Cloud Messaging ---
 
-// This function is designed to be called only on the client-side.
-export const getFCMToken = async (): Promise<string | null> => {
-  if (typeof window === 'undefined') return null;
+const VAPID_PUBLIC_KEY = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
 
-  try {
-    const messagingSupport = await isSupported();
-    if (!messagingSupport) {
-      console.log("Firebase Messaging is not supported in this browser.");
-      return null;
-    }
-    const messaging = getMessaging(app);
+/**
+ * Encapsulates the entire process of requesting notification permission,
+ * getting the FCM token, and saving it to the backend via an API route.
+ * @param user The authenticated Firebase user object.
+ * @param t The translation function from i18n.
+ */
+export const requestNotificationPermissionAndSaveToken = async (user: User, t: (key: string) => string) => {
+    if (typeof window === 'undefined') return;
 
-    // Get the registration token.
-    const token = await getToken(messaging, { 
-      vapidKey: "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8"
-    });
-    
-    if (token) {
-      console.log('FCM Token retrieved:', token);
-      return token;
-    } else {
-      console.log('No registration token available. Request permission to generate one.');
-      // This typically means the user has not granted notification permissions yet.
-      // The permission request should be handled before calling this function.
-      return null;
+    try {
+        const messagingSupport = await isSupported();
+        if (!messagingSupport) {
+            console.log("Firebase Messaging is not supported in this browser.");
+            alert(t('notifications.permission-unsupported-desc'));
+            return;
+        }
+
+        const permission = await Notification.requestPermission();
+
+        if (permission === 'granted') {
+            console.log('Notification permission granted.');
+            const messaging = getMessaging(app);
+
+            // Get the token
+            const fcmToken = await getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY });
+
+            if (fcmToken) {
+                console.log('FCM Token retrieved:', fcmToken);
+                
+                // Get the Firebase Auth ID token
+                const idToken = await user.getIdToken();
+
+                // Save the token to your backend
+                await fetch('/api/save-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`,
+                    },
+                    body: JSON.stringify({ token: fcmToken }),
+                });
+
+                alert(t('notifications.permission-granted-title'));
+
+            } else {
+                console.log('No registration token available. Request permission to generate one.');
+                alert(t('notifications.permission-denied-title'));
+            }
+        } else {
+            console.log('Unable to get permission to notify.');
+            alert(t('notifications.permission-denied-title'));
+        }
+    } catch (err) {
+        console.error('An error occurred while retrieving token.', err);
+        // This is where the AbortError will be caught.
+        alert('An error occurred while setting up notifications. Please try again later.');
     }
-  } catch (err) {
-    console.error('An error occurred while retrieving token.', err);
-    return null;
-  }
 };
 
 

@@ -1,21 +1,22 @@
 {
-    "name": "DietLogAI",
-    "short_name": "DietLogAI",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#f1f8e9",
-    "theme_color": "#f1f8e9",
-    "gcm_sender_id": "673788699862",
-    "icons": [
-        {
-            "src": "/icon-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/icon-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+  "name": "DietLogAI",
+  "short_name": "DietLogAI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f8e9",
+  "theme_color": "#f1f8e9",
+  "description": "Track your nutrition with the power of AI.",
+  "gcm_sender_id": "673788699862",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }

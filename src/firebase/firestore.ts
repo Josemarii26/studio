@@ -1,7 +1,8 @@
 
-import { doc, getDoc, setDoc, Timestamp, collection, query, orderBy, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp, collection, query, orderBy, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from './client';
 import type { DayData, UserProfile, ChatMessage } from '@/lib/types';
+import { getAuth } from 'firebase/auth';
 
 // We need a serializable version of our types for Firestore
 type SerializableDayData = Omit<DayData, 'date'> & {
@@ -145,5 +146,29 @@ export const saveChatHistory = async (userId: string, messages: ChatMessage[]): 
         await setDoc(docRef, { history: serializableHistory });
     } catch (error) {
         console.error("Error saving chat history to Firestore:", error);
+    }
+};
+
+/**
+ * Deletes all data associated with a user.
+ * @param userId The UID of the user to delete.
+ */
+export const deleteUserData = async (userId: string): Promise<void> => {
+    if (!userId) throw new Error("User ID is required for deletion.");
+
+    try {
+        // This requires a Cloud Function to delete the auth user.
+        // For now, we will delete the Firestore data.
+        const userProfileRef = doc(db, 'userProfiles', userId);
+        const userDailyDataRef = doc(db, 'userDailyData', userId);
+        const userChatHistoriesRef = doc(db, 'userChatHistories', userId);
+
+        await deleteDoc(userProfileRef);
+        await deleteDoc(userDailyDataRef);
+        await deleteDoc(userChatHistoriesRef);
+
+    } catch (error) {
+        console.error("Error deleting user data from Firestore:", error);
+        throw new Error("Failed to delete user data.");
     }
 };

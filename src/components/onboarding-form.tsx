@@ -17,8 +17,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Bell, BellOff } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
-import { getFCMToken } from '@/firebase/client';
-import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
+import { requestNotificationPermissionAndSaveToken } from '@/firebase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -61,23 +60,8 @@ export function OnboardingForm() {
 
   const handleRequestPermission = async () => {
     if (!user) return;
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc')});
-            const fcmToken = await getFCMToken();
-            if (fcmToken) {
-                await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
-            }
-        } else {
-            toast({ variant: 'destructive', title: t('notifications.permission-denied-title')});
-        }
-    } catch (error) {
-        console.error('Error requesting notification permission:', error);
-        toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc')});
-    } finally {
-        next();
-    }
+    await requestNotificationPermissionAndSaveToken(user, t);
+    next();
   }
   
   const processForm = async (data: FormData) => {

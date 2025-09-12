@@ -175,7 +175,19 @@
     "toast-avatar-invalid": "Tipo de Archivo no Válido",
     "toast-avatar-invalid-desc": "Por favor, selecciona un archivo de imagen.",
     "toast-avatar-failed": "Fallo al Subir",
-    "toast-avatar-failed-desc": "Hubo un error al leer el archivo."
+    "toast-avatar-failed-desc": "Hubo un error al leer el archivo.",
+    "account-management-title": "Gestión de la Cuenta",
+    "account-management-desc": "Elimina permanentemente tu cuenta y todos los datos asociados.",
+    "delete-btn": "Eliminar Cuenta",
+    "delete-confirm-title": "¿Estás absolutamente seguro?",
+    "delete-confirm-desc": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta, perfil y todos tus datos de seguimiento de comidas de nuestros servidores.",
+    "delete-confirm-btn": "Sí, eliminar mi cuenta",
+    "delete-cancel-btn": "Cancelar",
+    "delete-ing-btn": "Eliminando...",
+    "delete-success-title": "Cuenta Eliminada",
+    "delete-success-desc": "Tu cuenta y todos los datos han sido eliminados permanentemente.",
+    "delete-fail-title": "Error al Eliminar",
+    "delete-fail-desc": "No se pudieron eliminar los datos de la cuenta. Inténtalo de nuevo."
   },
   "day-modal": {
     "title": "Detalles del {date}",

@@ -175,7 +175,19 @@
     "toast-avatar-invalid": "Invalid File Type",
     "toast-avatar-invalid-desc": "Please select an image file.",
     "toast-avatar-failed": "Upload Failed",
-    "toast-avatar-failed-desc": "There was an error reading the file."
+    "toast-avatar-failed-desc": "There was an error reading the file.",
+    "account-management-title": "Account Management",
+    "account-management-desc": "Permanently delete your account and all associated data.",
+    "delete-btn": "Delete Account",
+    "delete-confirm-title": "Are you absolutely sure?",
+    "delete-confirm-desc": "This action cannot be undone. This will permanently delete your account, profile, and all of your meal tracking data from our servers.",
+    "delete-confirm-btn": "Yes, delete my account",
+    "delete-cancel-btn": "Cancel",
+    "delete-ing-btn": "Deleting...",
+    "delete-success-title": "Account Deleted",
+    "delete-success-desc": "Your account and all data have been permanently removed.",
+    "delete-fail-title": "Deletion Failed",
+    "delete-fail-desc": "Could not delete account data. Please try again."
   },
   "day-modal": {
     "title": "Details for {date}",
