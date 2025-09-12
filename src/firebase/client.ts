@@ -30,7 +30,7 @@ export const getFCMToken = async () => {
   try {
     const messaging = getMessaging(app);
     // Use the public key from environment variables
-    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    const vapidKey = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
     if (!vapidKey) {
         throw new Error("VAPID key is not configured in environment variables.");
     }
