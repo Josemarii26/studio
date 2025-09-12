@@ -42,11 +42,13 @@ const nextConfig: NextConfig = {
 
 const pwaConfig = withPWA({
   dest: "public",
-  register: true,
+  register: true, // Let the library handle registration
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  sw: "sw.js", // The name of our combined service worker
   buildExcludes: [/middleware-manifest\.json$/],
-  sw: "sw.js" // Keep the service worker name, but we will control its content
+  // We don't need swSrc if we create sw.js in src/app
 });
 
 export default pwaConfig(nextConfig);
+

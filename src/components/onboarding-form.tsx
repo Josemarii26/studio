@@ -66,12 +66,13 @@ export function OnboardingForm() {
     }
 
     try {
+      // The getFCMToken function now handles all the complexity
       const fcmToken = await getFCMToken();
 
       if (fcmToken) {
         const result = await saveNotificationSubscription({
           userId: user.uid,
-          subscription: fcmToken, // Pass the FCM Token directly
+          subscription: fcmToken,
         });
         
         if (result.success) {
