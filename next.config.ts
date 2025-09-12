@@ -1,6 +1,5 @@
 
 import type { NextConfig } from "next";
-import withPWA from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -40,14 +39,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const pwaConfig = withPWA({
-  dest: "public",
-  register: true, // Let the library handle registration
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-  sw: "sw.js", // The name of our combined service worker
-  buildExcludes: [/middleware-manifest\.json$/],
-  // We don't need swSrc if we create sw.js in src/app
-});
-
-export default pwaConfig(nextConfig);
+export default nextConfig;

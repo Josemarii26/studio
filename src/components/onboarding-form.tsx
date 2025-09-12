@@ -61,11 +61,11 @@ export function OnboardingForm() {
   const handleRequestPermission = async () => {
     if (!user) {
       toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
+      next(); // Go to next step even on error
       return;
     }
 
     try {
-      // The getFCMToken function now handles all the complexity
       const fcmToken = await getFCMToken();
 
       if (fcmToken) {
@@ -83,11 +83,10 @@ export function OnboardingForm() {
           throw new Error(result.error || "Failed to save subscription on server.");
         }
       } else {
-        // This case handles if the user denies permission or if something else goes wrong.
         toast({ 
           variant: 'destructive', 
-          title: "Permission Denied", 
-          description: "Push notifications were denied or could not be set up." 
+          title: t('notifications.permission-denied-title'), 
+          description: "You can enable notifications later in your browser settings."
         });
       }
     } catch (error: any) {

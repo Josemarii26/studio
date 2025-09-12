@@ -22,38 +22,31 @@ const facebookProvider = new FacebookAuthProvider();
 // Initialize Firebase Cloud Messaging and get a reference to the service
 export const getFCMToken = async () => {
   const isBrowserSupported = await isSupported();
-  if (!isBrowserSupported || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-    console.log("Firebase Messaging is not supported in this browser.");
-    return null;
+  if (!isBrowserSupported) {
+    console.error("Firebase Messaging is not supported in this browser.");
+    throw new Error("Firebase Messaging is not supported in this browser.");
   }
+  
+  const messaging = getMessaging(app);
 
   try {
-    const messaging = getMessaging(app);
-    // Use the public key from environment variables
-    const vapidKey = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
-    if (!vapidKey) {
-        throw new Error("VAPID key is not configured in environment variables.");
-    }
-    
-    // Wait for the service worker to be ready
-    const swRegistration = await navigator.serviceWorker.ready;
-
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      const token = await getToken(messaging, { 
-          vapidKey: vapidKey,
-          serviceWorkerRegistration: swRegistration
+      console.log('Notification permission granted.');
+      // Get the token
+      const fcmToken = await getToken(messaging, {
+        vapidKey: 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMIT2aMuorn_izFA2SmW2iXLYIQDgt4Uu6R-jvTmZxq0UivAl-r534K8',
       });
-      return token;
+      console.log('FCM Token:', fcmToken);
+      return fcmToken;
     } else {
-      console.log('Notification permission denied.');
+      console.warn('Notification permission denied.');
       return null;
     }
   } catch (error) {
-    console.error('An error occurred while retrieving token. ', error);
-    // Re-throw the error to be caught by the caller
+    console.error('An error occurred while retrieving token.', error);
     throw error;
   }
-}
+};
 
 export { app, auth, db, googleProvider, facebookProvider };
