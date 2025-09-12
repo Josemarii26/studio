@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -28,8 +29,7 @@ export const getFCMToken = async () => {
 
   try {
     const messaging = getMessaging(app);
-    // Use the public key from environment variables - Firebase SDK handles this automatically
-    // if the service worker is set up correctly.
+    // Use the public key from environment variables
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!vapidKey) {
         throw new Error("VAPID key is not configured in environment variables.");
@@ -51,8 +51,9 @@ export const getFCMToken = async () => {
     }
   } catch (error) {
     console.error('An error occurred while retrieving token. ', error);
+    // Re-throw the error to be caught by the caller
+    throw error;
   }
-  return null;
 }
 
 export { app, auth, db, googleProvider, facebookProvider };
