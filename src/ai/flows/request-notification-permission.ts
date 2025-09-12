@@ -9,7 +9,7 @@ import { saveUserProfile } from '@/firebase/firestore';
 
 const SaveNotificationSubscriptionInputSchema = z.object({
   userId: z.string().describe('The UID of the user.'),
-  subscription: z.any().describe("The user's PushSubscriptionJSON object from the browser."),
+  subscription: z.string().describe("The user's FCM registration token."),
 });
 export type SaveNotificationSubscriptionInput = z.infer<typeof SaveNotificationSubscriptionInputSchema>;
 
@@ -29,9 +29,10 @@ const saveNotificationSubscriptionFlow = ai.defineFlow(
   async ({ userId, subscription }) => {
     try {
       if (!userId || !subscription) {
-        throw new Error("User ID and subscription object are required.");
+        throw new Error("User ID and subscription token are required.");
       }
       
+      // We are now saving the FCM token as the pushSubscription
       await saveUserProfile(userId, { pushSubscription: subscription } as any);
 
       return { success: true };

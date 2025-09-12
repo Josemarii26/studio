@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,6 +19,7 @@ import { Loader2, Bell, BellRing } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
 import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
+import { getFCMToken } from '@/firebase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -32,25 +34,8 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-// Function from the tutorial to convert VAPID key
-function urlB64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
-  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/")
 
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i)
-  }
-  return outputArray
-}
-
-interface OnboardingFormProps {
-  vapidPublicKey: string;
-}
-
-export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
+export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, setUserProfile } = useUserStore();
@@ -79,74 +64,44 @@ export function OnboardingForm({ vapidPublicKey }: OnboardingFormProps) {
       toast({ variant: 'destructive', title: "Authentication Error", description: "You must be logged in." });
       return;
     }
-    
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      toast({ 
-        variant: 'destructive', 
-        title: t('notifications.permission-unsupported-title'), 
-        description: t('notifications.permission-unsupported-desc') 
-      });
-      return;
-    }
-  
+
     try {
-      // Solicitar permiso explícitamente
-      const permission = await Notification.requestPermission();
-      
-      if (permission !== 'granted') {
+      const fcmToken = await getFCMToken();
+
+      if (fcmToken) {
+        const result = await saveNotificationSubscription({
+          userId: user.uid,
+          subscription: fcmToken, // Pass the FCM Token directly
+        });
+        
+        if (result.success) {
+          toast({ 
+            title: t('notifications.permission-granted-title'), 
+            description: t('notifications.permission-granted-desc') 
+          });
+        } else {
+          throw new Error(result.error || "Failed to save subscription on server.");
+        }
+      } else {
+        // This case handles if the user denies permission or if something else goes wrong.
         toast({ 
           variant: 'destructive', 
           title: "Permission Denied", 
-          description: "Push notifications were denied. You can enable them in your browser settings." 
-        });
-        next(); // Continúa al siguiente paso aunque no se conceda el permiso
-        return;
-      }
-  
-      // Registrar service worker
-      const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      
-      // Esperar a que el service worker esté listo
-      await navigator.serviceWorker.ready;
-      
-      const applicationServerKey = urlB64ToUint8Array(vapidPublicKey);
-      
-      const pushSubscription = await swRegistration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey
-      });
-  
-      const subscriptionObject = pushSubscription.toJSON();
-  
-      const result = await saveNotificationSubscription({
-        userId: user.uid,
-        subscription: subscriptionObject,
-      });
-  
-      if (result.success) {
-        toast({ 
-          title: t('notifications.permission-granted-title'), 
-          description: t('notifications.permission-granted-desc') 
-        });
-      } else {
-        toast({ 
-          variant: 'destructive', 
-          title: "Subscription Failed", 
-          description: result.error || "Failed to save subscription"
+          description: "Push notifications were denied or could not be set up." 
         });
       }
-  
     } catch (error: any) {
-      console.error('Failed to subscribe or save subscription:', error);
+      console.error('Failed to get FCM token or save subscription:', error);
       toast({ 
         variant: 'destructive', 
         title: "Subscription Failed", 
         description: error.message || "Could not set up push notifications." 
       });
     } finally {
-      next();
+      next(); // Always move to the next step
     }
   };
+
 
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);

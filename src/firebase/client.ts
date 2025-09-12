@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -19,14 +20,22 @@ const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
 // Initialize Firebase Cloud Messaging and get a reference to the service
-const getFCMToken = async (vapidKey: string) => {
+export const getFCMToken = async () => {
     try {
-        if ('serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator && typeof window !== 'undefined') {
             const messaging = getMessaging(app);
+            // Use the public key from environment variables
+            const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+            if (!vapidKey) {
+                throw new Error("VAPID key is not configured in environment variables.");
+            }
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
                 const token = await getToken(messaging, { vapidKey: vapidKey });
                 return token;
+            } else {
+                console.log('Notification permission denied.');
+                return null;
             }
         }
     } catch (error) {
@@ -36,4 +45,4 @@ const getFCMToken = async (vapidKey: string) => {
 }
 
 
-export { app, auth, db, googleProvider, facebookProvider, getFCMToken };
+export { app, auth, db, googleProvider, facebookProvider };

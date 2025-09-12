@@ -46,6 +46,7 @@ const pwaConfig = withPWA({
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
   buildExcludes: [/middleware-manifest\.json$/],
+  sw: "sw.js" // Keep the service worker name, but we will control its content
 });
 
 export default pwaConfig(nextConfig);

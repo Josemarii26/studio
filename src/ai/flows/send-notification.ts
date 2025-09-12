@@ -1,16 +1,30 @@
+
 'use server';
 /**
- * @fileOverview A flow for sending web push notifications via web-push library.
+ * @fileOverview A flow for sending web push notifications via the Firebase Admin SDK.
  *
  * - sendNotification - A function that handles sending a push notification.
  * - SendNotificationInput - The input type for the sendNotification function.
  */
-
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { getMessaging } from 'firebase-admin/messaging';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { firebaseAdminConfig } from '@/firebase/admin-config';
+
+// Initialize Firebase Admin SDK only if all credentials are provided
+if (
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY
+) {
+    if (!getApps().length) {
+        initializeApp(firebaseAdminConfig);
+    }
+}
 
 const SendNotificationInputSchema = z.object({
-  subscription: z.any().describe('The PushSubscription object from the browser.'),
+  subscription: z.string().describe('The FCM registration token for the target device.'),
   title: z.string().describe('The title of the notification.'),
   body: z.string().describe('The body text of the notification.'),
   icon: z.string().optional().describe('The icon URL for the notification.'),
@@ -24,39 +38,38 @@ export const sendNotificationFlow = ai.defineFlow(
     outputSchema: z.boolean(),
   },
   async ({ subscription, title, body, icon }) => {
-    const VAPID_SUBJECT = process.env.VAPID_SUBJECT;
-    const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
-
-    if (!VAPID_SUBJECT || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-      console.error("VAPID details are not configured on the server. Cannot send notification.");
-      return false;
+    if (!getApps().length) {
+        console.error("Firebase Admin SDK is not initialized. Cannot send notification.");
+        return false;
     }
-
-    try {
-      const webpush = await import('web-push');
-      webpush.setVapidDetails(
-        VAPID_SUBJECT,
-        VAPID_PUBLIC_KEY,
-        VAPID_PRIVATE_KEY
-      );
-
-      const payload = JSON.stringify({
+    
+    const message = {
+      token: subscription,
+      notification: {
         title,
         body,
-        icon: icon || '/icon-192x192.png',
-      });
-      
-      await webpush.sendNotification(subscription, payload);
-      console.log('Successfully sent push notification.');
+      },
+      webpush: {
+        notification: {
+          icon: icon || '/icon-192x192.png',
+        },
+      },
+    };
+
+    try {
+      await getMessaging().send(message);
+      console.log('Successfully sent push notification to token:', subscription);
       return true;
     } catch (error) {
       console.error('Error sending push notification:', error);
+      // Specific error handling for unregistered tokens
+      if ((error as any).code === 'messaging/registration-token-not-registered') {
+        console.log(`FCM token ${subscription} is no longer valid. Consider removing it.`);
+      }
       return false;
     }
   }
 );
-
 
 export async function sendNotification(input: SendNotificationInput): Promise<boolean> {
     return await sendNotificationFlow(input);

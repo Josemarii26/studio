@@ -8,11 +8,7 @@ import { DashboardLoader } from "@/components/dashboard-loader";
 import { useCurrentLocale } from '@/locales/client';
 import { OnboardingForm } from "./onboarding-form";
 
-interface OnboardingClientProps {
-  vapidPublicKey: string;
-}
-
-export function OnboardingClient({ vapidPublicKey }: OnboardingClientProps) {
+export function OnboardingClient() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const locale = useCurrentLocale();
@@ -30,5 +26,5 @@ export function OnboardingClient({ vapidPublicKey }: OnboardingClientProps) {
         return <DashboardLoader />;
     }
 
-    return <OnboardingForm vapidPublicKey={vapidPublicKey} />;
+    return <OnboardingForm />;
 }

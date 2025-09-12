@@ -1,4 +1,4 @@
-// This file is intentionally kept empty.
-// Its presence is required for the PWA functionality managed by @ducanh2912/next-pwa.
-// The actual service worker logic for PWA (caching, etc.) is generated dynamically during the build process.
-// We are separating the PWA service worker from the Firebase Messaging one to avoid conflicts.
+
+// This file is intentionally left blank. 
+// The @ducanh2912/next-pwa plugin will inject its own service worker logic here for caching.
+// The Firebase service worker logic is in firebase-messaging-sw.js.
