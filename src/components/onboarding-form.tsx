@@ -14,9 +14,11 @@ import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bell, BellOff } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
+import { getFCMToken } from '@/firebase/client';
+import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -48,13 +50,35 @@ export function OnboardingForm() {
     { id: '02', name: t('onboarding.step2-name'), fields: ['weight', 'height', 'goalWeight'] },
     { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
     { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
-    { id: '05', name: t('onboarding.step6-name'), fields: [] },
+    { id: '05', name: t('onboarding.step5-name'), fields: [] },
+    { id: '06', name: t('onboarding.step6-name'), fields: [] },
   ];
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
+
+  const handleRequestPermission = async () => {
+    if (!user) return;
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            toast({ title: t('notifications.permission-granted-title'), description: t('notifications.permission-granted-desc')});
+            const fcmToken = await getFCMToken();
+            if (fcmToken) {
+                await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
+            }
+        } else {
+            toast({ variant: 'destructive', title: t('notifications.permission-denied-title')});
+        }
+    } catch (error) {
+        console.error('Error requesting notification permission:', error);
+        toast({ variant: 'destructive', title: t('notifications.permission-unsupported-title'), description: t('notifications.permission-unsupported-desc')});
+    } finally {
+        next();
+    }
+  }
   
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);
@@ -102,7 +126,7 @@ export function OnboardingForm() {
       if (!output) return;
     }
 
-    if (currentStep === STEPS.length - 2) { 
+    if (currentStep === STEPS.length - 3) { 
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -214,7 +238,25 @@ export function OnboardingForm() {
                 )} />
             )}
 
-            {currentStep === 4 && userProfile && (
+            {currentStep === 4 && (
+                <div className="text-center space-y-4">
+                    <h2 className="text-2xl font-bold">{t('onboarding.notifications-title')}</h2>
+                    <p className="text-muted-foreground">{t('onboarding.notifications-desc')}</p>
+                    <div className="flex justify-center gap-4 pt-4">
+                        <Button type="button" size="lg" onClick={handleRequestPermission}>
+                            <Bell className="mr-2 h-5 w-5" />
+                            {t('onboarding.notifications-enable-btn')}
+                        </Button>
+                         <Button type="button" size="lg" variant="ghost" onClick={() => next()}>
+                            <BellOff className="mr-2 h-5 w-5" />
+                            {t('onboarding.notifications-skip-btn')}
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+
+            {currentStep === 5 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
                     <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
@@ -239,7 +281,7 @@ export function OnboardingForm() {
                     {t('onboarding.finish-btn')}
                 </Button>
             )}
-            {currentStep === 4 && (
+            {currentStep === 5 && (
                 <Button type="button" onClick={() => {
                     toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
                     router.push(`/${locale}/dashboard`);
