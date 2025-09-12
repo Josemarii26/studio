@@ -14,10 +14,6 @@ export const metadata: Metadata = {
     title: 'DietLogAI',
     description: 'Track your nutrition with the power of AI.',
     manifest: '/manifest.json',
-    icons: {
-      icon: "/icon-192x192.png",
-      apple: "/icon-192x192.png"
-    },
 }
 
 export const viewport: Viewport = {

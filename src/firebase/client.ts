@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -22,20 +21,14 @@ const facebookProvider = new FacebookAuthProvider();
 
 
 // --- Firebase Cloud Messaging ---
-
-const VAPID_PUBLIC_KEY = "BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8";
-
 /**
  * Encapsulates the entire process of requesting notification permission,
- * getting the FCM token, and saving it to the backend via an API route.
+ * getting the FCM token, and saving it to the backend.
  * @param user The authenticated Firebase user object.
  * @param t The translation function from i18n.
  */
 export const requestNotificationPermissionAndSaveToken = async (user: User, t: (key: string) => string) => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-        console.log("Service Worker or window not available.");
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
     try {
         const messagingSupport = await isSupported();
@@ -49,16 +42,8 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
         if (permission === 'granted') {
             console.log('Notification permission granted.');
             const messaging = getMessaging(app);
-
-            // Wait for the service worker to be ready
-            console.log('Waiting for service worker to be ready...');
-            const swRegistration = await navigator.serviceWorker.ready;
-            console.log('Service worker is active:', swRegistration.active);
-
-            // Get the token
-            const fcmToken = await getToken(messaging, { 
-                vapidKey: VAPID_PUBLIC_KEY,
-                serviceWorkerRegistration: swRegistration 
+            const fcmToken = await getToken(messaging, {
+                vapidKey: 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8',
             });
 
             if (fcmToken) {
