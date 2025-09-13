@@ -2,19 +2,15 @@
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, FacebookAuthProvider, type User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider, type User } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getMessaging, getToken, isSupported } from 'firebase/messaging';
+import { getMessaging, getToken } from 'firebase/messaging';
 import { firebaseConfig } from './config';
 import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-
-// Set session persistence
-setPersistence(auth, browserLocalPersistence);
-
 const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
@@ -52,10 +48,18 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
         console.log('Service worker is active and ready.');
         
         const messaging = getMessaging(app);
+        
+        // Hardcoded VAPID key to eliminate environment variable issues.
+        const vapidKey = 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8';
+
+        if (!vapidKey) {
+            console.error("VAPID public key is not defined. Cannot get FCM token.");
+            return;
+        }
 
         // Now that the service worker is ready, get the token.
         const fcmToken = await getToken(messaging, {
-            vapidKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+            vapidKey: vapidKey,
             serviceWorkerRegistration: registration,
         });
 
