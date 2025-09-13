@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for sending a welcome push notification to a user.
@@ -22,13 +23,17 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
     outputSchema: z.object({ success: z.boolean(), message: z.string() }),
   },
   async ({ userId, locale }) => {
+    console.log('[Flow] sendWelcomeNotificationFlow started for user:', userId);
+    
     const userProfile = await loadUserProfile(userId);
 
     if (!userProfile) {
+      console.log('[Flow] User profile not found.');
       return { success: false, message: 'User profile not found.' };
     }
 
     if (!userProfile.pushSubscription) {
+      console.log('[Flow] User has no push subscription token.');
       return { success: false, message: 'User has no push subscription token.' };
     }
     
@@ -41,8 +46,10 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
     });
 
     if (success) {
+      console.log('[Flow] Welcome notification sent successfully.');
       return { success: true, message: 'Welcome notification sent.' };
     } else {
+      console.log('[Flow] Failed to send welcome notification via sendNotificationFlow.');
       return { success: false, message: 'Failed to send welcome notification.' };
     }
   }

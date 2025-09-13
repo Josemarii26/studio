@@ -171,8 +171,14 @@ export default function ProfilePage() {
     const NOTIFICATION_SENT_KEY = 'profileWelcomeNotificationSent';
     const notificationSent = sessionStorage.getItem(NOTIFICATION_SENT_KEY);
 
+    console.log('[Debug] Checking conditions for welcome notification...');
+    console.log('[Debug] User:', !!user);
+    console.log('[Debug] UserProfile:', !!userProfile);
+    console.log('[Debug] Push Subscription:', userProfile?.pushSubscription);
+    console.log('[Debug] Notification Sent Flag:', notificationSent);
+
     if (user && userProfile && userProfile.pushSubscription && !notificationSent) {
-      console.log('Attempting to send welcome notification...');
+      console.log('[Debug] All conditions met. Attempting to send welcome notification...');
       sendWelcomeNotification({ userId: user.uid, locale: locale })
         .then(response => {
           if (response.success) {

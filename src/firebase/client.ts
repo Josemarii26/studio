@@ -7,6 +7,8 @@ import { getFirestore } from 'firebase/firestore';
 import { getMessaging, getToken } from 'firebase/messaging';
 import { firebaseConfig } from './config';
 import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
+import { toast } from '@/hooks/use-toast';
+
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -25,7 +27,11 @@ const facebookProvider = new FacebookAuthProvider();
  */
 export const requestNotificationPermissionAndSaveToken = async (user: User, t: (key: string) => string) => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-        alert(t('notifications.permission-unsupported-desc'));
+        toast({
+            variant: 'destructive',
+            title: t('notifications.permission-unsupported-title'),
+            description: t('notifications.permission-unsupported-desc'),
+        });
         return;
     }
 
@@ -33,7 +39,10 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
             console.log('Unable to get permission to notify.');
-            alert(t('notifications.permission-denied-title'));
+            toast({
+                variant: 'destructive',
+                title: t('notifications.permission-denied-title'),
+            });
             return;
         }
         
@@ -65,18 +74,39 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
 
         if (fcmToken) {
             console.log('FCM Token retrieved:', fcmToken);
-            await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
-            alert(t('notifications.permission-granted-title'));
+            // CRITICAL FIX: Save the token to the backend
+            const result = await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
+            if (result.success) {
+                toast({
+                    title: t('notifications.permission-granted-title')
+                });
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: "Failed to save token",
+                    description: result.error
+                });
+            }
         } else {
             console.log('No registration token available. Request permission to generate one.');
-            alert(t('notifications.permission-denied-title'));
+            toast({
+                variant: 'destructive',
+                title: t('notifications.permission-denied-title'),
+            });
         }
     } catch (err) {
         console.error('An error occurred while retrieving token.', err);
         if (err instanceof Error) {
-             alert("Subscription failed: " + err.message);
+             toast({
+                variant: 'destructive',
+                title: "Subscription failed",
+                description: err.message
+             });
         } else {
-             alert('An error occurred while setting up notifications. Please try again later.');
+             toast({
+                variant: 'destructive',
+                title: 'An unknown error occurred while setting up notifications.'
+             });
         }
     }
 };
