@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -54,8 +55,8 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
 
         // Now that the service worker is ready, get the token.
         const fcmToken = await getToken(messaging, {
-            vapidKey: 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8',
-            serviceWorkerRegistration: registration, // Pass the registration
+            vapidKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+            serviceWorkerRegistration: registration,
         });
 
         if (fcmToken) {
@@ -68,8 +69,7 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
         }
     } catch (err) {
         console.error('An error occurred while retrieving token.', err);
-        // Provide more specific feedback if possible
-        if (err instanceof Error && err.name === 'AbortError') {
+        if (err instanceof Error) {
              alert("Subscription failed: " + err.message);
         } else {
              alert('An error occurred while setting up notifications. Please try again later.');
