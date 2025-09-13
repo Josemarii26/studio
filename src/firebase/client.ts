@@ -19,48 +19,61 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
-
-// --- Firebase Cloud Messaging ---
 /**
  * Encapsulates the entire process of requesting notification permission,
- * getting the FCM token, and saving it to the backend.
+ * getting the FCM token, and saving it to the backend. This version ensures
+ * the service worker is ready before attempting to get a token.
  * @param user The authenticated Firebase user object.
  * @param t The translation function from i18n.
  */
 export const requestNotificationPermissionAndSaveToken = async (user: User, t: (key: string) => string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+        alert(t('notifications.permission-unsupported-desc'));
+        return;
+    }
 
     try {
-        const messagingSupport = await isSupported();
-        if (!messagingSupport) {
-            alert(t('notifications.permission-unsupported-desc'));
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.log('Unable to get permission to notify.');
+            alert(t('notifications.permission-denied-title'));
             return;
         }
+        
+        console.log('Notification permission granted.');
 
-        const permission = await Notification.requestPermission();
+        // Explicitly register the service worker
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('Service worker registered successfully:', registration);
 
-        if (permission === 'granted') {
-            console.log('Notification permission granted.');
-            const messaging = getMessaging(app);
-            const fcmToken = await getToken(messaging, {
-                vapidKey: 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8',
-            });
+        // Wait for the service worker to be ready and active
+        await navigator.serviceWorker.ready;
+        console.log('Service worker is active and ready.');
+        
+        const messaging = getMessaging(app);
 
-            if (fcmToken) {
-                console.log('FCM Token retrieved:', fcmToken);
-                await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
-                alert(t('notifications.permission-granted-title'));
-            } else {
-                console.log('No registration token available. Request permission to generate one.');
-                alert(t('notifications.permission-denied-title'));
-            }
+        // Now that the service worker is ready, get the token.
+        const fcmToken = await getToken(messaging, {
+            vapidKey: 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8',
+            serviceWorkerRegistration: registration, // Pass the registration
+        });
+
+        if (fcmToken) {
+            console.log('FCM Token retrieved:', fcmToken);
+            await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
+            alert(t('notifications.permission-granted-title'));
         } else {
-            console.log('Unable to get permission to notify.');
+            console.log('No registration token available. Request permission to generate one.');
             alert(t('notifications.permission-denied-title'));
         }
     } catch (err) {
         console.error('An error occurred while retrieving token.', err);
-        alert('An error occurred while setting up notifications. Please try again later.');
+        // Provide more specific feedback if possible
+        if (err instanceof Error && err.name === 'AbortError') {
+             alert("Subscription failed: " + err.message);
+        } else {
+             alert('An error occurred while setting up notifications. Please try again later.');
+        }
     }
 };
 
