@@ -26,7 +26,7 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
     console.log('[Flow] sendWelcomeNotificationFlow started for user:', userId);
     
     // There can be a delay in Firestore propagation. Let's wait a moment.
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 5000));
     
     const userProfile = await loadUserProfile(userId);
 
