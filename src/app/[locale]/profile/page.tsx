@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { sendWelcomeNotification } from '@/ai/flows/send-welcome-notification';
 
 
 function ProfileHeader() {
@@ -164,6 +165,28 @@ export default function ProfilePage() {
     }
     loadData();
   }, [user]);
+
+  // Send a welcome notification once per session when the profile page is visited
+  useEffect(() => {
+    const NOTIFICATION_SENT_KEY = 'profileWelcomeNotificationSent';
+    const notificationSent = sessionStorage.getItem(NOTIFICATION_SENT_KEY);
+
+    if (user && userProfile && userProfile.pushSubscription && !notificationSent) {
+      console.log('Attempting to send welcome notification...');
+      sendWelcomeNotification({ userId: user.uid, locale: locale })
+        .then(response => {
+          if (response.success) {
+            console.log('Welcome notification sent successfully.');
+            sessionStorage.setItem(NOTIFICATION_SENT_KEY, 'true');
+          } else {
+            console.error('Failed to send welcome notification:', response.message);
+          }
+        })
+        .catch(err => {
+          console.error('Error calling sendWelcomeNotification flow:', err);
+        });
+    }
+  }, [user, userProfile, locale]);
 
   const performanceStats = useMemo(() => {
     if (!dailyData || dailyData.length === 0) {
