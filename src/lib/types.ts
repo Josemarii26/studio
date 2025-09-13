@@ -45,6 +45,7 @@ export type UserProfile = {
   bmi: number;
   photoUrl: string | null;
   pushSubscription: string | null;
+  welcomeNotificationSent?: boolean;
 };
 
 export type ChatMessage = {

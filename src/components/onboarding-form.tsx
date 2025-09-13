@@ -18,6 +18,7 @@ import { Loader2, Bell, BellOff } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
 import { requestNotificationPermission } from '@/firebase/client';
+import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -37,7 +38,6 @@ type FormData = z.infer<typeof formSchema>;
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [permissionRequested, setPermissionRequested] = useState(false);
   const { userProfile, setUserProfile } = useUserStore();
   const { user } = useAuth();
   const router = useRouter();
@@ -50,7 +50,8 @@ export function OnboardingForm() {
     { id: '02', name: t('onboarding.step2-name'), fields: ['weight', 'height', 'goalWeight'] },
     { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
     { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
-    { id: '05', name: t('onboarding.step6-name'), fields: [] },
+    { id: '05', name: t('onboarding.step5-name'), fields: [] },
+    { id: '06', name: t('onboarding.step6-name'), fields: [] },
   ];
   
   const form = useForm<FormData>({
@@ -79,17 +80,6 @@ export function OnboardingForm() {
     const dailyProteinGoal = Math.round((dailyCalories * 0.30) / 4);
     const dailyFatGoal = Math.round((dailyCalories * 0.30) / 9);
     const dailyCarbsGoal = Math.round((dailyCalories * 0.40) / 4);
-
-    let fcmToken: string | null = null;
-    if (Notification.permission === 'default' && !permissionRequested) {
-        const confirmed = confirm(t('onboarding.notifications-desc'));
-        if (confirmed) {
-            fcmToken = await requestNotificationPermission();
-            setPermissionRequested(true);
-        }
-    } else if (Notification.permission === 'granted') {
-        fcmToken = await requestNotificationPermission();
-    }
     
     const fullProfile: UserProfile = {
       ...data,
@@ -99,13 +89,41 @@ export function OnboardingForm() {
       dailyCarbsGoal,
       bmi,
       photoUrl: null,
-      pushSubscription: fcmToken,
+      pushSubscription: null, // Start with null
     }
     
-    await setUserProfile(fullProfile);
+    await setUserProfile(fullProfile); // Save profile without token first
     setIsSubmitting(false);
     setCurrentStep(prev => prev + 1);
   };
+  
+  const handleEnableNotifications = async () => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+        const token = await requestNotificationPermission();
+        if (token) {
+            const result = await saveNotificationSubscription({ userId: user.uid, subscription: token });
+            if (result.success) {
+                toast({ title: t('notifications.permission-granted-title') });
+                 if(userProfile) {
+                    setUserProfile({ ...userProfile, pushSubscription: token });
+                }
+            } else {
+                throw new Error(result.error || 'Failed to save subscription.');
+            }
+        }
+    } catch(err) {
+        console.error("Error enabling notifications:", err);
+    } finally {
+        setIsSubmitting(false);
+        setCurrentStep(prev => prev + 1); // Move to final step regardless
+    }
+  }
+  
+  const handleSkipNotifications = () => {
+      setCurrentStep(prev => prev + 1);
+  }
 
   const next = async () => {
     const fields = STEPS[currentStep].fields;
@@ -114,7 +132,7 @@ export function OnboardingForm() {
       if (!output) return;
     }
 
-    if (currentStep === STEPS.length - 2) { 
+    if (currentStep === STEPS.length - 3) { // On step 4, before notifications
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -226,7 +244,25 @@ export function OnboardingForm() {
                 )} />
             )}
 
-            {currentStep === 4 && userProfile && (
+            {currentStep === 4 && (
+                <div className="text-center space-y-4 flex flex-col items-center">
+                    <Bell className="w-16 h-16 text-primary" />
+                    <h2 className="text-2xl font-bold">{t('onboarding.notifications-title')}</h2>
+                    <p className="text-muted-foreground max-w-sm">{t('onboarding.notifications-desc')}</p>
+                     <div className="flex gap-4 pt-4">
+                        <Button type="button" variant="outline" onClick={handleSkipNotifications} disabled={isSubmitting}>
+                           <BellOff className="mr-2" />
+                           {t('onboarding.notifications-skip-btn')}
+                        </Button>
+                        <Button type="button" onClick={handleEnableNotifications} disabled={isSubmitting}>
+                           {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2" />}
+                           {t('onboarding.notifications-enable-btn')}
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {currentStep === 5 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
                     <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
@@ -238,7 +274,7 @@ export function OnboardingForm() {
             )}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
-            <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0}>{t('onboarding.back-btn')}</Button>
+            <Button type="button" variant="outline" onClick={prev} disabled={currentStep === 0 || currentStep >= 4}>{t('onboarding.back-btn')}</Button>
             
             {currentStep < 3 && (
                 <Button type="button" onClick={next}>
@@ -251,7 +287,7 @@ export function OnboardingForm() {
                     {t('onboarding.finish-btn')}
                 </Button>
             )}
-            {currentStep === 4 && (
+            {currentStep === 5 && (
                 <Button type="button" onClick={() => {
                     toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
                     router.push(`/${locale}/dashboard`);

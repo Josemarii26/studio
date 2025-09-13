@@ -166,24 +166,24 @@ export default function ProfilePage() {
     loadData();
   }, [user]);
 
-  // Send a welcome notification once per session when the profile page is visited
+  // Send a welcome notification once when the profile page is visited and conditions are met
   useEffect(() => {
-    const NOTIFICATION_SENT_KEY = 'profileWelcomeNotificationSent';
-    const notificationSent = sessionStorage.getItem(NOTIFICATION_SENT_KEY);
-
     console.log('[Debug] Checking conditions for welcome notification...');
     console.log('[Debug] User:', !!user);
-    console.log('[Debug] UserProfile:', !!userProfile);
-    console.log('[Debug] Push Subscription:', userProfile?.pushSubscription);
-    console.log('[Debug] Notification Sent Flag:', notificationSent);
+    console.log('[Debug] UserProfile loaded:', profileLoaded);
+    console.log('[Debug] Profile object:', userProfile);
+    console.log('[Debug] Push Subscription in profile:', userProfile?.pushSubscription);
+    console.log('[Debug] Welcome notification sent flag:', userProfile?.welcomeNotificationSent);
 
-    if (user && userProfile && userProfile.pushSubscription && !notificationSent) {
+
+    if (user && profileLoaded && userProfile && userProfile.pushSubscription && !userProfile.welcomeNotificationSent) {
       console.log('[Debug] All conditions met. Attempting to send welcome notification...');
       sendWelcomeNotification({ userId: user.uid, locale: locale })
         .then(response => {
           if (response.success) {
             console.log('Welcome notification sent successfully.');
-            sessionStorage.setItem(NOTIFICATION_SENT_KEY, 'true');
+            // We update the local state to prevent re-sending in the same session
+            setUserProfile({...userProfile, welcomeNotificationSent: true});
           } else {
             console.error('Failed to send welcome notification:', response.message);
           }
@@ -192,7 +192,7 @@ export default function ProfilePage() {
           console.error('Error calling sendWelcomeNotification flow:', err);
         });
     }
-  }, [user, userProfile, locale]);
+  }, [user, userProfile, profileLoaded, locale, setUserProfile]);
 
   const performanceStats = useMemo(() => {
     if (!dailyData || dailyData.length === 0) {

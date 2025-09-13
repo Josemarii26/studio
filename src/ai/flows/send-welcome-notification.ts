@@ -5,7 +5,7 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { loadUserProfile } from '@/firebase/firestore';
+import { loadUserProfile, saveUserProfile } from '@/firebase/firestore';
 import { sendNotificationFlow } from './send-notification';
 import { getI18n } from '@/locales/server';
 
@@ -25,16 +25,24 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
   async ({ userId, locale }) => {
     console.log('[Flow] sendWelcomeNotificationFlow started for user:', userId);
     
+    // There can be a delay in Firestore propagation. Let's wait a moment.
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     const userProfile = await loadUserProfile(userId);
 
     if (!userProfile) {
-      console.log('[Flow] User profile not found.');
+      console.error('[Flow] User profile not found for user:', userId);
       return { success: false, message: 'User profile not found.' };
     }
 
     if (!userProfile.pushSubscription) {
       console.log('[Flow] User has no push subscription token.');
       return { success: false, message: 'User has no push subscription token.' };
+    }
+    
+    if (userProfile.welcomeNotificationSent) {
+        console.log('[Flow] Welcome notification already sent.');
+        return { success: true, message: 'Welcome notification already sent.' };
     }
     
     const t = await getI18n(locale as 'en' | 'es');
@@ -47,6 +55,8 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
 
     if (success) {
       console.log('[Flow] Welcome notification sent successfully.');
+      // Mark that the notification has been sent to prevent duplicates
+      await saveUserProfile(userId, { ...userProfile, welcomeNotificationSent: true });
       return { success: true, message: 'Welcome notification sent.' };
     } else {
       console.log('[Flow] Failed to send welcome notification via sendNotificationFlow.');
