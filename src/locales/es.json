@@ -55,7 +55,7 @@
     "supplements-protein": "Proteína en Polvo",
     "supplements-both": "Ambos, Creatina y Proteína",
     "notifications-title": "¿Activar notificaciones?",
-    "notifications-desc": "Podemos enviarte un mensaje de bienvenida y recordatorios ocasionales para ayudarte a mantenerte en el camino con tus metas.",
+    "notifications-desc": "Podemos enviarte un mensaje de bienvenida y recordatorios ocasionales para ayudarte a mantenerte en el camino con tus metas. ¿Quieres activarlas?",
     "notifications-enable-btn": "Activar",
     "notifications-skip-btn": "Omitir",
     "summary-title": "Tu Plan Personalizado",
@@ -64,7 +64,7 @@
     "calorie-goal-label": "Meta diaria de calorías",
     "next-btn": "Siguiente Paso",
     "back-btn": "Atrás",
-    "finish-btn": "Calcular y continuar",
+    "finish-btn": "Calcular y finalizar",
     "dashboard-btn": "Ir al panel",
     "toast-complete": "¡Configuración completa!",
     "toast-complete-desc": "Redirigiendo a tu panel."

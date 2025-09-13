@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Bell, BellOff } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
-import { requestNotificationPermissionAndSaveToken } from '@/firebase/client';
+import { requestNotificationPermission } from '@/firebase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -37,6 +37,7 @@ type FormData = z.infer<typeof formSchema>;
 export function OnboardingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
   const { userProfile, setUserProfile } = useUserStore();
   const { user } = useAuth();
   const router = useRouter();
@@ -49,20 +50,13 @@ export function OnboardingForm() {
     { id: '02', name: t('onboarding.step2-name'), fields: ['weight', 'height', 'goalWeight'] },
     { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
     { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
-    { id: '05', name: t('onboarding.step5-name'), fields: [] },
-    { id: '06', name: t('onboarding.step6-name'), fields: [] },
+    { id: '05', name: t('onboarding.step6-name'), fields: [] },
   ];
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
-
-  const handleRequestPermission = async () => {
-    if (!user) return;
-    await requestNotificationPermissionAndSaveToken(user, t);
-    next();
-  }
   
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);
@@ -82,11 +76,21 @@ export function OnboardingForm() {
     const heightInMeters = data.height / 100;
     const bmi = parseFloat((data.weight / (heightInMeters * heightInMeters)).toFixed(1));
 
-    // Basic macro calculation (40% Carbs, 30% Protein, 30% Fat)
     const dailyProteinGoal = Math.round((dailyCalories * 0.30) / 4);
     const dailyFatGoal = Math.round((dailyCalories * 0.30) / 9);
     const dailyCarbsGoal = Math.round((dailyCalories * 0.40) / 4);
 
+    let fcmToken: string | null = null;
+    if (Notification.permission === 'default' && !permissionRequested) {
+        const confirmed = confirm(t('onboarding.notifications-desc'));
+        if (confirmed) {
+            fcmToken = await requestNotificationPermission();
+            setPermissionRequested(true);
+        }
+    } else if (Notification.permission === 'granted') {
+        fcmToken = await requestNotificationPermission();
+    }
+    
     const fullProfile: UserProfile = {
       ...data,
       dailyCalorieGoal: dailyCalories,
@@ -95,7 +99,7 @@ export function OnboardingForm() {
       dailyCarbsGoal,
       bmi,
       photoUrl: null,
-      pushSubscription: null
+      pushSubscription: fcmToken,
     }
     
     await setUserProfile(fullProfile);
@@ -110,7 +114,7 @@ export function OnboardingForm() {
       if (!output) return;
     }
 
-    if (currentStep === STEPS.length - 3) { 
+    if (currentStep === STEPS.length - 2) { 
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -222,25 +226,7 @@ export function OnboardingForm() {
                 )} />
             )}
 
-            {currentStep === 4 && (
-                <div className="text-center space-y-4">
-                    <h2 className="text-2xl font-bold">{t('onboarding.notifications-title')}</h2>
-                    <p className="text-muted-foreground">{t('onboarding.notifications-desc')}</p>
-                    <div className="flex justify-center gap-4 pt-4">
-                        <Button type="button" size="lg" onClick={handleRequestPermission}>
-                            <Bell className="mr-2 h-5 w-5" />
-                            {t('onboarding.notifications-enable-btn')}
-                        </Button>
-                         <Button type="button" size="lg" variant="ghost" onClick={() => next()}>
-                            <BellOff className="mr-2 h-5 w-5" />
-                            {t('onboarding.notifications-skip-btn')}
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-
-            {currentStep === 5 && userProfile && (
+            {currentStep === 4 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
                     <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
@@ -265,7 +251,7 @@ export function OnboardingForm() {
                     {t('onboarding.finish-btn')}
                 </Button>
             )}
-            {currentStep === 5 && (
+            {currentStep === 4 && (
                 <Button type="button" onClick={() => {
                     toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
                     router.push(`/${locale}/dashboard`);

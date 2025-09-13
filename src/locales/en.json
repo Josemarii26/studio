@@ -55,7 +55,7 @@
     "supplements-protein": "Protein Powder",
     "supplements-both": "Both Creatine and Protein Powder",
     "notifications-title": "Enable Notifications?",
-    "notifications-desc": "We can send you a welcome message and occasional reminders to help you stay on track with your goals.",
+    "notifications-desc": "We can send you a welcome message and occasional reminders to help you stay on track with your goals. Would you like to enable them?",
     "notifications-enable-btn": "Enable",
     "notifications-skip-btn": "Skip",
     "summary-title": "Your Personalized Plan",
@@ -64,7 +64,7 @@
     "calorie-goal-label": "Daily Calorie Goal",
     "next-btn": "Next Step",
     "back-btn": "Back",
-    "finish-btn": "Calculate & Continue",
+    "finish-btn": "Calculate & Finish",
     "dashboard-btn": "Go to Dashboard",
     "toast-complete": "Onboarding Complete!",
     "toast-complete-desc": "Redirecting to your dashboard."

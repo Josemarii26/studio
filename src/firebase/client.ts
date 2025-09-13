@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -6,7 +5,6 @@ import { getAuth, GoogleAuthProvider, FacebookAuthProvider, type User } from 'fi
 import { getFirestore } from 'firebase/firestore';
 import { getMessaging, getToken } from 'firebase/messaging';
 import { firebaseConfig } from './config';
-import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 import { toast } from '@/hooks/use-toast';
 
 
@@ -19,36 +17,26 @@ const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
 /**
- * Encapsulates the entire process of requesting notification permission,
- * getting the FCM token, and saving it to the backend. This version ensures
- * the service worker is ready before attempting to get a token.
- * @param user The authenticated Firebase user object.
- * @param t The translation function from i18n.
+ * Encapsulates the entire process of requesting notification permission and getting the FCM token.
+ * This version uses the robust navigator.serviceWorker.ready pattern.
+ * @returns The FCM token as a string, or null if permission is denied or an error occurs.
  */
-export const requestNotificationPermissionAndSaveToken = async (user: User, t: (key: string) => string) => {
+export const requestNotificationPermission = async (): Promise<string | null> => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-        toast({
-            variant: 'destructive',
-            title: t('notifications.permission-unsupported-title'),
-            description: t('notifications.permission-unsupported-desc'),
-        });
-        return;
+        console.error("Browser does not support notifications.");
+        return null;
     }
 
     try {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
             console.log('Unable to get permission to notify.');
-            toast({
-                variant: 'destructive',
-                title: t('notifications.permission-denied-title'),
-            });
-            return;
+            return null;
         }
         
         console.log('Notification permission granted.');
 
-        // Explicitly register the service worker
+        // Manually register the service worker
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         console.log('Service worker registered successfully:', registration);
 
@@ -58,13 +46,8 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
         
         const messaging = getMessaging(app);
         
-        // Hardcoded VAPID key to eliminate environment variable issues.
+        // This is the VAPID key from your Firebase project settings
         const vapidKey = 'BDaRbWuq2j_Wu-wD-EQTQTxp9cCnWv4KMlT2aMuorn_izFA2SmW2iXLYlQDgt4Uu6R-jvTmZxq0UivAl-r534K8';
-
-        if (!vapidKey) {
-            console.error("VAPID public key is not defined. Cannot get FCM token.");
-            return;
-        }
 
         // Now that the service worker is ready, get the token.
         const fcmToken = await getToken(messaging, {
@@ -74,25 +57,11 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
 
         if (fcmToken) {
             console.log('FCM Token retrieved:', fcmToken);
-            // CRITICAL FIX: Save the token to the backend
-            const result = await saveNotificationSubscription({ userId: user.uid, subscription: fcmToken });
-            if (result.success) {
-                toast({
-                    title: t('notifications.permission-granted-title')
-                });
-            } else {
-                 toast({
-                    variant: 'destructive',
-                    title: "Failed to save token",
-                    description: result.error
-                });
-            }
+            toast({ title: "Notifications enabled!" });
+            return fcmToken;
         } else {
             console.log('No registration token available. Request permission to generate one.');
-            toast({
-                variant: 'destructive',
-                title: t('notifications.permission-denied-title'),
-            });
+            return null;
         }
     } catch (err) {
         console.error('An error occurred while retrieving token.', err);
@@ -108,6 +77,7 @@ export const requestNotificationPermissionAndSaveToken = async (user: User, t: (
                 title: 'An unknown error occurred while setting up notifications.'
              });
         }
+        return null;
     }
 };
 
