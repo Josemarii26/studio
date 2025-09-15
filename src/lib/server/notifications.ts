@@ -28,7 +28,7 @@ export async function sendNotification(
     },
     webpush: {
       notification: {
-        icon: 'https://dietlog.ai/favicon.ico',
+        icon: 'https://dietlog.ai/leaf.png', // <-- Improvement: Use consistent icon
       },
       fcm_options: {
         link: data || '/', 

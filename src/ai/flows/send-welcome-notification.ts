@@ -51,6 +51,7 @@ export const sendWelcomeNotificationFlow = ai.defineFlow(
         pushSubscription: userProfile.pushSubscription,
         title: t('notifications.welcome-title'),
         body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
+        data: '/dashboard', // <-- Improvement: Link directly to the dashboard
       });
 
       console.log('[Flow] Welcome notification sent successfully.');
