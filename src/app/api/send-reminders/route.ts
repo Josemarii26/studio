@@ -2,8 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getAppInstance } from '@/firebase/server'; // Use our robust, centralized initializer
 import { getFirestore, collection, getDocs, query, where } from 'firebase-admin/firestore';
-// Correctly import the action, not a flow
-import { sendNotification } from '@/ai/actions/send-notification'; 
+import { sendNotification } from '@/ai/flows/send-notification'; 
 
 // The Firebase Admin SDK is initialized once in @/firebase/server.ts
 const app = getAppInstance();
