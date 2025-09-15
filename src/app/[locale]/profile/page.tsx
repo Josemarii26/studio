@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill, Flame, Trash2, Bell } from 'lucide-react';
+import { ArrowLeft, Target, TrendingUp, Award, Zap, Pill, Flame, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { sendWelcomeNotification } from '@/ai/flows/send-welcome-notification';
-import { sendTestNotification } from '@/ai/flows/send-test-notification';
+
 
 function ProfileHeader() {
   const t = useI18n();
@@ -112,7 +112,7 @@ function DeleteAccountDialog({ userId, onAccountDeleted }: { userId: string, onA
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                 <Button variant="destructive" className="w-full">
+                 <Button variant="destructive" className="w-full mt-8">
                     <Trash2 className="mr-2" />
                     {t('profile.delete-btn')}
                 </Button>
@@ -145,8 +145,6 @@ export default function ProfilePage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const t = useI18n();
   const locale = useCurrentLocale();
-  const [isSendingTest, setIsSendingTest] = useState(false);
-
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -278,35 +276,6 @@ export default function ProfilePage() {
     await signOut();
     router.push(`/${locale}/login?account_deleted=true`);
   };
-  
-  const handleSendTestNotification = async () => {
-    if (!userProfile?.pushSubscription) {
-      toast({
-        variant: 'destructive',
-        title: 'No push subscription',
-        description: 'Could not send a test notification.',
-      });
-      return;
-    }
-    setIsSendingTest(true);
-    try {
-      const response = await sendTestNotification({ subscription: userProfile.pushSubscription });
-      if (response.success) {
-        toast({ title: 'Test notification sent!', description: 'You should receive it shortly.' });
-      } else {
-        throw new Error(response.message);
-      }
-    } catch (error: any) {
-      console.error("Error sending test notification:", error);
-      toast({
-        variant: 'destructive',
-        title: 'Failed to send test notification',
-        description: error.message || 'An unknown error occurred.',
-      });
-    } finally {
-      setIsSendingTest(false);
-    }
-  }
 
 
   if (authLoading || !profileLoaded || !userProfile || isLoadingData) {
@@ -417,7 +386,7 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle>{t('profile.goals-title')}</CardTitle>
                  <CardDescription>{t('profile.goals-desc')}</CardDescription>
-              </CardHeader>
+              </Header>
               <CardContent className="space-y-4">
                  <div className="space-y-2">
                     <div className="flex justify-between text-lg font-medium">
@@ -449,11 +418,7 @@ export default function ProfilePage() {
                 <CardTitle>{t('profile.account-management-title')}</CardTitle>
                 <CardDescription>{t('profile.account-management-desc')}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <Button variant="outline" onClick={handleSendTestNotification} disabled={isSendingTest} className="w-full">
-                    <Bell className="mr-2" />
-                    {isSendingTest ? 'Sending...' : 'Send Test Notification'}
-                </Button>
+            <CardContent>
                 {user && <DeleteAccountDialog userId={user.uid} onAccountDeleted={handleAccountDeleted} />}
             </CardContent>
           </Card>
