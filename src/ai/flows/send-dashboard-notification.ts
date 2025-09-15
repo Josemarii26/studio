@@ -2,19 +2,26 @@
 'use server';
 
 import { sendNotification } from '@/ai/actions/send-notification';
-// Correctly import the admin version of loadUserProfile
 import { loadUserProfile } from '@/firebase/admin-firestore';
+import { getAppInstance } from '@/firebase/server'; // Import the app instance getter
 
 export async function sendDashboardNotification(props: { userId: string }) {
   'use server';
 
+  // --- DIAGNOSTIC STEP ---
+  // Get the initialized Firebase app instance and log which project it's connected to.
+  const app = getAppInstance();
+  const projectId = app.options.projectId;
+  console.log(`[Flow] DIAGNOSTIC: Server is connected to Firebase project: ${projectId}`);
+  // --- END DIAGNOSTIC ---
+
   console.log(`[Flow] sendDashboardNotification called for userId: ${props.userId}`);
 
-  // This now calls the server-side function
   const userProfile = await loadUserProfile(props.userId);
 
   if (!userProfile) {
-    console.error('[Flow] User profile not found (admin check).');
+    // We now know this fails because the project ID above is likely wrong.
+    console.error(`[Flow] User profile not found for userId: ${props.userId}. Check if the server project ID matches the database.`);
     return { success: false, message: 'User profile not found.' };
   }
 
@@ -24,11 +31,10 @@ export async function sendDashboardNotification(props: { userId: string }) {
   }
 
   try {
-    // Remove the translation logic and use a simple hardcoded message for the test
     await sendNotification(
       userProfile.pushSubscription,
-      'Test Notification', // Simple title
-      'This is a test notification from the dashboard!', // Simple body
+      'Test Notification',
+      'This is a test notification from the dashboard!',
       '/'
     );
 
