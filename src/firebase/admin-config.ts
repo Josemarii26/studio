@@ -1,11 +1,13 @@
 
-// This configuration is for the Firebase Admin SDK (runs on the server)
-// It is kept separate from the client config for security.
+// This configuration is used for the Firebase Admin SDK (server-side).
 export const firebaseAdminConfig = {
-    credential: {
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : '',
-    },
-    databaseURL: `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebaseio.com`,
+  // For server-side code, we read from a variable WITHOUT the NEXT_PUBLIC_ prefix.
+  // This is the core fix for the "undefined" project ID issue.
+  projectId: process.env.FIREBASE_PROJECT_ID, 
+  
+  // These remain the same.
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  
+  // The private key requires special handling to replace the escaped newline characters.
+  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
 };
