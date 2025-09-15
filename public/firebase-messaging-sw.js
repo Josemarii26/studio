@@ -1,18 +1,21 @@
-//Scripts for firebase and firebase messaging
+
+// Scripts for firebase and firebase messaging
 importScripts("https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js");
 
-// Initialize the Firebase app in the service worker by passing in the messagingSenderId.
+// **THIS CONFIGURATION MUST BE HARDCODED**
+// The service worker runs in a separate context from the web app and
+// does not have access to the `process.env` variables.
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "673788699862",
-    appId: "YOUR_APP_ID",
-    measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyBvGccscK_xTE4Voa54V2XUglmL82bvy2c",
+  authDomain: "nutritrackai-tfxng.firebaseapp.com",
+  projectId: "nutritrackai-tfxng",
+  storageBucket: "nutritrackai-tfxng.firebasestorage.app",
+  messagingSenderId: "673788699862",
+  appId: "1:673788699862:web:6f6fa002571bc29dd95577"
 };
 
+// Initialize the Firebase app in the service worker
 firebase.initializeApp(firebaseConfig);
 
 // Retrieve an instance of Firebase Messaging so that it can handle background messages.
@@ -21,10 +24,11 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('Received background message ', payload);
 
+  // Customize notification here
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/icon-192x192.png'
+    icon: '/leaf.png'
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
