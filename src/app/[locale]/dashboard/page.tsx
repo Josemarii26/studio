@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { sendDashboardNotification } from '@/ai/flows/send-dashboard-notification';
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { user, loading: authLoading } = useAuth();
@@ -122,6 +123,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
+  const [notificationSent, setNotificationSent] = useState(false);
   const t = useI18n();
 
   // Authentication and onboarding checks. This is the new, more robust logic.
@@ -153,6 +155,29 @@ export default function DashboardPage() {
       setShowWalkthrough(true);
     }
   }, [user, userProfile, authLoading, profileLoaded, router, locale]);
+
+  // Send a test notification on dashboard load
+  useEffect(() => {
+    if (user && userProfile && !notificationSent) {
+      console.log('[Dashboard] Attempting to send dashboard test notification...');
+      setNotificationSent(true); // Prevent re-sends
+
+      sendDashboardNotification({ userId: user.uid })
+        .then(response => {
+          if (response.success) {
+            console.log('[Dashboard] Test notification flow triggered successfully.');
+            toast({ title: 'Test Notification Sent', description: 'You should receive it shortly.' });
+          } else {
+            console.error('[Dashboard] Failed to trigger test notification flow:', response.message);
+            toast({ variant: 'destructive', title: 'Notification Failed', description: response.message });
+          }
+        })
+        .catch(err => {
+          console.error('[Dashboard] Error calling sendDashboardNotification flow:', err);
+          toast({ variant: 'destructive', title: 'Notification Error', description: 'An unexpected error occurred.' });
+        });
+    }
+  }, [user, userProfile, notificationSent, toast]);
 
 
   const handleWalkthroughComplete = () => {
