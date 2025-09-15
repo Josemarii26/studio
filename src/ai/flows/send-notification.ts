@@ -1,46 +1,51 @@
 
 'use server';
-/**
- * @fileOverview A flow for sending web push notifications via the Firebase Admin SDK.
- *
- * - sendNotification - A function that handles sending a push notification.
- * - SendNotificationInput - The input type for the sendNotification function.
- */
+
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getMessaging } from 'firebase-admin/messaging';
-import { getAppInstance } from '@/firebase/server'; // Correctly get the initialized app instance
+import { getAppInstance } from '@/firebase/server';
 
-// The Firebase Admin SDK is now initialized centrally in src/firebase/server.ts.
-// We no longer need any initialization logic in this file.
-
+// Input schema for the notification flow
 export const SendNotificationInput = z.object({
-  subscription: z.string().describe('The push subscription object as a JSON string'),
+  pushSubscription: z.any().describe('The user\'s push subscription object, which must contain a \'token\' field.'),
   title: z.string().describe('The title of the notification'),
   body: z.string().describe('The body text of the notification'),
   data: z.optional(z.string()).describe('A URL to open when the notification is clicked'),
 });
 
+// --- AI Flow (optional, for structured AI operations) ---
 export const sendNotificationFlow = ai.flow(
   {
     name: 'sendNotificationFlow',
     inputSchema: SendNotificationInput,
     outputSchema: z.void(),
   },
-  async ({ subscription, title, body, data }) => {
-    await sendNotification(subscription, title, body, data);
+  async ({ pushSubscription, title, body, data }) => {
+    await sendNotification(pushSubscription, title, body, data);
   }
 );
 
+// --- Core Server-Side Send Function ---
 export async function sendNotification(
-  subscription: any, // Can be a string or an object
+  pushSubscription: any, // The user profile\'s pushSubscription object
   title: string,
   body: string,
   data?: string
 ) {
-  getAppInstance(); // Ensures the app is initialized before proceeding
+  // Ensure Firebase Admin is initialized
+  getAppInstance();
 
-  let parsedSubscription = typeof subscription === 'string' ? JSON.parse(subscription) : subscription;
+  // --- CORE FIX ---
+  // Directly extract the token from the pushSubscription object.
+  // This was the source of the "Exactly one of topic, token or condition is required" error.
+  const token = pushSubscription?.token;
+
+  if (!token) {
+    console.error('Error: Push subscription object is missing the \'token\' field.', pushSubscription);
+    throw new Error('Push subscription is invalid and is missing a token.');
+  }
+  // --- END FIX ---
 
   const message = {
     notification: {
@@ -49,20 +54,20 @@ export async function sendNotification(
     },
     webpush: {
       notification: {
-        icon: 'https://dietlog.ai/favicon.ico',
+        icon: 'https://dietlog.ai/favicon.ico', // Using a publicly available icon
       },
       fcm_options: {
-        link: data || '/',
+        link: data || '/', // Link to open when the notification is clicked
       },
     },
-    token: parsedSubscription.token,
+    token: token, // Use the extracted token here
   };
 
   try {
     await getMessaging().send(message);
-    console.log('Successfully sent notification');
+    console.log(`Successfully sent notification to token: ${token}`);
   } catch (error) {
-    console.error('Error sending notification:', error);
-    throw new Error('Failed to send notification');
+    console.error('Firebase Admin SDK error sending notification:', error);
+    throw new Error('Failed to send push notification via Admin SDK.');
   }
 }
