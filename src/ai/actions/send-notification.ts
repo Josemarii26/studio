@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getApp } from '@/firebase/server';
+import { getAppInstance } from '@/firebase/server';
 import { getMessaging } from 'firebase-admin/messaging';
 
 /**
@@ -19,7 +19,7 @@ export async function sendNotification(
 ): Promise<void> {
 
   try {
-    const app = getApp();
+    const app = getAppInstance();
     const messaging = getMessaging(app);
 
     const message = {
