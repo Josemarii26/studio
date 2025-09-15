@@ -9,14 +9,14 @@ import { loadUserProfile, saveUserProfile } from '@/firebase/admin-firestore';
 import { sendNotificationFlow } from './send-notification';
 import { getI18n } from '@/locales/server';
 
-const SendWelcomeNotificationInputSchema = z.object({
+export const SendWelcomeNotificationInputSchema = z.object({
   userId: z.string().describe('The UID of the user to send the notification to.'),
   locale: z.string().describe('The locale of the user for translation.'),
 });
 export type SendWelcomeNotificationInput = z.infer<typeof SendWelcomeNotificationInputSchema>;
 
 
-const sendWelcomeNotificationFlow = ai.defineFlow(
+export const sendWelcomeNotificationFlow = ai.defineFlow(
   {
     name: 'sendWelcomeNotificationFlow',
     inputSchema: SendWelcomeNotificationInputSchema,
@@ -64,7 +64,3 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
     }
   }
 );
-
-export async function sendWelcomeNotification(input: SendWelcomeNotificationInput): Promise<{ success: boolean; message: string; }> {
-    return await sendWelcomeNotificationFlow(input);
-}

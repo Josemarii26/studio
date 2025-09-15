@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { sendWelcomeNotification } from '@/ai/flows/send-welcome-notification';
+import { sendWelcomeNotificationAction } from '@/app/actions/notification-actions';
 
 
 function ProfileHeader() {
@@ -178,7 +178,7 @@ export default function ProfilePage() {
 
     if (user && profileLoaded && userProfile && userProfile.pushSubscription && !userProfile.welcomeNotificationSent) {
       console.log('[Debug] All conditions met. Attempting to send welcome notification...');
-      sendWelcomeNotification({ userId: user.uid, locale: locale })
+      sendWelcomeNotificationAction({ userId: user.uid, locale: locale })
         .then(response => {
           if (response.success) {
             console.log('Welcome notification sent successfully.');
@@ -189,7 +189,7 @@ export default function ProfilePage() {
           }
         })
         .catch(err => {
-          console.error('Error calling sendWelcomeNotification flow:', err);
+          console.error('Error calling sendWelcomeNotification action:', err);
         });
     }
   }, [user, userProfile, profileLoaded, locale, setUserProfile]);
