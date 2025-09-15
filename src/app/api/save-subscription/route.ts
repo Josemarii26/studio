@@ -1,50 +1,57 @@
 
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, getApps, App } from 'firebase-admin/app';
-import { doc, getFirestore, updateDoc } from 'firebase-admin/firestore';
-import { firebaseAdminConfig } from '@/firebase/admin-config';
+import { getAppInstance } from '@/firebase/server'; // Use our robust, centralized initializer
+import { getFirestore, doc, updateDoc } from 'firebase-admin/firestore';
 
-// Initialize Firebase Admin SDK only if all credentials are provided
-if (
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
-    process.env.FIREBASE_CLIENT_EMAIL &&
-    process.env.FIREBASE_PRIVATE_KEY
-) {
-    if (!getApps().length) {
-        initializeApp(firebaseAdminConfig);
-    }
-}
+// The Firebase Admin SDK is initialized once in @/firebase/server.ts
+// We just need to get the instance here.
+const app = getAppInstance();
+const db = getFirestore(app);
 
 export async function POST(request: Request) {
-  // Check if the app is initialized before proceeding
-  if (!getApps().length) {
-    console.error('Firebase Admin SDK is not initialized. Missing credentials.');
-    return new NextResponse('Internal Server Error: Firebase not configured', { status: 500 });
-  }
-
-  const db = getFirestore();
   const authToken = request.headers.get('Authorization')?.split('Bearer ')[1];
+
   if (!authToken) {
-    return new NextResponse('Unauthorized', { status: 401 });
+    return new NextResponse('Unauthorized: No auth token provided', { status: 401 });
   }
 
   try {
-    const decodedToken = await getAuth().verifyIdToken(authToken);
+    // Verify the user's identity using the auth token
+    const decodedToken = await getAuth(app).verifyIdToken(authToken);
     const userId = decodedToken.uid;
+    
+    // Get the push subscription object from the request body
     const subscription = await request.json();
 
-    if (!userId || !subscription) {
-      return new NextResponse('Bad Request: Missing user ID or subscription.', { status: 400 });
+    if (!subscription) {
+      return new NextResponse('Bad Request: Missing subscription data.', { status: 400 });
     }
     
+    // Get a reference to the user's profile document
     const userProfileRef = doc(db, 'userProfiles', userId);
+    
+    // Update the document with the new push subscription
     await updateDoc(userProfileRef, { pushSubscription: subscription });
     
-    return NextResponse.json({ success: true, message: 'Subscription saved.' });
+    console.log(`[API] Successfully saved push subscription for user: ${userId}`);
+    return NextResponse.json({ success: true, message: 'Subscription saved successfully.' });
 
   } catch (error) {
-    console.error('Error verifying auth token or saving subscription:', error);
+    console.error('[API] Error in save-subscription:', error);
+
+    // Handle specific auth errors
+    if (error instanceof Error && 'code' in error) {
+        const firebaseError = error as { code: string; message: string };
+        if (firebaseError.code === 'auth/id-token-expired') {
+            return new NextResponse('Unauthorized: Token expired', { status: 401 });
+        }
+        if (firebaseError.code === 'auth/argument-error') {
+            return new NextResponse('Unauthorized: Invalid token', { status: 401 });
+        }
+    }
+    
+    // Generic server error for other cases
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
