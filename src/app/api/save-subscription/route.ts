@@ -1,11 +1,10 @@
 
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { getAppInstance } from '@/firebase/server'; // Use our robust, centralized initializer
-import { getFirestore, doc, updateDoc } from 'firebase-admin/firestore';
+import { getAppInstance } from '@/firebase/server';
+// Import setDoc instead of updateDoc
+import { getFirestore, doc, setDoc } from 'firebase-admin/firestore';
 
-// The Firebase Admin SDK is initialized once in @/firebase/server.ts
-// We just need to get the instance here.
 const app = getAppInstance();
 const db = getFirestore(app);
 
@@ -17,30 +16,27 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Verify the user's identity using the auth token
     const decodedToken = await getAuth(app).verifyIdToken(authToken);
     const userId = decodedToken.uid;
-    
-    // Get the push subscription object from the request body
     const subscription = await request.json();
 
     if (!subscription) {
       return new NextResponse('Bad Request: Missing subscription data.', { status: 400 });
     }
     
-    // Get a reference to the user's profile document
     const userProfileRef = doc(db, 'userProfiles', userId);
     
-    // Update the document with the new push subscription
-    await updateDoc(userProfileRef, { pushSubscription: subscription });
+    // Use setDoc with { merge: true }.
+    // This will create the document if it doesn't exist, or merge the data if it does.
+    // This is the robust solution to the 'User profile not found' error.
+    await setDoc(userProfileRef, { pushSubscription: subscription }, { merge: true });
     
-    console.log(`[API] Successfully saved push subscription for user: ${userId}`);
+    console.log(`[API] Successfully created/updated profile and saved subscription for user: ${userId}`);
     return NextResponse.json({ success: true, message: 'Subscription saved successfully.' });
 
   } catch (error) {
     console.error('[API] Error in save-subscription:', error);
 
-    // Handle specific auth errors
     if (error instanceof Error && 'code' in error) {
         const firebaseError = error as { code: string; message: string };
         if (firebaseError.code === 'auth/id-token-expired') {
@@ -51,7 +47,6 @@ export async function POST(request: Request) {
         }
     }
     
-    // Generic server error for other cases
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
