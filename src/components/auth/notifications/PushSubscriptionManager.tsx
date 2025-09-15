@@ -11,33 +11,6 @@ import { useI18n } from '@/locales/client';
 import { getMessaging, onMessage } from 'firebase/messaging';
 import { app } from '@/firebase/client';
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-
-async function subscribeToPushNotifications(userId: string): Promise<PushSubscription | null> {
-    if (!VAPID_PUBLIC_KEY) {
-        console.error('VAPID public key is not defined. Cannot subscribe to push notifications.');
-        return null;
-    }
-
-    try {
-        const token = await requestNotificationPermission();
-        if (token) {
-            const subscriptionObject = JSON.parse(JSON.stringify(token)); // Ensure clean object
-            await saveUserProfileFromClient(userId, { 
-                pushSubscription: subscriptionObject 
-            });
-            // This function now primarily returns the token, not the full subscription object
-            // The subscription logic is handled within requestNotificationPermission
-            return {} as PushSubscription; // Return a placeholder
-        }
-    } catch (error) {
-        console.error('Error subscribing to push notifications:', error);
-    }
-
-    return null;
-}
-
-
 /**
  * A component that handles the push notification subscription logic silently in the background
  * and listens for foreground messages.
@@ -56,41 +29,46 @@ export function PushSubscriptionManager() {
         const unsubscribe = onMessage(messaging, (payload) => {
             console.log('Foreground message received.', payload);
             
-            // Show a toast notification
             toast({
                 title: payload.notification?.title || 'New Notification',
                 description: payload.notification?.body || '',
             });
         });
 
-        return () => unsubscribe(); // Unsubscribe when component unmounts
+        return () => unsubscribe();
     }
   }, [toast]);
 
   // Logic for initial subscription
   useEffect(() => {
+    const subscribeAndSaveToken = async (userId: string) => {
+        try {
+            const token = await requestNotificationPermission();
+            if (token) {
+                console.log('[Push Manager] FCM Token received, saving to profile...');
+                // **FIX: Save the token directly as a string**
+                await saveUserProfileFromClient(userId, { 
+                    pushSubscription: token 
+                });
+                console.log('[Push Manager] Successfully subscribed and updated profile.');
+                toast({ title: t('notifications.subscription-success') });
+            } else {
+                console.warn('[Push Manager] Failed to get FCM token.');
+                toast({ title: t('notifications.subscription-failed'), variant: 'destructive' });
+            }
+        } catch (error) {
+            console.error('[Push Manager] Error during subscription process:', error);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     if (user && isLoaded && userProfile && !isProcessing) {
-
+      // Check if permission is granted but we don't have a token saved in our DB
       if ('Notification' in window && Notification.permission === 'granted' && !userProfile.pushSubscription) {
-        console.log('[Push Manager] Permission is granted, but no subscription found. Subscribing...');
+        console.log('[Push Manager] Permission is granted, but no subscription found in DB. Subscribing...');
         setIsProcessing(true);
-
-        subscribeToPushNotifications(user.uid)
-            .then(subscription => {
-                if (subscription) {
-                    console.log('[Push Manager] Successfully subscribed and updated profile.');
-                    toast({ title: t('notifications.subscription-success') });
-                } else {
-                    console.warn('[Push Manager] Failed to subscribe.');
-                    toast({ title: t('notifications.subscription-failed'), variant: 'destructive' });
-                }
-            })
-            .catch(err => {
-                console.error('[Push Manager] Error during subscription:', err);
-            })
-            .finally(() => {
-                setIsProcessing(false);
-            });
+        subscribeAndSaveToken(user.uid);
       }
     }
   }, [user, isLoaded, userProfile, isProcessing, toast, t]);

@@ -5,7 +5,7 @@ import { getMessaging } from 'firebase-admin/messaging';
 import { getAppInstance } from '@/firebase/server';
 
 export async function sendNotification(
-  pushSubscription: any, // Can be a string token or an object with a token property
+  pushSubscription: string, // **FIX: Expect a string token directly**
   title: string,
   body: string,
   data?: string
@@ -13,12 +13,9 @@ export async function sendNotification(
   // Ensure Firebase Admin is initialized
   getAppInstance();
 
-  // The pushSubscription can be the token string or an object containing the token.
-  const token = typeof pushSubscription === 'string' ? pushSubscription : pushSubscription?.token;
-
-  if (!token) {
-    console.error('Error: Push subscription is invalid or missing a token.', pushSubscription);
-    throw new Error('Push subscription is invalid or missing a token.');
+  if (!pushSubscription) {
+    console.error('Error: Push subscription token is missing.');
+    throw new Error('Push subscription token is missing.');
   }
 
   const message = {
@@ -28,20 +25,27 @@ export async function sendNotification(
     },
     webpush: {
       notification: {
-        icon: 'https://dietlog.ai/leaf.png', // <-- Improvement: Use consistent icon
+        icon: 'https://dietlog.ai/leaf.png',
       },
       fcm_options: {
         link: data || '/', 
       },
     },
-    token: token, // Use the extracted token here
+    token: pushSubscription, // **FIX: Use the token directly**
   };
 
   try {
     await getMessaging().send(message);
-    console.log(`Successfully sent notification to token: ${token}`);
+    console.log(`Successfully sent notification to token: ${pushSubscription}`);
   } catch (error) {
     console.error('Firebase Admin SDK error sending notification:', error);
+    // Log more specific details if available
+    if (error instanceof Error && 'code' in error) {
+        const firebaseError = error as { code: string, message: string };
+        if (firebaseError.code === 'messaging/registration-token-not-registered') {
+            console.error('The provided registration token is not valid. It may be expired or deregistered.');
+        }
+    }
     throw new Error('Failed to send push notification via Admin SDK.');
   }
 }

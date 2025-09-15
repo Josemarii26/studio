@@ -8,7 +8,8 @@ import { sendNotification } from '@/lib/server/notifications';
 
 // Input schema for the notification flow
 export const SendNotificationInput = z.object({
-  pushSubscription: z.any().describe('The user\'s push subscription token (string) or object.'),
+  // **FIX: Define the pushSubscription as a string**
+  pushSubscription: z.string().describe("The user's FCM push subscription token."),
   title: z.string().describe('The title of the notification'),
   body: z.string().describe('The body text of the notification'),
   data: z.optional(z.string()).describe('A URL to open when the notification is clicked'),
