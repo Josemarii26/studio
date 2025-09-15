@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for sending web push notifications via the Firebase Admin SDK.
@@ -8,68 +9,60 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getMessaging } from 'firebase-admin/messaging';
-import { initializeApp, getApps } from 'firebase-admin/app';
-import { firebaseAdminConfig } from '@/firebase/admin-config';
+import { getAppInstance } from '@/firebase/server'; // Correctly get the initialized app instance
 
-// Initialize Firebase Admin SDK only if all credentials are provided
-if (
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
-    process.env.FIREBASE_CLIENT_EMAIL &&
-    process.env.FIREBASE_PRIVATE_KEY
-) {
-    if (!getApps().length) {
-        initializeApp(firebaseAdminConfig);
-    }
-}
+// The Firebase Admin SDK is now initialized centrally in src/firebase/server.ts.
+// We no longer need any initialization logic in this file.
 
-const SendNotificationInputSchema = z.object({
-  subscription: z.string().describe('The FCM registration token for the target device.'),
-  title: z.string().describe('The title of the notification.'),
-  body: z.string().describe('The body text of the notification.'),
-  icon: z.string().optional().describe('The icon URL for the notification.'),
+export const SendNotificationInput = z.object({
+  subscription: z.string().describe('The push subscription object as a JSON string'),
+  title: z.string().describe('The title of the notification'),
+  body: z.string().describe('The body text of the notification'),
+  data: z.optional(z.string()).describe('A URL to open when the notification is clicked'),
 });
-export type SendNotificationInput = z.infer<typeof SendNotificationInputSchema>;
 
-export const sendNotificationFlow = ai.defineFlow(
+export const sendNotificationFlow = ai.flow(
   {
     name: 'sendNotificationFlow',
-    inputSchema: SendNotificationInputSchema,
-    outputSchema: z.boolean(),
+    inputSchema: SendNotificationInput,
+    outputSchema: z.void(),
   },
-  async ({ subscription, title, body, icon }) => {
-    if (!getApps().length) {
-        console.error("Firebase Admin SDK is not initialized. Cannot send notification.");
-        return false;
-    }
-    
-    const message = {
-      token: subscription,
-      notification: {
-        title,
-        body,
-      },
-      webpush: {
-        notification: {
-          icon: icon || '/icon-192x192.png',
-        },
-      },
-    };
-
-    try {
-      await getMessaging().send(message);
-      console.log('Successfully sent push notification to token:', subscription);
-      return true;
-    } catch (error) {
-      console.error('Error sending push notification:', error);
-      // Specific error handling for unregistered tokens
-      if ((error as any).code === 'messaging/registration-token-not-registered') {
-        console.log(`FCM token ${subscription} is no longer valid. Consider removing it.`);
-      }
-      return false;
-    }
+  async ({ subscription, title, body, data }) => {
+    await sendNotification(subscription, title, body, data);
   }
 );
 
-export async function sendNotification(input: SendNotificationInput): Promise<boolean> {
-    return await sendNotificationFlow(input);
+export async function sendNotification(
+  subscription: any, // Can be a string or an object
+  title: string,
+  body: string,
+  data?: string
+) {
+  getAppInstance(); // Ensures the app is initialized before proceeding
+
+  let parsedSubscription = typeof subscription === 'string' ? JSON.parse(subscription) : subscription;
+
+  const message = {
+    notification: {
+      title,
+      body,
+    },
+    webpush: {
+      notification: {
+        icon: 'https://dietlog.ai/favicon.ico',
+      },
+      fcm_options: {
+        link: data || '/',
+      },
+    },
+    token: parsedSubscription.token,
+  };
+
+  try {
+    await getMessaging().send(message);
+    console.log('Successfully sent notification');
+  } catch (error) {
+    console.error('Error sending notification:', error);
+    throw new Error('Failed to send notification');
+  }
 }
