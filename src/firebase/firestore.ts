@@ -21,9 +21,6 @@ type SerializableChatMessage = Omit<ChatMessage, 'timestamp'> & {
  * @returns The UserProfile object or null if not found.
  */
 export const loadUserProfile = async (userId: string): Promise<UserProfile | null> => {
-    if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
-        throw new Error('Missing Firebase Admin credentials. Please set NEXT_PUBLIC_FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables.');
-    }
     try {
         const docRef = doc(db, 'userProfiles', userId);
         const docSnap = await getDoc(docRef);
