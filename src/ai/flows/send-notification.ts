@@ -8,7 +8,7 @@ import { getAppInstance } from '@/firebase/server';
 
 // Input schema for the notification flow
 export const SendNotificationInput = z.object({
-  pushSubscription: z.any().describe('The user\'s push subscription object, which must contain a \'token\' field.'),
+  pushSubscription: z.any().describe('The user\'s push subscription token (string) or object.'),
   title: z.string().describe('The title of the notification'),
   body: z.string().describe('The body text of the notification'),
   data: z.optional(z.string()).describe('A URL to open when the notification is clicked'),
@@ -28,7 +28,7 @@ export const sendNotificationFlow = ai.flow(
 
 // --- Core Server-Side Send Function ---
 export async function sendNotification(
-  pushSubscription: any, // The user profile\'s pushSubscription object
+  pushSubscription: any, // Can be a string token or an object with a token property
   title: string,
   body: string,
   data?: string
@@ -36,16 +36,13 @@ export async function sendNotification(
   // Ensure Firebase Admin is initialized
   getAppInstance();
 
-  // --- CORE FIX ---
-  // Directly extract the token from the pushSubscription object.
-  // This was the source of the "Exactly one of topic, token or condition is required" error.
-  const token = pushSubscription?.token;
+  // The pushSubscription can be the token string or an object containing the token.
+  const token = typeof pushSubscription === 'string' ? pushSubscription : pushSubscription?.token;
 
   if (!token) {
-    console.error('Error: Push subscription object is missing the \'token\' field.', pushSubscription);
-    throw new Error('Push subscription is invalid and is missing a token.');
+    console.error('Error: Push subscription is invalid or missing a token.', pushSubscription);
+    throw new Error('Push subscription is invalid or missing a token.');
   }
-  // --- END FIX ---
 
   const message = {
     notification: {
@@ -54,10 +51,10 @@ export async function sendNotification(
     },
     webpush: {
       notification: {
-        icon: 'https://dietlog.ai/favicon.ico', // Using a publicly available icon
+        icon: 'https://dietlog.ai/favicon.ico',
       },
       fcm_options: {
-        link: data || '/', // Link to open when the notification is clicked
+        link: data || '/', 
       },
     },
     token: token, // Use the extracted token here

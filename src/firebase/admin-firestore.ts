@@ -2,7 +2,7 @@
 'use server';
 
 import { getAppInstance } from './server';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, doc, setDoc } from 'firebase-admin/firestore';
 import type { UserProfile } from '@/lib/types';
 
 // Initialize the Admin Firestore instance
@@ -24,13 +24,29 @@ export const loadUserProfile = async (userId: string): Promise<UserProfile | nul
             return null;
         }
 
-        // The data is directly usable, assuming the structure matches the UserProfile type.
-        // Firestore Admin SDK handles Timestamps differently, but for the profile, it should be fine.
         return docSnap.data() as UserProfile;
 
     } catch (error) {
         console.error("[Admin Firestore] Error loading user profile:", error);
-        // Return null to ensure consistent error handling with the client-side function.
         return null;
+    }
+}
+
+/**
+ * Saves a user's profile to Firestore using the Admin SDK.
+ * Intended for server-side use only.
+ * @param userId The UID of the user.
+ * @param profileData The data to save.
+ * @returns True if successful, false otherwise.
+ */
+export const saveUserProfile = async (userId: string, profileData: Partial<UserProfile>): Promise<boolean> => {
+    try {
+        const docRef = adminDb.collection('userProfiles').doc(userId);
+        await setDoc(docRef, profileData, { merge: true });
+        console.log(`[Admin Firestore] Profile for user ${userId} saved successfully.`);
+        return true;
+    } catch (error) {
+        console.error(`[Admin Firestore] Error saving user profile for ${userId}:`, error);
+        return false;
     }
 }

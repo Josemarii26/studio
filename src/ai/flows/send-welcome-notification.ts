@@ -5,7 +5,7 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { loadUserProfile, saveUserProfile } from '@/firebase/firestore';
+import { loadUserProfile, saveUserProfile } from '@/firebase/admin-firestore';
 import { sendNotificationFlow } from './send-notification';
 import { getI18n } from '@/locales/server';
 
@@ -25,7 +25,6 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
   async ({ userId, locale }) => {
     console.log('[Flow] sendWelcomeNotificationFlow started for user:', userId);
     
-    // There can be a delay in Firestore propagation. Let's wait a moment.
     await new Promise(resolve => setTimeout(resolve, 5000));
     
     const userProfile = await loadUserProfile(userId);
@@ -47,20 +46,21 @@ const sendWelcomeNotificationFlow = ai.defineFlow(
     
     const t = await getI18n(locale as 'en' | 'es');
 
-    const success = await sendNotificationFlow({
-      subscription: userProfile.pushSubscription,
-      title: t('notifications.welcome-title'),
-      body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
-    });
+    try {
+      await sendNotificationFlow({
+        pushSubscription: userProfile.pushSubscription,
+        title: t('notifications.welcome-title'),
+        body: t('notifications.welcome-body', { name: userProfile.name.split(' ')[0] }),
+      });
 
-    if (success) {
       console.log('[Flow] Welcome notification sent successfully.');
-      // Mark that the notification has been sent to prevent duplicates
-      await saveUserProfile(userId, { ...userProfile, welcomeNotificationSent: true });
+      await saveUserProfile(userId, { welcomeNotificationSent: true });
       return { success: true, message: 'Welcome notification sent.' };
-    } else {
-      console.log('[Flow] Failed to send welcome notification via sendNotificationFlow.');
-      return { success: false, message: 'Failed to send welcome notification.' };
+
+    } catch (error) {
+      console.log('[Flow] Failed to send welcome notification.', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: `Failed to send welcome notification: ${errorMessage}` };
     }
   }
 );

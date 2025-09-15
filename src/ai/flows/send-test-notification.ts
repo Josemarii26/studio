@@ -26,18 +26,19 @@ const sendTestNotificationFlow = ai.defineFlow(
       return { success: false, message: 'No push subscription token provided.' };
     }
 
-    const success = await sendNotificationFlow({
-      subscription: subscription,
-      title: "Test Notification",
-      body: "This is a test notification from DietLogAI.",
-    });
+    try {
+      await sendNotificationFlow({
+        pushSubscription: subscription,
+        title: "Test Notification",
+        body: "This is a test notification from DietLogAI.",
+      });
 
-    if (success) {
       console.log('[Flow] Test notification sent successfully.');
       return { success: true, message: 'Test notification sent.' };
-    } else {
-      console.log('[Flow] Failed to send test notification.');
-      return { success: false, message: 'Failed to send test notification.' };
+    } catch (error) {
+      console.log('[Flow] Failed to send test notification.', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, message: `Failed to send test notification: ${errorMessage}` };
     }
   }
 );

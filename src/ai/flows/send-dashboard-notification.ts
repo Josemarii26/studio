@@ -1,7 +1,7 @@
 
 'use server';
 
-import { sendNotification } from '@/ai/actions/send-notification';
+import { sendNotification } from '@/ai/flows/send-notification';
 import { loadUserProfile } from '@/firebase/admin-firestore';
 
 /**
