@@ -1,63 +1,60 @@
 
 import { NextResponse } from 'next/server';
+import { getAppInstance } from '@/firebase/server'; // Use our robust, centralized initializer
 import { getFirestore, collection, getDocs, query, where } from 'firebase-admin/firestore';
-import { initializeApp, getApps } from 'firebase-admin/app';
-import { firebaseAdminConfig } from '@/firebase/admin-config';
-import { sendNotification } from '@/ai/flows/send-notification';
+// Correctly import the action, not a flow
+import { sendNotification } from '@/ai/actions/send-notification'; 
 
-// Initialize Firebase Admin SDK only if all credentials are provided
-if (
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
-    process.env.FIREBASE_CLIENT_EMAIL &&
-    process.env.FIREBASE_PRIVATE_KEY
-) {
-    if (!getApps().length) {
-        initializeApp(firebaseAdminConfig);
-    }
-}
+// The Firebase Admin SDK is initialized once in @/firebase/server.ts
+const app = getAppInstance();
+const db = getFirestore(app);
 
 export async function GET(request: Request) {
-  // Simple cron job security
+  // Simple cron job security (ensure this header is sent by your cron job provider)
   if (request.headers.get('X-Appengine-Cron') !== 'true') {
+     console.warn('[API] send-reminders call rejected due to missing X-Appengine-Cron header.');
      return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // Check if the app is initialized before proceeding
-  if (!getApps().length) {
-    const msg = 'Firebase Admin SDK is not initialized. Missing credentials.';
-    console.error(msg);
-    return new NextResponse(msg, { status: 500 });
-  }
-  
-  const db = getFirestore();
+  console.log('[API] send-reminders job started.');
 
   try {
     const profilesRef = collection(db, 'userProfiles');
+    // Find all users who have a push subscription
     const q = query(profilesRef, where('pushSubscription', '!=', null));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
+      console.log('[API] No users with subscriptions to notify.');
       return NextResponse.json({ success: true, message: 'No users with subscriptions to notify.' });
     }
 
-    const notificationsPromises = querySnapshot.docs.map(doc => {
+    console.log(`[API] Found ${querySnapshot.size} users with subscriptions.`);
+
+    // Create a list of promises for all the notification sending operations
+    const notificationPromises = querySnapshot.docs.map(doc => {
       const userProfile = doc.data();
+
       if (userProfile.pushSubscription) {
-          return sendNotification({
-            subscription: userProfile.pushSubscription,
-            title: 'Your Daily Reminder',
-            body: 'Don\'t forget to log your meals for today!',
-          });
+          // Correctly call the sendNotification action with the right arguments
+          return sendNotification(
+            userProfile.pushSubscription,
+            'Your Daily Reminder', 
+            'Don\'t forget to log your meals for today!',
+            '/' // URL to open on click
+          );
       }
-      return Promise.resolve();
+      return Promise.resolve(); // Resolve for users without a subscription object
     });
 
-    await Promise.all(notificationsPromises);
+    // Wait for all notifications to be sent
+    await Promise.all(notificationPromises);
 
+    console.log(`[API] ${querySnapshot.size} reminders sent successfully.`);
     return NextResponse.json({ success: true, message: `${querySnapshot.size} reminders sent.` });
     
   } catch (error) {
-    console.error('Error sending reminders:', error);
+    console.error('[API] Error in send-reminders job:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
