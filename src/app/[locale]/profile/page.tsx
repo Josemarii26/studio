@@ -386,7 +386,7 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle>{t('profile.goals-title')}</CardTitle>
                  <CardDescription>{t('profile.goals-desc')}</CardDescription>
-              </Header>
+              </CardHeader>
               <CardContent className="space-y-4">
                  <div className="space-y-2">
                     <div className="flex justify-between text-lg font-medium">
