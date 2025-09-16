@@ -24,3 +24,8 @@
     "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
     "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"
   ]
+
+[[redirects]]
+  from = "/__/auth/*"
+  to = "/index.html"
+  status = 200
