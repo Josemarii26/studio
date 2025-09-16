@@ -1,16 +1,2 @@
-# ========================================
-# Firebase Auth handler (Login, SignUp, etc.)
-# ========================================
-/__/auth/*   /index.html   200
-
-# ========================================
-# SPA: enviar cualquier ruta al index.html
-# para que tu frontend maneje la navegación
-# ========================================
-/es/*       /index.html   200
-/en/*       /index.html   200
-
-# ========================================
-# Redirigir la raíz a un idioma por defecto (opcional)
-# ========================================
-/           /index.html   200
+/es/__/auth/*   /es/index.html   200
+/en/__/auth/*   /en/index.html   200
