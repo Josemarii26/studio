@@ -8,7 +8,7 @@ importScripts("https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 // does not have access to the `process.env` variables.
 const firebaseConfig = {
   apiKey: "AIzaSyBvGccscK_xTE4Voa54V2XUglmL82bvy2c",
-  authDomain: "nutritrackai-tfxng.firebaseapp.com",
+  authDomain: "www.dietlog-ai.site",
   projectId: "nutritrackai-tfxng",
   storageBucket: "nutritrackai-tfxng.firebasestorage.app",
   messagingSenderId: "673788699862",
