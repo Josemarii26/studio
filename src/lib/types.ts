@@ -44,7 +44,6 @@ export type UserProfile = {
   dailyCarbsGoal: number;
   bmi: number;
   photoUrl: string | null;
-  pushSubscription: string | null;
   welcomeNotificationSent?: boolean;
 };
 

@@ -14,10 +14,9 @@ import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useRouter } from 'next/navigation';
-import { Loader2, Bell, BellOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
-import { requestNotificationPermission } from '@/firebase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -49,8 +48,7 @@ export function OnboardingForm() {
     { id: '02', name: t('onboarding.step2-name'), fields: ['weight', 'height', 'goalWeight'] },
     { id: '03', name: t('onboarding.step3-name'), fields: ['activityLevel', 'goal'] },
     { id: '04', name: t('onboarding.step4-name'), fields: ['supplementation'] },
-    { id: '05', name: t('onboarding.step5-name'), fields: [] },
-    { id: '06', name: t('onboarding.step6-name'), fields: [] },
+    { id: '05', name: t('onboarding.step6-name'), fields: [] },
   ];
   
   const form = useForm<FormData>({
@@ -95,7 +93,6 @@ export function OnboardingForm() {
       dailyCarbsGoal,
       bmi,
       photoUrl: null,
-      pushSubscription: null, // Always start with null
       welcomeNotificationSent: false,
     }
     
@@ -104,28 +101,6 @@ export function OnboardingForm() {
     setIsSubmitting(false);
     setCurrentStep(prev => prev + 1);
   };
-  
-  const handleEnableNotifications = async () => {
-    if (!user) return;
-    setIsSubmitting(true);
-    try {
-        const token = await requestNotificationPermission();
-        if (token && userProfile) {
-            // Update the user profile with the new token
-            await setUserProfile({ ...userProfile, pushSubscription: token });
-            toast({ title: t('notifications.permission-granted-title') });
-        }
-    } catch(err) {
-        console.error("Error enabling notifications:", err);
-    } finally {
-        setIsSubmitting(false);
-        setCurrentStep(prev => prev + 1); // Move to final step regardless
-    }
-  }
-  
-  const handleSkipNotifications = () => {
-      setCurrentStep(prev => prev + 1);
-  }
 
   const next = async () => {
     const fields = STEPS[currentStep].fields;
@@ -134,7 +109,7 @@ export function OnboardingForm() {
       if (!output) return;
     }
 
-    if (currentStep === STEPS.length - 3) { // On step 4, just before notifications
+    if (currentStep === STEPS.length - 2) { 
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -245,26 +220,8 @@ export function OnboardingForm() {
                     </FormItem>
                 )} />
             )}
-            
-            {currentStep === 4 && (
-                <div className="text-center space-y-4 flex flex-col items-center">
-                    <Bell className="w-16 h-16 text-primary" />
-                    <h2 className="text-2xl font-bold">{t('onboarding.notifications-title')}</h2>
-                    <p className="text-muted-foreground max-w-sm">{t('onboarding.notifications-desc')}</p>
-                     <div className="flex gap-4 pt-4">
-                        <Button type="button" variant="outline" onClick={handleSkipNotifications} disabled={isSubmitting}>
-                           <BellOff className="mr-2" />
-                           {t('onboarding.notifications-skip-btn')}
-                        </Button>
-                        <Button type="button" onClick={handleEnableNotifications} disabled={isSubmitting}>
-                           {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2" />}
-                           {t('onboarding.notifications-enable-btn')}
-                        </Button>
-                    </div>
-                </div>
-            )}
 
-            {currentStep === 5 && userProfile && (
+            {currentStep === 4 && userProfile && (
                 <div className="text-center space-y-4">
                     <h2 className="text-2xl font-bold">{t('onboarding.summary-title')}</h2>
                     <p className="text-muted-foreground">{t('onboarding.summary-subtitle')}</p>
@@ -289,7 +246,7 @@ export function OnboardingForm() {
                     {t('onboarding.finish-btn')}
                 </Button>
             )}
-            {currentStep === 5 && (
+            {currentStep === 4 && (
                 <Button type="button" onClick={() => {
                     toast({ title: t('onboarding.toast-complete'), description: t('onboarding.toast-complete-desc')});
                     router.push(`/${locale}/dashboard`);
