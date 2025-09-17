@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A nutritional chat analysis AI agent that uses structured output.
@@ -78,16 +77,7 @@ const nutritionalChatAnalysisFlow = ai.defineFlow(
     outputSchema: NutritionalChatAnalysisOutputSchema,
   },
   async input => {
-    const llmResponse = await ai.generate({
-        prompt: prompt.prompt,
-        input: input,
-        model: 'googleai/gemini-2.5-flash',
-        output: {
-            schema: NutritionalChatAnalysisOutputSchema,
-        },
-    });
-
-    const output = llmResponse.output();
+    const {output} = await prompt(input);
     if (!output) {
       throw new Error("The AI model failed to return a structured response.");
     }
