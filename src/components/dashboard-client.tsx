@@ -158,7 +158,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
                             red: 'rdp-day_red',
                             missed: 'rdp-day_missed',
                             selected: 'text-foreground',
-                            today: 'ring-2 ring-primary/80 animate-pulse-ring'
+                            today: 'ring-2 ring-primary/80'
                         }}
                         locale={dateFnsLocale}
                     />
@@ -192,3 +192,5 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     </div>
   );
 }
+
+    

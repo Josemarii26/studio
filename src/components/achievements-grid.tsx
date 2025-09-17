@@ -164,3 +164,5 @@ export function AchievementsGrid({ dailyData, userProfile }: { dailyData: DayDat
         </div>
     );
 }
+
+    

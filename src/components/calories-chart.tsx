@@ -52,7 +52,7 @@ export function CaloriesChart({ dailyData }: CaloriesChartProps) {
                     <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
                     <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                     <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                    <Bar dataKey="calories" fill="var(--color-calories)" radius={8} animationDuration={1000} />
+                    <Bar dataKey="calories" fill="var(--color-calories)" radius={8} animationDuration={1500} />
                 </BarChart>
             </ResponsiveContainer>
         </ChartContainer>
@@ -60,3 +60,5 @@ export function CaloriesChart({ dailyData }: CaloriesChartProps) {
     </Card>
   );
 }
+
+    

@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
   // Send a test notification on dashboard load
   useEffect(() => {
-    if (user && userProfile && !notificationSent) {
+    if (user && userProfile && userProfile.pushSubscription && !notificationSent) {
       console.log('[Dashboard] Attempting to send dashboard test notification...');
       setNotificationSent(true); // Prevent re-sends
 
@@ -166,15 +166,12 @@ export default function DashboardPage() {
         .then(response => {
           if (response.success) {
             console.log('[Dashboard] Test notification flow triggered successfully.');
-            toast({ title: 'Test Notification Sent', description: 'You should receive it shortly.' });
           } else {
             console.error('[Dashboard] Failed to trigger test notification flow:', response.message);
-            toast({ variant: 'destructive', title: 'Notification Failed', description: response.message });
           }
         })
         .catch(err => {
           console.error('[Dashboard] Error calling sendDashboardNotification flow:', err);
-          toast({ variant: 'destructive', title: 'Notification Error', description: 'An unexpected error occurred.' });
         });
     }
   }, [user, userProfile, notificationSent, toast]);
@@ -313,3 +310,5 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
+
+    

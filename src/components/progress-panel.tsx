@@ -70,8 +70,8 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
         return streak;
     }, [dailyData, isLoaded]);
 
-    const animatedStreak = useAnimatedCounter(greenDaysStreak);
-    const animatedGoal = useAnimatedCounter(userProfile?.dailyCalorieGoal || 0);
+    const animatedStreak = useAnimatedCounter(greenDaysStreak, 1500);
+    const animatedGoal = useAnimatedCounter(userProfile?.dailyCalorieGoal || 0, 1500);
 
     if (!isLoaded || !userProfile) {
         return (
@@ -118,3 +118,5 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
         </div>
     );
 }
+
+    
