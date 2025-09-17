@@ -18,7 +18,6 @@ import { Loader2, Bell, BellOff } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
 import { requestNotificationPermission } from '@/firebase/client';
-import { saveNotificationSubscription } from '@/ai/flows/request-notification-permission';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -61,6 +60,8 @@ export function OnboardingForm() {
   
   const processForm = async (data: FormData) => {
     setIsSubmitting(true);
+    
+    // Calculate BMR
     let bmr;
     if (data.gender === 'male') {
       bmr = 88.362 + (13.397 * data.weight) + (4.799 * data.height) - (5.677 * data.age);
@@ -68,20 +69,25 @@ export function OnboardingForm() {
       bmr = 447.593 + (9.247 * data.weight) + (3.098 * data.height) - (4.330 * data.age);
     }
 
+    // Adjust for activity level
     const activityMultipliers = { sedentary: 1.2, light: 1.375, moderate: 1.55, intense: 1.725 };
     let tdee = bmr * activityMultipliers[data.activityLevel];
 
+    // Adjust for goal
     const goalAdjustments = { lose: -500, maintain: 0, gain: 300 };
     const dailyCalories = Math.round(tdee + goalAdjustments[data.goal]);
     
+    // Calculate BMI
     const heightInMeters = data.height / 100;
     const bmi = parseFloat((data.weight / (heightInMeters * heightInMeters)).toFixed(1));
 
+    // Calculate macros
     const dailyProteinGoal = Math.round((dailyCalories * 0.30) / 4);
     const dailyFatGoal = Math.round((dailyCalories * 0.30) / 9);
     const dailyCarbsGoal = Math.round((dailyCalories * 0.40) / 4);
     
-    const fullProfile: UserProfile = {
+    // Create the initial profile
+    const profile: UserProfile = {
       ...data,
       dailyCalorieGoal: dailyCalories,
       dailyProteinGoal,
@@ -89,10 +95,12 @@ export function OnboardingForm() {
       dailyCarbsGoal,
       bmi,
       photoUrl: null,
-      pushSubscription: null, // Start with null
+      pushSubscription: null, // Always start with null
+      welcomeNotificationSent: false,
     }
     
-    await setUserProfile(fullProfile); // Save profile without token first
+    // Save profile and move to the next step
+    await setUserProfile(profile);
     setIsSubmitting(false);
     setCurrentStep(prev => prev + 1);
   };
@@ -102,16 +110,10 @@ export function OnboardingForm() {
     setIsSubmitting(true);
     try {
         const token = await requestNotificationPermission();
-        if (token) {
-            const result = await saveNotificationSubscription({ userId: user.uid, subscription: token });
-            if (result.success) {
-                toast({ title: t('notifications.permission-granted-title') });
-                 if(userProfile) {
-                    setUserProfile({ ...userProfile, pushSubscription: token });
-                }
-            } else {
-                throw new Error(result.error || 'Failed to save subscription.');
-            }
+        if (token && userProfile) {
+            // Update the user profile with the new token
+            await setUserProfile({ ...userProfile, pushSubscription: token });
+            toast({ title: t('notifications.permission-granted-title') });
         }
     } catch(err) {
         console.error("Error enabling notifications:", err);
@@ -132,7 +134,7 @@ export function OnboardingForm() {
       if (!output) return;
     }
 
-    if (currentStep === STEPS.length - 3) { // On step 4, before notifications
+    if (currentStep === STEPS.length - 3) { // On step 4, just before notifications
         await form.handleSubmit(processForm)();
     } else {
         setCurrentStep(prev => prev + 1);
@@ -243,7 +245,7 @@ export function OnboardingForm() {
                     </FormItem>
                 )} />
             )}
-
+            
             {currentStep === 4 && (
                 <div className="text-center space-y-4 flex flex-col items-center">
                     <Bell className="w-16 h-16 text-primary" />
