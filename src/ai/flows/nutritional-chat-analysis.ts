@@ -78,7 +78,16 @@ const nutritionalChatAnalysisFlow = ai.defineFlow(
     outputSchema: NutritionalChatAnalysisOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const llmResponse = await ai.generate({
+        prompt: prompt.prompt,
+        input: input,
+        model: 'googleai/gemini-2.5-flash',
+        output: {
+            schema: NutritionalChatAnalysisOutputSchema,
+        },
+    });
+
+    const output = llmResponse.output();
     if (!output) {
       throw new Error("The AI model failed to return a structured response.");
     }
