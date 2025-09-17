@@ -4,13 +4,35 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import type { DayData } from '@/lib/types';
 import { Flame, TrendingUp, Target, HeartPulse } from 'lucide-react';
 import { isSameDay, subDays, startOfToday } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useUserStore } from '@/hooks/use-user-store';
 import { useI18n } from '@/locales/client';
 
 interface ProgressPanelProps {
     dailyData: DayData[];
 }
+
+const useAnimatedCounter = (endValue: number, duration = 1000) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let startTime: number | null = null;
+        const animate = (currentTime: number) => {
+            if (startTime === null) startTime = currentTime;
+            const progress = currentTime - startTime;
+            const currentCount = Math.min(Math.floor((progress / duration) * endValue), endValue);
+            setCount(currentCount);
+
+            if (progress < duration) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }, [endValue, duration]);
+
+    return count;
+};
 
 export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     const { userProfile, isLoaded } = useUserStore();
@@ -48,6 +70,9 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
         return streak;
     }, [dailyData, isLoaded]);
 
+    const animatedStreak = useAnimatedCounter(greenDaysStreak);
+    const animatedGoal = useAnimatedCounter(userProfile?.dailyCalorieGoal || 0);
+
     if (!isLoaded || !userProfile) {
         return (
              <div className="grid gap-4 grid-cols-1">
@@ -59,12 +84,12 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
     }
 
     return (
-        <div className="grid gap-6 grid-cols-1 animate-fade-in-up">
+        <div className="grid gap-6 grid-cols-1 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <Card className="p-6 text-center shadow-lg">
                 <CardTitle className="mb-2 text-lg">{t('dashboard.progress-streak-title')}</CardTitle>
                 <div className="flex items-center justify-center gap-2">
                     <Flame className="h-10 w-10 text-destructive" />
-                    <span className="text-5xl font-bold">{greenDaysStreak}</span>
+                    <span className="text-5xl font-bold">{animatedStreak}</span>
                 </div>
                 <CardDescription className="mt-2">{t('dashboard.progress-streak-desc')}</CardDescription>
             </Card>
@@ -73,7 +98,7 @@ export function ProgressPanel({ dailyData }: ProgressPanelProps) {
                 <CardTitle className="mb-2 text-lg">{t('dashboard.progress-goal-title')}</CardTitle>
                 <div className="flex items-center justify-center gap-2">
                     <Target className="h-10 w-10 text-primary" />
-                    <span className="text-4xl font-bold">{userProfile.dailyCalorieGoal.toLocaleString()}</span>
+                    <span className="text-4xl font-bold">{animatedGoal.toLocaleString()}</span>
                 </div>
                 <CardDescription className="mt-2">kcal</CardDescription>
             </Card>

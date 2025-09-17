@@ -143,7 +143,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
-            <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up w-full p-2 sm:p-0">
+            <Card className="shadow-lg bg-background/50 backdrop-blur-xl animate-fade-in-up w-full p-2 sm:p-0" style={{ animationDelay: '0.1s' }}>
                 <CardContent className="p-0 sm:p-6">
                     <Calendar
                         mode="single"
@@ -176,7 +176,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
       </div>
       
       <div className="mx-auto mt-8">
-        <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up">{t('dashboard.achievements-title')}</h2>
+        <h2 className="text-2xl font-bold font-headline mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>{t('dashboard.achievements-title')}</h2>
         <AchievementsGrid dailyData={dailyData} userProfile={userProfile} />
       </div>
 

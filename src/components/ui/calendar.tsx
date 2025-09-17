@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -39,7 +40,7 @@ function Calendar({
         cell: "flex-1 min-w-0 text-center text-sm p-1 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "w-full h-9 p-0 font-normal aria-selected:opacity-100 min-w-0 mx-0.5 my-0.5 rounded-md"
+          "w-full h-9 p-0 font-normal aria-selected:opacity-100 min-w-0 mx-0.5 my-0.5 rounded-md animate-fade-in-up"
         ),
         day_range_end: "day-range-end",
         day_selected:
