@@ -12,7 +12,7 @@ interface ProgressPanelProps {
     dailyData: DayData[];
 }
 
-const useAnimatedCounter = (endValue: number, duration = 1000) => {
+const useAnimatedCounter = (endValue: number, duration = 2000) => {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
