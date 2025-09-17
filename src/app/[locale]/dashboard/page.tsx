@@ -6,7 +6,7 @@ import { NutritionalChat } from '@/components/nutritional-chat';
 import { DietLogAILogo } from '@/components/diet-log-ai-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, LogOut, MailWarning } from 'lucide-react';
+import { MessageSquare, LogOut } from 'lucide-react';
 import { SidebarProvider, Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { DashboardClient } from '@/components/dashboard-client';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,6 @@ import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { sendDashboardNotification } from '@/ai/flows/send-dashboard-notification';
 
 function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { user, loading: authLoading } = useAuth();
@@ -76,32 +75,6 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   );
 }
 
-function EmailVerificationGate() {
-    const { signOut } = useAuth();
-    const router = useRouter();
-    const locale = useCurrentLocale();
-    const t = useI18n();
-
-    const handleSignOut = async () => {
-        await signOut();
-        router.push(`/${locale}/login`);
-    };
-
-    return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4 text-center">
-            <div className="space-y-4">
-                <MailWarning className="mx-auto h-16 w-16 text-primary" />
-                <h1 className="text-3xl font-bold font-headline">{t('auth.verify-title')}</h1>
-                <p className="max-w-md text-muted-foreground">
-                    {t('auth.verify-desc')}
-                </p>
-                <p className="text-sm text-muted-foreground">{t('auth.verify-spam')}</p>
-                <Button onClick={handleSignOut}>{t('auth.verify-logout-btn')}</Button>
-            </div>
-        </div>
-    )
-}
-
 function getDayStatus(totals: DayData['totals'], userProfile: UserProfile): 'green' | 'yellow' | 'red' {
     let status: 'green' | 'yellow' | 'red' = 'green';
     const calorieDiff = Math.abs(totals.calories - userProfile.dailyCalorieGoal);
@@ -123,7 +96,6 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
-  const [notificationSent, setNotificationSent] = useState(false);
   const t = useI18n();
 
   // Authentication and onboarding checks. This is the new, more robust logic.
@@ -135,10 +107,6 @@ export default function DashboardPage() {
     if (!user) {
       router.push(`/${locale}/login`);
       return;
-    }
-
-    if (!user.emailVerified) {
-      return; // Do nothing, the EmailVerificationGate will be shown
     }
     
     // At this point, user is logged in and email is verified.
@@ -156,27 +124,6 @@ export default function DashboardPage() {
     }
   }, [user, userProfile, authLoading, profileLoaded, router, locale]);
 
-  // Send a test notification on dashboard load
-  useEffect(() => {
-    if (user && userProfile && userProfile.pushSubscription && !notificationSent) {
-      console.log('[Dashboard] Attempting to send dashboard test notification...');
-      setNotificationSent(true); // Prevent re-sends
-
-      sendDashboardNotification({ userId: user.uid })
-        .then(response => {
-          if (response.success) {
-            console.log('[Dashboard] Test notification flow triggered successfully.');
-          } else {
-            console.error('[Dashboard] Failed to trigger test notification flow:', response.message);
-          }
-        })
-        .catch(err => {
-          console.error('[Dashboard] Error calling sendDashboardNotification flow:', err);
-        });
-    }
-  }, [user, userProfile, notificationSent, toast]);
-
-
   const handleWalkthroughComplete = () => {
     if (user) {
         const walkthroughKey = `walkthroughCompleted-${user.uid}`;
@@ -189,7 +136,7 @@ export default function DashboardPage() {
   // Load data from Firestore when the component mounts or user changes
   useEffect(() => {
     async function loadData() {
-      if (user && user.emailVerified && userProfile) {
+      if (user && userProfile) {
         setIsLoadingData(true);
         const data = await loadDailyDataForUser(user.uid);
         setDailyData(data);
@@ -204,7 +151,7 @@ export default function DashboardPage() {
   
   // Save data to Firestore whenever it changes
   useEffect(() => {
-    if (user && user.emailVerified && !isLoadingData) {
+    if (user && !isLoadingData) {
       saveDailyDataForUser(user.uid, dailyData);
     }
   }, [dailyData, user, isLoadingData]);
@@ -259,15 +206,10 @@ export default function DashboardPage() {
   if (authLoading || !profileLoaded) {
     return <DashboardLoader />;
   }
-
-  // If user exists but email is not verified, show the verification gate.
-  if (user && !user.emailVerified) {
-    return <EmailVerificationGate />;
-  }
   
   // If user is logged in, verified, but has no profile, it means they need to onboard.
   // The useEffect above will handle redirection, but we show a loader in the meantime.
-  if (user && user.emailVerified && !userProfile) {
+  if (user && !userProfile) {
     return <DashboardLoader />;
   }
 
@@ -310,5 +252,3 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </main>
   )
 }
-
-    
