@@ -32,7 +32,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { sendWelcomeNotificationAction } from '@/app/actions/notification-actions';
 
 
 function ProfileHeader() {
@@ -165,34 +164,6 @@ export default function ProfilePage() {
     }
     loadData();
   }, [user]);
-
-  // Send a welcome notification once when the profile page is visited and conditions are met
-  useEffect(() => {
-    console.log('[Debug] Checking conditions for welcome notification...');
-    console.log('[Debug] User:', !!user);
-    console.log('[Debug] UserProfile loaded:', profileLoaded);
-    console.log('[Debug] Profile object:', userProfile);
-    console.log('[Debug] Push Subscription in profile:', userProfile?.pushSubscription);
-    console.log('[Debug] Welcome notification sent flag:', userProfile?.welcomeNotificationSent);
-
-
-    if (user && profileLoaded && userProfile && userProfile.pushSubscription && !userProfile.welcomeNotificationSent) {
-      console.log('[Debug] All conditions met. Attempting to send welcome notification...');
-      sendWelcomeNotificationAction({ userId: user.uid, locale: locale })
-        .then(response => {
-          if (response.success) {
-            console.log('Welcome notification sent successfully.');
-            // We update the local state to prevent re-sending in the same session
-            setUserProfile({...userProfile, welcomeNotificationSent: true});
-          } else {
-            console.error('Failed to send welcome notification:', response.message);
-          }
-        })
-        .catch(err => {
-          console.error('Error calling sendWelcomeNotification action:', err);
-        });
-    }
-  }, [user, userProfile, profileLoaded, locale, setUserProfile]);
 
   const performanceStats = useMemo(() => {
     if (!dailyData || dailyData.length === 0) {
