@@ -57,7 +57,7 @@ const prompt = ai.definePrompt({
 
 You MUST identify meals labeled with keywords and place them in the correct field in the output schema.
 - For English, use: "Breakfast", "Lunch", "Dinner", "Snack".
-- For Spanish, use: "Desayuno", "Almuerzo", "Cena", "Merienda".
+- For Spanish, use: "Desayuno", "Desayunar", "Almuerzo", "Almorzar", "Cena", "Cenar", "Merienda", "Merendar".
 
 Your task is to:
 1.  Analyze the user's meal description.

@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import type { ChatMessage, DayData } from '@/lib/types';
@@ -60,21 +59,21 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
 const KeywordChecker = ({ message }: { message: string }) => {
     const t = useI18n();
     const keywords = {
-        'breakfast': 'desayuno',
-        'lunch': 'almuerzo',
-        'dinner': 'cena',
-        'merienda': 'merienda',
+        'breakfast': ['breakfast', 'desayuno', 'desayunar'],
+        'lunch': ['lunch', 'almuerzo', 'almorzar'],
+        'dinner': ['dinner', 'cena', 'cenar'],
+        'merienda': ['merienda', 'merendar']
     };
     const lowerCaseMessage = message.toLowerCase();
 
     return (
         <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-            {Object.entries(keywords).map(([en, es]) => {
-                const isPresent = lowerCaseMessage.includes(en) || lowerCaseMessage.includes(es);
+            {Object.entries(keywords).map(([meal, terms]) => {
+                const isPresent = terms.some(term => lowerCaseMessage.includes(term));
                 return (
-                    <div key={en} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
+                    <div key={meal} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
                         {isPresent ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        <span className="capitalize">{t(`chat.${en}` as any)}</span>
+                        <span className="capitalize">{t(`chat.${meal}` as any)}</span>
                     </div>
                 )
             })}
@@ -160,21 +159,15 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
         return;
     }
 
-    const keywords = ['breakfast', 'lunch', 'dinner', 'merienda', 'desayuno', 'almuerzo', 'cena'];
     const messageContent = values.message.toLowerCase();
-    
-    let keywordsFoundCount = 0;
     const foundKeywords = new Set();
-    
-    if (messageContent.includes('breakfast') || messageContent.includes('desayuno')) foundKeywords.add('breakfast');
-    if (messageContent.includes('lunch') || messageContent.includes('almuerzo')) foundKeywords.add('lunch');
-    if (messageContent.includes('dinner') || messageContent.includes('cena')) foundKeywords.add('dinner');
-    if (messageContent.includes('merienda')) foundKeywords.add('merienda');
 
-    keywordsFoundCount = foundKeywords.size;
+    if (['breakfast', 'desayuno', 'desayunar'].some(k => messageContent.includes(k))) foundKeywords.add('breakfast');
+    if (['lunch', 'almuerzo', 'almorzar'].some(k => messageContent.includes(k))) foundKeywords.add('lunch');
+    if (['dinner', 'cena', 'cenar'].some(k => messageContent.includes(k))) foundKeywords.add('dinner');
+    if (['merienda', 'merendar'].some(k => messageContent.includes(k))) foundKeywords.add('merienda');
 
-
-    if (keywordsFoundCount < 2) {
+    if (foundKeywords.size < 2) {
         toast({
             variant: 'destructive',
             title: t('chat.missing-labels-error'),
