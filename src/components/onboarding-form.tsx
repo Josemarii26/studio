@@ -18,19 +18,22 @@ import { Loader2 } from 'lucide-react';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { useAuth } from '@/hooks/use-auth';
 
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  age: z.coerce.number().min(13, "You must be at least 13.").max(120),
+const formSchema = (t: any) => z.object({
+  name: z.string().min(4, { message: t('onboarding.error-name-min') }),
+  age: z.coerce.number().int({ message: t('onboarding.error-age-integer') }),
   gender: z.enum(['male', 'female', 'other']),
-  weight: z.coerce.number().min(30, "Weight must be at least 30."),
-  height: z.coerce.number().min(100, "Height must be at least 100 cm."),
+  weight: z.coerce.number().min(30, { message: t('onboarding.error-weight-range') }).max(250, { message: t('onboarding.error-weight-range') }).refine((val) => {
+    const decimalPart = val.toString().split('.')[1];
+    return !decimalPart || decimalPart.length <= 2;
+  }, { message: t('onboarding.error-weight-decimal') }),
+  height: z.coerce.number().int({ message: t('onboarding.error-height-integer') }).min(100, { message: t('onboarding.error-height-range') }).max(230, { message: t('onboarding.error-height-range') }),
   goalWeight: z.coerce.number().min(30, "Goal weight must be a positive number."),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'intense']),
   goal: z.enum(['lose', 'maintain', 'gain']),
   supplementation: z.enum(['none', 'creatine', 'protein', 'both']),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<ReturnType<typeof formSchema>>;
 
 
 export function OnboardingForm() {
@@ -52,7 +55,7 @@ export function OnboardingForm() {
   ];
   
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema(t)),
     defaultValues: { name: '', gender: 'female', activityLevel: 'light', goal: 'maintain', supplementation: 'none' },
   });
   

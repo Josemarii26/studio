@@ -67,7 +67,13 @@
     "finish-btn": "Calculate & Finish",
     "dashboard-btn": "Go to Dashboard",
     "toast-complete": "Onboarding Complete!",
-    "toast-complete-desc": "Redirecting to your dashboard."
+    "toast-complete-desc": "Redirecting to your dashboard.",
+    "error-name-min": "Name must be at least 4 characters.",
+    "error-age-integer": "Age must be a whole number.",
+    "error-height-integer": "Height must be a whole number.",
+    "error-height-range": "Height must be between 100 and 230 cm.",
+    "error-weight-decimal": "Weight must be a valid number.",
+    "error-weight-range": "Weight must be between 30 and 250 kg."
   },
   "auth": {
     "login-title": "Welcome Back!",
