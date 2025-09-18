@@ -27,7 +27,7 @@ const formSchema = (t: any) => z.object({
     return !decimalPart || decimalPart.length <= 2;
   }, { message: t('onboarding.error-weight-decimal') }),
   height: z.coerce.number().int({ message: t('onboarding.error-height-integer') }).min(100, { message: t('onboarding.error-height-range') }).max(230, { message: t('onboarding.error-height-range') }),
-  goalWeight: z.coerce.number().min(30, "Goal weight must be a positive number."),
+  goalWeight: z.coerce.number().min(30, { message: t('onboarding.error-goal-weight-range') }).max(250, { message: t('onboarding.error-goal-weight-range') }),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'intense']),
   goal: z.enum(['lose', 'maintain', 'gain']),
   supplementation: z.enum(['none', 'creatine', 'protein', 'both']),

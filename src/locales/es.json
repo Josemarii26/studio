@@ -73,7 +73,8 @@
     "error-height-integer": "La altura debe ser un número entero.",
     "error-height-range": "La altura debe estar entre 100 y 230 cm.",
     "error-weight-decimal": "El peso debe ser un número válido.",
-    "error-weight-range": "El peso debe estar entre 30 y 250 kg."
+    "error-weight-range": "El peso debe estar entre 30 y 250 kg.",
+    "error-goal-weight-range": "El peso objetivo debe estar entre 30 y 250 kg."
   },
   "auth": {
     "login-title": "¡Bienvenido de Nuevo!",
