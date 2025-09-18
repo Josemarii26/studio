@@ -33,6 +33,8 @@ export default function LocaleLayout({
     <html lang={locale} suppressHydrationWarning>
        <head>
           <link rel="manifest" href="/manifest.json" />
+          <link rel="icon" href="/leaf.png" />
+          <link rel="apple-touch-icon" href="/leaf.png" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
