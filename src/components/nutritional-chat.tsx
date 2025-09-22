@@ -16,10 +16,10 @@ import { DietLogAILogo } from './diet-log-ai-logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { format, isSameDay, startOfToday } from 'date-fns';
+import { format, isSameDay, startOfToday, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { loadChatHistory, saveChatHistory } from '@/firebase/firestore';
-import { useI18n } from '@/locales/client';
+import { useI18n, useCurrentLocale } from '@/locales/client';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 
@@ -92,8 +92,24 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const { toast } = useToast();
   const { user } = useAuth();
   const t = useI18n();
-  const locale = useI18n();
+  const currentLocale = useCurrentLocale();
   
+  const loggedDates = dailyData.map(d => d.date.toDateString());
+
+  useEffect(() => {
+    const today = startOfToday();
+    if (!loggedDates.includes(today.toDateString())) {
+        setSelectedDate(today);
+    } else {
+        let lastAvailableDate = subDays(today, 1);
+        while(loggedDates.includes(lastAvailableDate.toDateString())){
+            lastAvailableDate = subDays(lastAvailableDate, 1);
+        }
+        setSelectedDate(lastAvailableDate);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dailyData]);
+
   const hasLogForSelectedDate = dailyData.some(d => d.date && isSameDay(d.date, selectedDate));
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -304,7 +320,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                     <PopoverTrigger asChild>
                         <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP", {locale: locale.locale === 'es' ? es : undefined}) : <span>{t('chat.pick-a-date')}</span>}
+                            {selectedDate ? format(selectedDate, "PPP", {locale: currentLocale === 'es' ? es : undefined}) : <span>{t('chat.pick-a-date')}</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -312,7 +328,10 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                             mode="single"
                             selected={selectedDate}
                             onSelect={(d) => setSelectedDate(d || startOfToday())}
-                            disabled={(date) => date > new Date() || date < new Date("2024-01-01")}
+                            disabled={[(date) => {
+                                const dateString = date.toDateString();
+                                return date > new Date() || date < new Date("2024-01-01") || loggedDates.includes(dateString);
+                            }]}
                             initialFocus
                         />
                     </PopoverContent>
