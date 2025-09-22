@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import type { DayData, UserProfile } from '@/lib/types';
@@ -6,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ProgressPanel } from './progress-panel';
 import { DayDetailModal } from './day-detail-modal';
-import { isSameDay, startOfYesterday, differenceInDays, isToday, startOfToday } from 'date-fns';
+import { parseISO, isSameDay, startOfYesterday, differenceInDays, startOfToday } from 'date-fns';
 import { es as esLocale, enUS as enUSLocale } from 'date-fns/locale';
 import { CaloriesChart } from './calories-chart';
 import { AchievementsGrid } from './achievements-grid';
@@ -15,9 +14,9 @@ import { DashboardLoader } from './dashboard-loader';
 import { useSidebar } from './ui/sidebar';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 
-
 interface DashboardClientProps {
-  dailyData: DayData[];
+  initialDailyData: DayData[];
+  lastAnalysisDate: string | null;
 }
 
 function CalendarLegend() {
@@ -44,15 +43,19 @@ function CalendarLegend() {
     )
 }
 
-export function DashboardClient({ dailyData }: DashboardClientProps) {
+export function DashboardClient({ initialDailyData, lastAnalysisDate }: DashboardClientProps) {
   const { userProfile, isLoaded: isProfileLoaded } = useUserStore();
   const { toggleSidebar } = useSidebar();
+  const [dailyData, setDailyData] = useState(initialDailyData);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
   const t = useI18n();
   const locale = useCurrentLocale();
   const dateFnsLocale = locale === 'es' ? esLocale : enUSLocale;
 
+  useEffect(() => {
+    setDailyData(initialDailyData);
+  }, [initialDailyData]);
 
   const handleDayClick = (day: Date) => {
     const dataForDay = dailyData.find(d => isSameDay(d.date, day));
@@ -71,18 +74,16 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     }
   };
   
-  // When an analysis is complete, select today's data to show the modal
   useEffect(() => {
-    const todayData = dailyData.find(d => isSameDay(d.date, new Date()));
-    if(todayData && Object.keys(todayData.meals).length > 0){
-        // Don't re-open the modal if it was just closed by the user
-        if(!selectedDayData) {
-             setSelectedDayData(todayData);
+    if (lastAnalysisDate) {
+        const updatedDate = parseISO(lastAnalysisDate);
+        const dataForDate = dailyData.find(d => d.date && isSameDay(d.date, updatedDate));
+        if (dataForDate) {
+            setSelectedDayData(dataForDate);
         }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dailyData]);
-
+  }, [lastAnalysisDate, dailyData]);
 
   const modifiers = useMemo(() => {
     const loggedDates = dailyData.map(d => d.date.toDateString());
@@ -112,7 +113,7 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
         yellow: dailyData.filter(d => d.status === 'yellow').map(d => d.date),
         red: dailyData.filter(d => d.status === 'red').map(d => d.date),
         missed: missedDays,
-        today: hasDataForToday ? [] : [today], // Only apply today style if no data
+        today: hasDataForToday ? [] : [today],
         disabled: { after: new Date() },
     }
   }, [dailyData]);
@@ -192,5 +193,3 @@ export function DashboardClient({ dailyData }: DashboardClientProps) {
     </div>
   );
 }
-
-    

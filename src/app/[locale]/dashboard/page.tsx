@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,8 +16,8 @@ import { useRouter } from 'next/navigation';
 import { DashboardLoader } from '@/components/dashboard-loader';
 import { loadDailyDataForUser, saveDailyDataForUser } from '@/firebase/firestore';
 import type { DayData, ChatMessage, UserProfile } from '@/lib/types';
-import { NutritionalChatAnalysisOutput, nutritionalChatAnalysis } from '@/ai/flows/nutritional-chat-analysis';
-import { startOfToday, isSameDay } from 'date-fns';
+import { NutritionalChatAnalysisOutput } from '@/ai/flows/nutritional-chat-analysis';
+import { parseISO, isSameDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { WalkthroughModal } from '@/components/walkthrough-modal';
 import { useI18n, useCurrentLocale } from '@/locales/client';
@@ -93,15 +92,15 @@ export default function DashboardPage() {
   const locale = useCurrentLocale();
   const [dailyData, setDailyData] = useState<DayData[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [lastAnalysisDate, setLastAnalysisDate] = useState<string | null>(null);
   const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const t = useI18n();
 
-  // Authentication and onboarding checks. This is the new, more robust logic.
   useEffect(() => {
     if (authLoading || !profileLoaded) {
-      return; // Wait until auth and profile are loaded
+      return;
     }
 
     if (!user) {
@@ -109,14 +108,11 @@ export default function DashboardPage() {
       return;
     }
     
-    // At this point, user is logged in and email is verified.
-    // Now we check if they have a profile.
     if (!userProfile) {
       router.push(`/${locale}/onboarding`);
       return;
     }
 
-    // If we get here, user is verified and has a profile. Show the walkthrough if needed.
     const walkthroughKey = `walkthroughCompleted-${user.uid}`;
     const completed = localStorage.getItem(walkthroughKey);
     if (!completed) {
@@ -132,8 +128,6 @@ export default function DashboardPage() {
     }
   };
 
-
-  // Load data from Firestore when the component mounts or user changes
   useEffect(() => {
     async function loadData() {
       if (user && userProfile) {
@@ -148,8 +142,6 @@ export default function DashboardPage() {
     loadData();
   }, [user, userProfile, authLoading]);
 
-  
-  // Save data to Firestore whenever it changes
   useEffect(() => {
     if (user && !isLoadingData) {
       saveDailyDataForUser(user.uid, dailyData);
@@ -160,7 +152,7 @@ export default function DashboardPage() {
   const handleAnalysisUpdate = (result: NutritionalChatAnalysisOutput) => {
     if (!userProfile) return;
     
-    if(!result || !result.totals || result.totals.calories === 0) {
+    if(!result || !result.totals || result.totals.calories === 0 || !result.date) {
         toast({
             variant: "destructive",
             title: t('dashboard.toast-analysis-failed'),
@@ -176,9 +168,9 @@ export default function DashboardPage() {
         return;
     }
 
-    const today = startOfToday();
+    const logDate = parseISO(result.date);
     const newDayData: DayData = {
-      date: today,
+      date: logDate,
       meals: result.meals,
       totals: result.totals,
       observations: result.observations,
@@ -188,9 +180,11 @@ export default function DashboardPage() {
     };
     
     setDailyData(prevData => {
-        const otherDays = prevData.filter(d => !isSameDay(d.date, today));
+        const otherDays = prevData.filter(d => !isSameDay(d.date, logDate));
         return [...otherDays, newDayData];
     });
+    
+    setLastAnalysisDate(result.date);
     
     const analysisSummary = `💡 **${t('profile.goals-title')}**\n${result.observations}\n\n**${t('profile.summary-title')}**\n- ${t('profile.goals-calories')}: ${result.totals.calories}\n- ${t('profile.goals-protein')}: ${result.totals.protein}g\n- ${t('profile.goals-fat')}: ${result.totals.fat}g\n- ${t('profile.goals-carbs')}: ${result.totals.carbs}g`;
 
@@ -207,13 +201,10 @@ export default function DashboardPage() {
     return <DashboardLoader />;
   }
   
-  // If user is logged in, verified, but has no profile, it means they need to onboard.
-  // The useEffect above will handle redirection, but we show a loader in the meantime.
   if (user && !userProfile) {
     return <DashboardLoader />;
   }
 
-  // If we reach here, user is fully authenticated and has a profile.
   return (
     <SidebarProvider>
       <WalkthroughModal isOpen={showWalkthrough} onComplete={handleWalkthroughComplete} />
@@ -221,7 +212,7 @@ export default function DashboardPage() {
         <HeaderWithSidebar />
         <div className="flex flex-1">
             <DashboardContent>
-              <DashboardClient dailyData={dailyData} />
+              <DashboardClient initialDailyData={dailyData} lastAnalysisDate={lastAnalysisDate} />
             </DashboardContent>
             <Sidebar side="right" className="border-l">
                 <NutritionalChat 

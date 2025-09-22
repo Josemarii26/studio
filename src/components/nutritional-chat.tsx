@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, Loader, Info, CheckCircle2, XCircle, Copy, Check } from 'lucide-react';
+import { Send, Bot, User, Loader, Info, CheckCircle2, XCircle, Copy, Check, CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,9 +16,12 @@ import { DietLogAILogo } from './diet-log-ai-logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { isSameDay, startOfToday } from 'date-fns';
+import { format, isSameDay, startOfToday } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { loadChatHistory, saveChatHistory } from '@/firebase/firestore';
 import { useI18n } from '@/locales/client';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 const formSchema = z.object({
   message: z.string().min(10, { message: 'Please describe your meals in more detail.' }),
@@ -36,7 +39,6 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
     return (
       <>
         {lines.map((line, lineIndex) => {
-          // Process bold and italics within each line
           const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g).filter(Boolean);
           return (
             <div key={lineIndex}>
@@ -85,13 +87,14 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const t = useI18n();
+  const locale = useI18n();
   
-  const todaysData = dailyData.find(d => d.date && isSameDay(d.date, startOfToday()));
-  const hasSuccessfulLogForToday = todaysData && Object.keys(todaysData.meals).length > 0 && todaysData.totals.calories > 0;
+  const hasLogForSelectedDate = dailyData.some(d => d.date && isSameDay(d.date, selectedDate));
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -106,7 +109,6 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     ]);
   }
 
-  // Load chat history from Firestore on mount
   useEffect(() => {
     async function loadHistory() {
         if (user) {
@@ -124,14 +126,12 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Save chat history to Firestore whenever it changes
   useEffect(() => {
     if (user && !isHistoryLoading && messages.length > 0) {
         saveChatHistory(user.uid, messages);
     }
   }, [messages, user, isHistoryLoading]);
 
-  // Auto-scroll to bottom of chat
   useEffect(() => {
     const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
     if (viewport) {
@@ -150,11 +150,11 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   }
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if(hasSuccessfulLogForToday) {
+    if(hasLogForSelectedDate) {
         toast({
             variant: "destructive",
-            title: t('chat.log-today-error'),
-            description: t('chat.log-today-error-desc'),
+            title: t('chat.log-exists-error'),
+            description: t('chat.log-exists-error-desc'),
         });
         return;
     }
@@ -182,8 +182,11 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     form.reset();
 
     try {
-      const result = await nutritionalChatAnalysis({ mealDescription: values.message });
-      onAnalysisUpdate(result); // The parent now handles adding assistant/system messages
+      const result = await nutritionalChatAnalysis({ 
+        mealDescription: values.message,
+        currentDate: format(selectedDate, 'yyyy-MM-dd')
+       });
+      onAnalysisUpdate(result);
     } catch (error) {
       console.error(error);
       const errorMessage: ChatMessage = { id: String(Date.now() + 1), role: 'system', content: t('chat.server-error'), timestamp: new Date() };
@@ -261,43 +264,60 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
           </ScrollArea>
       </CardContent>
       <CardFooter className="border-t p-4">
-        {hasSuccessfulLogForToday ? (
+        {hasLogForSelectedDate ? (
             <div className="w-full text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg flex items-center gap-2 justify-center">
                 <Info className="h-4 w-4" />
                 {t('chat.already-logged')}
             </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full flex-col gap-2">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex w-full flex-col gap-4">
                <div className="p-2 rounded-md bg-muted/50">
                   <p className="text-xs text-muted-foreground mb-2">{t('chat.keyword-helper')}</p>
                   <KeywordChecker message={messageValue || ''} />
                </div>
-              <div className="flex w-full items-start gap-2">
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          placeholder={t('chat.placeholder')}
-                          className="resize-none"
-                          rows={4}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              form.handleSubmit(handleSubmit)();
-                            }
-                          }}
+               <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder={t('chat.placeholder')}
+                        className="resize-none"
+                        rows={3}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            form.handleSubmit(handleSubmit)();
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex w-full items-center justify-between gap-2">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selectedDate ? format(selectedDate, "PPP", {locale: locale.locale === 'es' ? es : undefined}) : <span>{t('chat.pick-a-date')}</span>}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(d) => setSelectedDate(d || startOfToday())}
+                            disabled={(date) => date > new Date() || date < new Date("2024-01-01")}
+                            initialFocus
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" size="icon" disabled={isLoading || isHistoryLoading}>
+                    </PopoverContent>
+                </Popover>
+                <Button type="submit" size="icon" className='h-10 w-14' disabled={isLoading || isHistoryLoading}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
