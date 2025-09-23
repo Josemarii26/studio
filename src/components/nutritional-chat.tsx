@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import type { ChatMessage, DayData } from '@/lib/types';
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,10 +22,6 @@ import { loadChatHistory, saveChatHistory } from '@/firebase/firestore';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-
-const formSchema = z.object({
-  message: z.string().min(10, { message: 'Please describe your meals in more detail.' }),
-});
 
 interface NutritionalChatProps {
   onAnalysisUpdate: (data: NutritionalChatAnalysisOutput) => void;
@@ -94,8 +90,15 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const { user } = useAuth();
   const t = useI18n();
   const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'es' ? es : enUS;
   
   const loggedDates = dailyData.map(d => d.date.toDateString());
+
+  const formSchema = useMemo(() => z.object({
+    message: z.string().min(10, { message: t('chat.validation-min-length') })
+  }), [t]);
+
+  type FormSchemaType = z.infer<typeof formSchema>;
 
   useEffect(() => {
     const today = startOfToday();
@@ -113,7 +116,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
 
   const hasLogForSelectedDate = dailyData.some(d => d.date && isSameDay(d.date, selectedDate));
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: { message: '' },
   });
@@ -166,7 +169,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     });
   }
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: FormSchemaType) => {
     if(hasLogForSelectedDate) {
         toast({
             variant: "destructive",
@@ -301,6 +304,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                     <FormControl>
                       <Textarea
                         {...field}
+                        autoFocus={false}
                         placeholder={t('chat.placeholder')}
                         className="resize-none"
                         rows={3}
@@ -324,11 +328,12 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                             className={cn("flex-1 justify-start text-left font-normal min-w-0", !selectedDate && "text-muted-foreground")}
                         >
                             <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">{selectedDate ? format(selectedDate, "PP", {locale: currentLocale === 'es' ? es : enUS}) : <span>{t('chat.pick-a-date')}</span>}</span>
+                            <span className="truncate">{selectedDate ? format(selectedDate, "PP", {locale}) : <span>{t('chat.pick-a-date')}</span>}</span>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent onOpenAutoFocus={(e) => e.preventDefault()} className="w-auto p-0">
                         <Calendar
+                            locale={locale}
                             mode="single"
                             selected={selectedDate}
                             onSelect={(d) => {

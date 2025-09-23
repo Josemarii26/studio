@@ -1,6 +1,7 @@
 
 'use client';
 import { format, isToday } from 'date-fns';
+import type { Locale } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DayData, UserProfile, Meal } from '@/lib/types';
@@ -18,6 +19,7 @@ interface DayDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onGoToChat: () => void;
+  locale: Locale;
 }
 
 const mealIcons: { [key: string]: ReactNode } = {
@@ -30,7 +32,7 @@ const mealIcons: { [key: string]: ReactNode } = {
 const MEAL_ORDER: (keyof DayData['meals'])[] = ['breakfast', 'lunch', 'merienda', 'dinner'];
 
 
-export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToChat }: DayDetailModalProps) {
+export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToChat, locale }: DayDetailModalProps) {
   const { date, meals, totals, observations, creatineTaken, proteinTaken } = dayData;
   const t = useI18n();
 
@@ -54,7 +56,7 @@ export function DayDetailModal({ dayData, userProfile, isOpen, onClose, onGoToCh
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('day-modal.title', {date: format(date, 'MMMM d, yyyy')})}</DialogTitle>
+          <DialogTitle>{t('day-modal.title', {date: format(date, 'MMMM d, yyyy', { locale })})}</DialogTitle>
           <DialogDescription>{observations}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4 md:grid-cols-5">

@@ -232,7 +232,9 @@
     "breakfast": "Breakfast",
     "lunch": "Lunch",
     "dinner": "Dinner",
-    "merienda": "Snack"
+    "merienda": "Snack",
+    "send": "Send",
+    "validation-min-length": "Please describe your meals in more detail."
   },
   "achievements": {
     "bronze-title": "Bronze Achievements",

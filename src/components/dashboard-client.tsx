@@ -50,8 +50,8 @@ export function DashboardClient({ initialDailyData, lastAnalysisDate }: Dashboar
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
   const t = useI18n();
-  const locale = useCurrentLocale();
-  const dateFnsLocale = locale === 'es' ? esLocale : enUSLocale;
+  const currentLocale = useCurrentLocale();
+  const dateFnsLocale = currentLocale === 'es' ? esLocale : enUSLocale;
 
   useEffect(() => {
     setDailyData(initialDailyData);
@@ -188,6 +188,7 @@ export function DashboardClient({ initialDailyData, lastAnalysisDate }: Dashboar
           isOpen={!!selectedDayData}
           onClose={() => setSelectedDayData(null)}
           onGoToChat={handleGoToChat}
+          locale={dateFnsLocale}
         />
       )}
     </div>

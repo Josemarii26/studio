@@ -197,7 +197,7 @@
     "delete-fail-desc": "No se pudieron eliminar los datos de la cuenta. Inténtalo de nuevo."
   },
   "day-modal": {
-    "title": "Detalles del {date}",
+    "title": "Detalles de {date}",
     "macros-title": "Distribución de Macronutrientes",
     "macros-no-data": "No hay datos de macros disponibles.",
     "calories-title": "Calorías",
@@ -233,7 +233,8 @@
     "lunch": "Almuerzo",
     "dinner": "Cena",
     "merienda": "Merienda",
-    "send": "Enviar"
+    "send": "Enviar",
+    "validation-min-length": "Por favor, describe tus comidas con más detalle."
   },
   "achievements": {
     "bronze-title": "Logros de Bronce",
