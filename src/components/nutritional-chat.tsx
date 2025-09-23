@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { format, isSameDay, startOfToday, subDays } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
 import { loadChatHistory, saveChatHistory } from '@/firebase/firestore';
 import { useI18n, useCurrentLocale } from '@/locales/client';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -88,6 +88,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -303,6 +304,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                         placeholder={t('chat.placeholder')}
                         className="resize-none"
                         rows={3}
+                        autoFocus={false}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -315,19 +317,25 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                   </FormItem>
                 )}
               />
-              <div className="flex w-full items-center justify-between gap-2">
-                <Popover>
+              <div className="flex w-full flex-col sm:flex-row items-center gap-2">
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
+                         <Button
+                            variant={"outline"}
+                            className={cn("w-full sm:w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}
+                         >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP", {locale: currentLocale === 'es' ? es : undefined}) : <span>{t('chat.pick-a-date')}</span>}
+                            {selectedDate ? format(selectedDate, "PP", {locale: currentLocale === 'es' ? es : enUS}) : <span>{t('chat.pick-a-date')}</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <Calendar
                             mode="single"
                             selected={selectedDate}
-                            onSelect={(d) => setSelectedDate(d || startOfToday())}
+                            onSelect={(d) => {
+                                setSelectedDate(d || startOfToday());
+                                setIsCalendarOpen(false);
+                            }}
                             disabled={[(date) => {
                                 const dateString = date.toDateString();
                                 return date > new Date() || date < new Date("2024-01-01") || loggedDates.includes(dateString);
@@ -336,8 +344,9 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                         />
                     </PopoverContent>
                 </Popover>
-                <Button type="submit" size="icon" className='h-10 w-14' disabled={isLoading || isHistoryLoading}>
-                  <Send className="h-4 w-4" />
+                <Button type="submit" className="w-full sm:w-auto sm:flex-grow" disabled={isLoading || isHistoryLoading}>
+                  <Send className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t('chat.send')}</span>
                 </Button>
               </div>
             </form>
