@@ -304,7 +304,6 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                         placeholder={t('chat.placeholder')}
                         className="resize-none"
                         rows={3}
-                        autoFocus={false}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -320,7 +319,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
               <div className="flex w-full items-center gap-2">
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
-                        <Button
+                         <Button
                             variant={"outline"}
                             className={cn("flex-1 justify-start text-left font-normal min-w-0", !selectedDate && "text-muted-foreground")}
                         >
@@ -328,7 +327,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                             <span className="truncate">{selectedDate ? format(selectedDate, "PP", {locale: currentLocale === 'es' ? es : enUS}) : <span>{t('chat.pick-a-date')}</span>}</span>
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent onOpenAutoFocus={(e) => e.preventDefault()} className="w-auto p-0">
                         <Calendar
                             mode="single"
                             selected={selectedDate}
@@ -340,7 +339,6 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                                 const dateString = date.toDateString();
                                 return date > new Date() || date < new Date("2024-01-01") || loggedDates.includes(dateString);
                             }]}
-                            initialFocus
                         />
                     </PopoverContent>
                 </Popover>
