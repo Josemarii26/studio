@@ -232,7 +232,8 @@
     "breakfast": "Desayuno",
     "lunch": "Almuerzo",
     "dinner": "Cena",
-    "merienda": "Merienda"
+    "merienda": "Merienda",
+    "send": "Enviar"
   },
   "achievements": {
     "bronze-title": "Logros de Bronce",

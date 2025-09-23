@@ -317,15 +317,15 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                   </FormItem>
                 )}
               />
-              <div className="flex w-full flex-col sm:flex-row items-center gap-2">
+              <div className="flex w-full items-center gap-2">
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
-                         <Button
+                        <Button
                             variant={"outline"}
-                            className={cn("w-full sm:w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}
-                         >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PP", {locale: currentLocale === 'es' ? es : enUS}) : <span>{t('chat.pick-a-date')}</span>}
+                            className={cn("flex-1 justify-start text-left font-normal min-w-0", !selectedDate && "text-muted-foreground")}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{selectedDate ? format(selectedDate, "PP", {locale: currentLocale === 'es' ? es : enUS}) : <span>{t('chat.pick-a-date')}</span>}</span>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -333,7 +333,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                             mode="single"
                             selected={selectedDate}
                             onSelect={(d) => {
-                                setSelectedDate(d || startOfToday());
+                                if (d) setSelectedDate(d);
                                 setIsCalendarOpen(false);
                             }}
                             disabled={[(date) => {
@@ -344,9 +344,8 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
                         />
                     </PopoverContent>
                 </Popover>
-                <Button type="submit" className="w-full sm:w-auto sm:flex-grow" disabled={isLoading || isHistoryLoading}>
-                  <Send className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">{t('chat.send')}</span>
+                <Button type="submit" size="icon" className="flex-shrink-0" disabled={isLoading || isHistoryLoading}>
+                  <Send className="h-4 w-4" />
                 </Button>
               </div>
             </form>
