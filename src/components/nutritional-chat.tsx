@@ -219,7 +219,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
   };
 
   return (
-    <div className="flex h-full flex-col bg-card">
+    <div className="flex h-full flex-col bg-card" drawer-vaul-unauto-scale="true">
       <CardHeader className="flex flex-row items-center gap-3 border-b">
         <DietLogAILogo className="h-8 w-8 text-primary" />
         <div>
