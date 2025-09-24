@@ -123,12 +123,6 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
 
   const messageValue = form.watch('message');
 
-  const resetToInitialMessage = () => {
-    setMessages([
-        { id: '1', role: 'assistant', content: t('chat.initial-message'), timestamp: new Date() }
-    ]);
-  }
-
   useEffect(() => {
     async function loadHistory() {
         if (user) {
@@ -137,14 +131,16 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
             if (history.length > 0) {
                 setMessages(history);
             } else {
-                resetToInitialMessage();
+                setMessages([
+                    { id: '1', role: 'assistant', content: t('chat.initial-message'), timestamp: new Date() }
+                ]);
             }
             setIsHistoryLoading(false);
         }
     }
     loadHistory();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (user && !isHistoryLoading && messages.length > 0) {

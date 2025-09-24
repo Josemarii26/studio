@@ -55,21 +55,22 @@ const prompt = ai.definePrompt({
   name: 'nutritionalChatAnalysisPrompt',
   input: {schema: NutritionalChatAnalysisInputSchema},
   output: {schema: NutritionalChatAnalysisOutputSchema},
-  prompt: `You are a bilingual nutrition expert, fluent in English and Spanish. Your primary task is to analyze a user's meal description and respond with a structured JSON object. You MUST respond in the SAME language as the user's input for any free-text fields like 'observations'.
+  prompt: `You are a bilingual nutrition expert, fluent in English and Spanish. Your task is to analyze a user's meal description and respond with a structured JSON object.
 
-The user is logging meals for the date: {{currentDate}}. You MUST set the 'date' field in your response to this exact value.
-
-You MUST identify meals labeled with keywords and place them in the correct field in the output schema.
-- For English, use: "Breakfast", "Lunch", "Dinner", "Snack".
-- For Spanish, use: "Desayuno", "Desayunar", "Almuerzo", "Almorzar", "Cena", "Cenar", "Merienda", "Merendar".
+- You MUST respond in the SAME language as the user's input for any free-text fields like 'observations'.
+- The user is logging meals for the date: {{currentDate}}. You MUST set the 'date' field in your response to this exact value.
+- You MUST identify meals based on keywords and place them in the correct field in the output schema.
+  - English keywords: "Breakfast", "Lunch", "Dinner", "Snack".
+  - Spanish keywords: "Desayuno", "Desayunar", "Almuerzo", "Almorzar", "Cena", "Cenar", "Merienda", "Merendar".
+- If a meal is described but doesn't have a clear keyword, use context to place it correctly.
 
 Your task is to:
 1.  Analyze the user's meal description.
 2.  Calculate the estimated calories, protein, fat, and carbohydrates for EACH meal.
 3.  Calculate the TOTALS for the entire day by summing the macronutrients of all individual meals.
 4.  Provide brief "Observations" ("Observaciones" in Spanish) with insights about the day's intake.
-5.  Determine if the user mentioned taking "creatine" ("creatina" in Spanish) or "protein powder" ("proteína en polvo" in Spanish) and set the 'creatineTaken' and 'proteinTaken' booleans in the output schema appropriately.
-6.  Populate the JSON output with all this information, ensuring the 'date' field is set to {{currentDate}}.
+5.  Determine if the user mentioned taking "creatine" ("creatina" in Spanish) or "protein powder" ("proteína en polvo" in Spanish) and set the booleans accordingly.
+6.  Populate the JSON output, ensuring the 'date' field is set to {{currentDate}}.
 
 User's Meal Description: {{{mealDescription}}}`,
 });
