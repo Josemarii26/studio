@@ -141,16 +141,9 @@ export default function DashboardPage() {
     }
     loadData();
   }, [user, userProfile, authLoading]);
-
-  useEffect(() => {
-    if (user && !isLoadingData) {
-      saveDailyDataForUser(user.uid, dailyData);
-    }
-  }, [dailyData, user, isLoadingData]);
   
-
   const handleAnalysisUpdate = (result: NutritionalChatAnalysisOutput) => {
-    if (!userProfile) return;
+    if (!userProfile || !user) return;
     
     if(!result || !result.totals || result.totals.calories === 0 || !result.date) {
         toast({
@@ -179,10 +172,10 @@ export default function DashboardPage() {
       proteinTaken: result.proteinTaken,
     };
     
-    setDailyData(prevData => {
-        const otherDays = prevData.filter(d => !isSameDay(d.date, logDate));
-        return [...otherDays, newDayData];
-    });
+    const updatedDailyData = [...dailyData.filter(d => !isSameDay(d.date, logDate)), newDayData];
+    
+    setDailyData(updatedDailyData);
+    saveDailyDataForUser(user.uid, updatedDailyData);
     
     setLastAnalysisDate(result.date);
     
@@ -197,11 +190,14 @@ export default function DashboardPage() {
     setChatMessages(prev => [...prev, assistantMessage]);
   };
   
-  if (authLoading || !profileLoaded) {
+  if (authLoading || !profileLoaded || isLoadingData) {
     return <DashboardLoader />;
   }
   
   if (user && !userProfile) {
+    // This case handles the brief moment after login but before profile is loaded,
+    // or if a user exists in auth but has no profile (and should be in onboarding).
+    // The useEffect above will handle the redirect to onboarding.
     return <DashboardLoader />;
   }
 
