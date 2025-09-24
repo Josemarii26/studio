@@ -25,7 +25,7 @@ const MealSchema = z.object({
 });
 
 const NutritionalChatAnalysisOutputSchema = z.object({
-  date: z.string().describe("The date for which the meals are being logged, in YYYY-MM-DD format. This MUST be the same as the `currentDate` provided in the input."),
+  date: z.string().describe("The date for which the meals are being logged, in YYY-MM-DD format. This MUST be the same as the `currentDate` provided in the input."),
   meals: z.object({
     breakfast: MealSchema.optional().describe('The analysis for the breakfast meal, if present.'),
     lunch: MealSchema.optional().describe('The analysis for the lunch meal, if present.'),
@@ -62,7 +62,7 @@ const prompt = ai.definePrompt({
 - You MUST identify meals based on keywords and place them in the correct field in the output schema.
   - English keywords: "Breakfast", "Lunch", "Dinner", "Snack".
   - Spanish keywords: "Desayuno", "Desayunar", "Almuerzo", "Almorzar", "Cena", "Cenar", "Merienda", "Merendar".
-- If a meal is described but doesn't have a clear keyword, use context to place it correctly.
+- The 'merienda' field in the JSON output corresponds to the "Snack" keyword in English. If a meal is described but doesn't have a clear keyword, use context to place it correctly.
 
 Your task is to:
 1.  Analyze the user's meal description.

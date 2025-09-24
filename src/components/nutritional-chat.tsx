@@ -60,18 +60,20 @@ const KeywordChecker = ({ message }: { message: string }) => {
         'breakfast': ['breakfast', 'desayuno', 'desayunar'],
         'lunch': ['lunch', 'almuerzo', 'almorzar'],
         'dinner': ['dinner', 'cena', 'cenar'],
-        'merienda': ['merienda', 'merendar']
+        'merienda': ['snack', 'merienda', 'merendar']
     };
     const lowerCaseMessage = message.toLowerCase();
 
     return (
         <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-            {Object.entries(keywords).map(([meal, terms]) => {
+            {Object.entries(keywords).map(([mealKey, terms]) => {
                 const isPresent = terms.some(term => lowerCaseMessage.includes(term));
+                const translationKey = mealKey === 'merienda' ? 'chat.snack' : `chat.${mealKey as 'breakfast' | 'lunch' | 'dinner'}`;
+
                 return (
-                    <div key={meal} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
+                    <div key={mealKey} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
                         {isPresent ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        <span className="capitalize">{t(`chat.${meal}` as any)}</span>
+                        <span className="capitalize">{t(translationKey as any)}</span>
                     </div>
                 )
             })}
@@ -181,7 +183,7 @@ export function NutritionalChat({ onAnalysisUpdate, dailyData, messages, setMess
     if (['breakfast', 'desayuno', 'desayunar'].some(k => messageContent.includes(k))) foundKeywords.add('breakfast');
     if (['lunch', 'almuerzo', 'almorzar'].some(k => messageContent.includes(k))) foundKeywords.add('lunch');
     if (['dinner', 'cena', 'cenar'].some(k => messageContent.includes(k))) foundKeywords.add('dinner');
-    if (['merienda', 'merendar'].some(k => messageContent.includes(k))) foundKeywords.add('merienda');
+    if (['snack', 'merienda', 'merendar'].some(k => messageContent.includes(k))) foundKeywords.add('merienda');
 
     if (foundKeywords.size < 2) {
         toast({
