@@ -145,7 +145,7 @@
     "walkthrough-complete-btn": "Let's Go!"
   },
   "profile": {
-    "back-btn": "Back to Dashboard",
+    "back-btn": "Back",
     "goal-prefix": "Goal: {goal}",
     "summary-title": "Performance Summary",
     "summary-desc": "A quick look at your progress and habits.",
