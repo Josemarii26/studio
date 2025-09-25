@@ -68,12 +68,12 @@ const KeywordChecker = ({ message }: { message: string }) => {
         <div className="grid grid-cols-2 gap-2 text-xs mb-2">
             {Object.entries(keywords).map(([mealKey, terms]) => {
                 const isPresent = terms.some(term => lowerCaseMessage.includes(term));
-                const translationKey = mealKey === 'merienda' ? 'chat.snack' : `chat.${mealKey as 'breakfast' | 'lunch' | 'dinner'}`;
+                const translationKey = `chat.${mealKey}` as 'chat.breakfast' | 'chat.lunch' | 'chat.dinner' | 'chat.merienda';
 
                 return (
                     <div key={mealKey} className={cn("flex items-center gap-2", isPresent ? 'text-status-green' : 'text-status-red')}>
                         {isPresent ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        <span className="capitalize">{t(translationKey as any)}</span>
+                        <span className="capitalize">{t(translationKey)}</span>
                     </div>
                 )
             })}
